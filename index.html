@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>네이처과학학원 완벽내신 CHECKLIST</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+        
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif; background-color: #f0f2f5; color: #222222; margin: 0; padding: 40px 20px 140px 20px; display: flex; flex-direction: column; align-items: center; }
+
+        /* [학년 선택 마스터 컨트롤 세그먼트] */
+        .grade-tab-container { display: flex; width: 100%; max-width: 860px; background: #111c3a; border-radius: 8px 8px 0 0; padding: 10px 15px; gap: 10px; }
+        .tab-btn { flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.2s ease; }
+        .tab-btn:hover { background: rgba(255, 255, 255, 0.2); color: #ffffff; }
+        .tab-btn.active { background: #d4af37; color: #111c3a; border-color: #d4af37; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+
+        /* [선생님 전용 범위 설정 패널] */
+        .scope-selector-panel { width: 100%; max-width: 860px; background-color: #ffffff; border: 2px solid #111c3a; border-top: none; border-radius: 0 0 8px 8px; padding: 22px; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
+        .selector-title { font-size: 15px; font-weight: 800; color: #111c3a; margin-bottom: 14px; }
+        .master-control-row { display: flex; gap: 8px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #e2e8f0; align-items: center; }
+        .btn-master { padding: 6px 14px; font-size: 12px; font-weight: 800; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
+        .btn-master-all { background-color: #111c3a; color: #ffffff; border: 1px solid #111c3a; }
+        .btn-master-clear { background-color: #ffffff; color: #111c3a; border: 1px solid #cbd5e1; }
+        .btn-master-reset { background-color: #b23a48; color: #ffffff; border: 1px solid #b23a48; margin-left: auto; }
+        .btn-master-reset:hover { background-color: #922a36; }
+        
+        .scope-group-container { display: flex; flex-direction: column; gap: 10px; }
+        .scope-group { border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px; background: #f8fafc; }
+        .group-header-label { font-size: 14px; font-weight: 800; color: #111c3a; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; cursor: pointer; }
+        .group-header-label input { width: 16px; height: 16px; accent-color: #111c3a; }
+        .sub-group-grid { display: flex; flex-wrap: wrap; gap: 8px; padding-left: 22px; border-top: 1px dashed #e2e8f0; padding-top: 10px; }
+        .sub-scope-label { font-size: 12.5px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer; background: #ffffff; padding: 5px 12px; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .sub-scope-label input { width: 14px; height: 14px; accent-color: #d4af37; }
+
+        /* [A4 프리미엄 대지 디자인] */
+        .report-paper { width: 210mm; min-height: 297mm; background-color: #ffffff; padding: 25mm 20mm; box-shadow: 0 10px 40px rgba(0,0,0,0.08); position: relative; box-sizing: border-box; border: 1px solid #111c3a; }
+        .report-paper::before { content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px; border: 2px solid #111c3a; pointer-events: none; }
+        .report-paper::after { content: ''; position: absolute; top: 18px; left: 18px; right: 18px; bottom: 18px; border: 1px solid #d4af37; pointer-events: none; }
+
+        /* [헤더 섹션] */
+        .header-section { background-color: #111c3a; border-bottom: 4px solid #d4af37; padding: 22px 28px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; color: #ffffff; position: relative; z-index: 5; }
+        .logo-area { font-size: 12px; font-weight: 800; color: #d4af37; letter-spacing: 2px; margin-bottom: 4px; }
+        .main-title { font-size: 25px; font-weight: 900; margin: 0; letter-spacing: -0.5px; }
+        
+        .student-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: rgba(255, 255, 255, 0.08); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(214, 175, 55, 0.3); }
+        .meta-cell { display: flex; align-items: center; gap: 6px; }
+        .meta-cell label { font-size: 12px; font-weight: 700; color: #d4af37; white-space: nowrap; }
+        .meta-input { background: transparent; border: none; border-bottom: 1px solid #d4af37; color: #ffffff; font-size: 14px; font-weight: 800; width: 85px; text-align: center; outline: none; }
+        .meta-select { background: #111c3a; border: none; border-bottom: 1px solid #d4af37; color: #ffffff; font-size: 12.5px; font-weight: 800; outline: none; cursor: pointer; width: 105px; }
+
+        /* [프리미엄 내신 성취도 시각화 게이지 바] */
+        .premium-gauge-container { width: 100%; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 18px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; position: relative; z-index: 5; }
+        .gauge-label { font-size: 13px; font-weight: 800; color: #111c3a; white-space: nowrap; }
+        .gauge-track { flex: 1; height: 12px; background: #e2e8f0; border-radius: 10px; overflow: hidden; position: relative; }
+        .gauge-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #111c3a, #d4af37); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .gauge-percent { font-size: 14px; font-weight: 900; color: #d4af37; min-width: 45px; text-align: right; text-shadow: 0.5px 0.5px 1px #111c3a; }
+
+        /* [테이블 구조] */
+        .unit-block { margin-bottom: 28px; page-break-inside: avoid; display: block; }
+        .table-title { font-size: 13.5px; font-weight: 800; color: #ffffff; padding: 8px 16px; border-radius: 5px 5px 0 0; display: inline-block; background-color: #111c3a; }
+        .checklist-table { width: 100%; border-collapse: collapse; margin-top: -1px; }
+        .checklist-table th, .checklist-table td { border: 1px solid #bbbbbb; padding: 10px 8px; font-size: 13px; line-height: 1.5; }
+        .checklist-table th { background-color: #f4f6f9; color: #111c3a; font-weight: 800; text-align: center; }
+        
+        .editable-tag { font-size: 11px; font-weight: 600; color: #d4af37; background-color: #111c3a; padding: 2px 6px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+
+        .content-td, .solution-td { outline: none; transition: background 0.15s ease; cursor: pointer; }
+        .content-td:focus, .solution-td:focus { background-color: #ffffdd !important; }
+        .content-list { margin: 0; padding-left: 15px; color: #444444; }
+        .content-list li { margin-bottom: 4px; }
+
+        .grade-td { text-align: center; width: 110px; }
+        .btn-group { display: flex; gap: 4px; justify-content: center; }
+        .btn-grade { border: 1px solid #dddddd; background-color: #ffffff; padding: 4px 8px; font-size: 11px; font-weight: 800; border-radius: 4px; cursor: pointer; }
+        .btn-grade.active-a { background-color: #e8f5e9 !important; color: #2e7d32 !important; border-color: #2e7d32 !important; }
+        .btn-grade.active-b { background-color: #fff3e0 !important; color: #e65100 !important; border-color: #e65100 !important; }
+        .btn-grade.active-c { background-color: #ffebee !important; color: #c62828 !important; border-color: #c62828 !important; }
+        
+        .print-only-badge { display: none; font-weight: 900; padding: 4px 10px; border-radius: 4px; font-size: 13px; }
+        .solution-td { font-size: 12px; font-weight: 600; text-align: center; color: #555555; width: 170px; background-color: #fafafa; }
+        .sol-c { color: #c62828; font-weight: 700; }
+
+        /* 매크로 팝오버 창 */
+        #solution-macro-popover { position: absolute; display: none; background: #ffffff; border: 2px solid #111c3a; box-shadow: 0 6px 20px rgba(0,0,0,0.15); border-radius: 6px; padding: 8px; z-index: 10005; width: 220px; flex-direction: column; gap: 4px; }
+        .macro-btn { background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; padding: 6px 10px; font-size: 11.5px; font-weight: 700; border-radius: 4px; text-align: left; cursor: pointer; transition: all 0.1s ease; }
+        .macro-btn:hover { background: #111c3a; color: #ffffff; border-color: #111c3a; }
+
+        /* [종합 피드백 블록] */
+        .opinion-section { margin-top: 30px; page-break-inside: avoid; }
+        .opinion-title { font-size: 15px; font-weight: 800; color: #111c3a; margin-bottom: 8px; border-left: 4px solid #111c3a; padding-left: 8px; }
+        .chip-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .opinion-chip { background-color: #ffffff; border: 1px solid #111c3a; color: #111c3a; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 20px; cursor: pointer; }
+        .opinion-chip:hover { background-color: #111c3a; color: #ffffff; }
+        .opinion-box { width: 100%; min-height: 110px; border: 1px solid #111c3a; padding: 15px; font-size: 13px; line-height: 1.6; color: #333333; outline: none; background-color: #fafafa; text-align: justify; }
+
+        /* [하단 고정형 버튼 바] */
+        .summary-bar { position: fixed; bottom: 0; left: 0; right: 0; background-color: #111c3a; padding: 15px 40px; display: flex; justify-content: center; align-items: center; gap: 15px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 9999; border-top: 3px solid #d4af37; }
+        .btn-action-print { background-color: #d4af37; color: #111c3a; border: none; padding: 12px 35px; font-size: 14px; font-weight: 800; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .btn-action-image { background-color: #2e7d32; color: #ffffff; border: none; padding: 12px 35px; font-size: 14px; font-weight: 800; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        /* [🖨️ 인쇄 최적화] */
+        @media print {
+            html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background-color: #ffffff; display: flex; justify-content: center; align-items: center; }
+            .no-print { display: none !important; }
+            .editable-tag { display: none !important; }
+            .meta-select { -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; border: none !important; background: transparent !important; width: auto !important; }
+            .meta-select::-ms-expand { display: none !important; }
+            .meta-input { border: none !important; }
+            .report-paper { box-shadow: none; border: none; width: 210mm; min-height: 297mm; padding: 20mm 18mm !important; margin: auto !important; display: block; position: relative; }
+            .report-paper::before, .report-paper::after { display: block !important; }
+            @page { size: A4; margin: 0; }
+            
+            .btn-group { display: none !important; }
+            .print-only-badge { display: inline-block !important; }
+            .content-td, .solution-td { background-color: transparent !important; }
+            .opinion-box { background-color: transparent !important; border: 1px solid #111c3a !important; }
+            .summary-bar { display: none !important; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <div class="grade-tab-container no-print">
+        <button type="button" class="tab-btn active" id="tab-mid1" onclick="switchGrade('mid1')">중1 과학 리포트</button>
+        <button type="button" class="tab-btn" id="tab-mid2" onclick="switchGrade('mid2')">중2 과학 리포트</button>
+        <button type="button" class="tab-btn" id="tab-mid3" onclick="switchGrade('mid3')">중3 과학 리포트</button>
+    </div>
+
+    <div class="scope-selector-panel no-print">
+        <div class="selector-title">🌿 단원 편집 마스터 컨트롤러</div>
+        <div class="master-control-row">
+            <button type="button" class="btn-master btn-master-all" onclick="setAllScopes(true)">✓ 전체 단원 켜기</button>
+            <button type="button" class="btn-master btn-master-clear" onclick="setAllScopes(false)">✕ 전체 단원 끄기</button>
+            <button type="button" class="btn-master btn-master-reset" onclick="resetCurrentReport()">🔄 새 학생 레포트 작성 (초기화)</button>
+        </div>
+        <div class="scope-group-container" id="scope-widget-root"></div>
+    </div>
+
+    <div class="report-paper" id="capture-target-paper">
+        <div class="header-section">
+            <div>
+                <div class="logo-area">NATURE SCIENCE ACADEMY</div>
+                <h1 class="main-title">완벽내신 CHECKLIST</h1>
+            </div>
+            <div class="student-meta-grid">
+                <div class="meta-cell"><label>이름 :</label><input type="text" id="student-name" class="meta-input" value="네이처" oninput="syncFilenameAndSave()"></div>
+                <div class="meta-cell"><label>학교명 :</label><input type="text" id="school-name" class="meta-input" value="네이처중" oninput="syncFilenameAndSave()"></div>
+                <div class="meta-cell">
+                    <label>시험 :</label>
+                    <select id="exam-type" class="meta-select" onchange="syncFilenameAndSave()">
+                        <option value="1학기 중간고사">1학기 중간 대비</option>
+                        <option value="1학기 기말고사">1학기 기말 대비</option>
+                        <option value="2학기 중간고사">2학기 중간 대비</option>
+                        <option value="2학기 기말고사">2학기 기말 대비</option>
+                        <option value="직전 파이널 모의고사">직전 파이널</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-gauge-container">
+            <div class="gauge-label">✨ 내신 분석 성취율</div>
+            <div class="gauge-track"><div class="gauge-fill" id="gauge-bar"></div></div>
+            <div class="gauge-percent" id="gauge-txt">0%</div>
+        </div>
+
+        <div id="report-table-root"></div>
+
+        <div class="opinion-section">
+            <div class="opinion-title">지도교사 종합 피드백 의견</div>
+            <div class="chip-container no-print">
+                <button class="opinion-chip" onclick="addText('개념 이해도는 전반적으로 우수하나 ')">개념 우수</button>
+                <button class="opinion-chip" onclick="addText('핵심 용어 암기가 부족하여 오답이 다수 발생합니다. ')">암기 부족</button>
+                <button class="opinion-chip" onclick="addText('기본 문항 대비 고난도 심화 유형 풀이에 취약점이 관찰됩니다. ')">고난도 부족</button>
+                <button class="opinion-chip" onclick="addText('실전 모의고사 풀이 시 서술형 문항 감점을 최소화해야 합니다. ')">응용문제 부족</button>
+                <button class="opinion-chip" onclick="addText('틀린 문항의 연계 이론 메커니즘을 완벽히 이해하고 재점검해야 합니다. ')">오답 보완 필요</button>
+                <button class="opinion-chip" onclick="addText('추가로 배부된 기출 모의고사를 반드시 모두 풀고 검사받아야 합니다. ')">추가문제 풀이</button>
+                <button class="opinion-chip" onclick="addText('시험 직전 최종 파이널 보강 수업에는 무조건 필참할 수 있도록 지도 바랍니다. ')">직전 보강 필참</button>
+            </div>
+            <div id="opinion-textarea" class="opinion-box" contenteditable="true" oninput="saveCurrentState()">현재 전반적인 개념 이해도는 양호하나 특정 응용 문제 풀이 및 고난도 심화 유형에 대한 훈련이 다소 부족한 상태입니다. 학교별 출제 경향을 고려할 때, 틀린 문제와 연계된 심화 이론을 완벽히 정립하고 시험장에 들어가야 실수를 줄일 수 있습니다. 따라서 다가오는 직전 보강 시험에는 반드시 필참할 수 있도록 지도해주시고, 추가로 배부된 고난도 시크릿 모의고사 문항을 마저 모두 풀어 제출할 수 있도록 가정에서도 함께 점검 및 격려 부탁드립니다.</div>
+        </div>
+    </div>
+
+    <div class="summary-bar no-print">
+        <button class="btn-action-print" onclick="window.print()">🖨️ 내신 리포트 인쇄 / PDF 저장</button>
+        <button class="btn-action-image" onclick="saveAsImageFile()">📸 카톡 전송용 이미지 저장</button>
+    </div>
+
+    <!-- 수정된 서술형 특화 SOLUTION 매크로 팝오버 -->
+    <div id="solution-macro-popover" class="no-print">
+        <button type="button" class="macro-btn" onclick="injectMacro('💡 심화 문제 풀이 유지', false)">💡 심화 문제 풀이 유지</button>
+        <button type="button" class="macro-btn" onclick="injectMacro('📝 원포인트 후 추가문제', false)">📝 원포인트 후 추가문제</button>
+        <button type="button" class="macro-btn" onclick="injectMacro('🚨 재학습 + 보강 필참', true)">🚨 재학습 + 보강 필참</button>
+        <button type="button" class="macro-btn" onclick="injectMacro('🔍 취약 유형 유사문항 배부', false)">🔍 취약 유형 유사 배부</button>
+        <button type="button" class="macro-btn" onclick="injectMacro('✏️ 오답노트 정리 및 재검사', false)">✏️ 오답노트 정리 검사</button>
+        <hr style="border: 0; border-top: 1px dashed #cbd5e1; width: 100%; margin: 2px 0;">
+        <button type="button" class="macro-btn" onclick="injectMacro('✍️ 서술형 단위 누락 감점 주의', true)">✍️ 서술형 단위 감점 주의</button>
+        <button type="button" class="macro-btn" onclick="injectMacro('✍️ 서술형 조건 확인 미흡 보완', true)">✍️ 서술형 조건 확인 보완</button>
+        <button type="button" class="macro-btn" onclick="injectMacro('✍️ 서술형 논리적 풀이과정 연습', true)">✍️ 서술형 풀이과정 연습</button>
+    </div>
+
+    <script>
+        const CURRICULUM_DATA = {
+            mid1: [
+                { title: "1. 과학과 인류의 지속가능한 삶", sub: [{ id: "m1-1-1", name: "과학과 인류의 삶", list: ["과학적 탐구 방법의 프로세스 이해","과학의 발전이 인류 문명에 미친 영향","환경 보전과 지속가능한 삶의 연계성"] }] },
+                { title: "2. 생물의 구성과 다양성", sub: [
+                    { id: "m1-2-1", name: "생물의 구성", list: ["세포의 기본 구조 및 기능 분석","동물세포 and 식물세포의 차이점 및 특징","세포-조직-기관-개체로 이어지는 구성 단계"] },
+                    { id: "m1-2-2", name: "생물다양성과 분류", list: ["생물다양성의 정의 및 변이의 발생 원인","생물을 체계적으로 분류하는 목적과 방법","생물의 5계 분화 체계론의 이해"] },
+                    { id: "m1-2-3", name: "생물다양성보전", list: ["생물다양성 보전이 인류에게 필요한 이유","생물다양성 감소를 초래하는 주요 원인 파악","생태계 유지를 위한 구체적인 실천 원칙"] }
+                ]},
+                { title: "3. 열", sub: [
+                    { id: "m1-3-1", name: "온도와 열의 이동", list: ["물질을 구성하는 입자의 운동과 온도의 관계","두 물질이 접촉할 때 일어나는 열평형 현상","열이 이동하는 세 가지 방식 (전도·대류·복사)"] },
+                    { id: "m1-3-2", name: "비열", list: ["비열의 고유 정의와 물리적 의미 이해","우리 생활 속에서 비열을 활용하는 대표적 사례"] },
+                    { id: "m1-3-3", name: "열팽창", list: ["온도 변화에 따른 고체·액체의 열팽창 원리","산업 및 실생활 속 열팽창 설계 활용 사례"] }
+                ]},
+                { title: "4. 물질의 상태 변화", sub: [
+                    { id: "m1-4-1", name: "입자의 운동과 상태", list: ["확산과 증발 현상을 통한 입자의 운동 증명","고체, 액체, 기체 세 가지 상태의 분자적 특징"] },
+                    { id: "m1-4-2", name: "상태변화와 에너지", list: ["열에너지를 흡수하거나 방출하는 상태변화 매칭","상태 변화 시 출입하는 열에너지의 실생활 이용"] }
+                ]},
+                { title: "5. 힘의 작용", sub: [
+                    { id: "m1-5-1", name: "힘의 표현과 평형", list: ["힘의 3요소를 이용한 화살표 작도법","두 힘의 합력 공식과 평형을 이루는 조건"] },
+                    { id: "m1-5-2", name: "여러 가지 힘(1)", list: ["지구 질량에 의한 중력의 특징과 크기(무게)","탄성력의 방향성 및 훅의 법칙 개념 응용"] },
+                    { id: "m1-5-3", name: "여러 가지 힘(2)", list: ["접촉면에서 작용하는 마찰력의 크기 결정 요인","유체 속 물체에 작용하는 부력의 발생 원리"] },
+                    { id: "m1-5-4", name: "힘과 운동 변화", list: ["알짜힘이 0일 때 물체의 운동 상태 (관성)","힘의 작용에 따른 속력 및 운동 방향의 변화"] }
+                ]},
+                { title: "6. 기체의 성질", sub: [
+                    { id: "m1-6-1", name: "기체의 압력", list: ["압력의 기본 정의와 단면적당 힘의 관계식","기체 분자의 충돌로 인해 발생하는 압력의 원인"] },
+                    { id: "m1-6-2", name: "기체의 압력과 부피", list: ["보일의 법칙(일정 온도에서 압력과 부피의 관계)","압력 변화에 따른 분자 운동 모형 시각화"] },
+                    { id: "m1-6-3", name: "기체의 온도와 부피", list: ["샤를의 법칙(일정 압력에서 온도와 부피의 관계)","온도 상승에 따른 기체 분자 충돌 및 속도 변화"] }
+                ]},
+                { title: "7. 태양계", sub: [
+                    { id: "m1-7-1", name: "태양계의 구성", list: ["태양 및 행성, 소행성 등 태양계 천체 특징","천체 망원경의 기본 광학 메커니즘과 조작법"] },
+                    { id: "m1-7-2", name: "지구의 운동", list: ["지구 자전축 기준의 자전과 이로 인한 일주 현상","지구 공전 궤도와 별자리의 연주 운동 분포 원리"] },
+                    { id: "m1-7-3", name: "달의 운동", list: ["달의 공전 주기율과 위치에 따른 위상 변화","일식 현상과 월식 현상의 기하학적 조건 비교"] }
+                ]}
+            ],
+            mid2: [
+                { title: "1. 물질의 특성", sub: [
+                    { id: "m2-1-1", name: "혼합물의 분리(1)", list: ["순물질과 혼합물의 기본 정의와 예시 분별","밀도 차를 이용한 고체 및 액체 혼합물의 분리 원리"] },
+                    { id: "m2-1-2", name: "혼합물의 분리(2)", list: ["용해도 차(재결정)를 이용한 분리 메커니즘","끓는점 및 녹는점 차이(증류)를 이용한 분리법 이해"] }
+                ]},
+                { title: "2. 지권의 구성", sub: [
+                    { id: "m2-2-1", name: "지권의 구성과 암석", list: ["지구계 구성 요소 및 지권의 층상 구조 특성","화성암·퇴적암·변성암 종류와 암석의 순환","광물의 특징 및 풍화 작용과 토양 형성"] },
+                    { id: "m2-2-2", name: "판의 이동과 경계", list: ["대륙 이동설과 판 구조론의 기본 개념 체계","화산대, 지진대 분포와 판의 경계 특징 분석"] }
+                ]},
+                { title: "3. 빛과 파동", sub: [
+                    { id: "m2-3-1", name: "빛과 물체의 상", list: ["빛의 반사 법칙과 거울에 의한 상의 특징","빛의 굴절 및 렌즈의 광학적 상 형성 원리"] },
+                    { id: "m2-3-2", name: "물체의 색과 합성", list: ["빛의 삼원색 합성 원리 및 실생활 적용","물체의 색이 결정되는 반사와 흡수의 매커니즘"] },
+                    { id: "m2-3-3", name: "파동과 소리", list: ["파동의 발생과 전달 메커니즘(종파/횡파)","소리의 3요소(세기·맵시·높낮이) 분석"] }
+                ]},
+                { title: "4. 물질의 구성", sub: [
+                    { id: "m2-4-1", name: "원소와 화합물", list: ["원소와 화합물의 차이 및 원자 구조 이해","원소 기호와 화학식을 이용한 물질의 표현법"] },
+                    { id: "m2-4-2", name: "물질의 구성 입자", list: ["독립된 입자인 분자의 개념 원리 정립","전하를 띠는 이온의 형성 과정 및 확인 앙금 반응"] }
+                ]},
+                { title: "5. 식물과 에너지", sub: [
+                    { id: "m2-5-1", name: "광합성", list: ["광합성이 일어나는 장소(엽록체)와 생성 물질","광합성에 영향을 미치는 환경 요인 분석 훈련"] },
+                    { id: "m2-5-2", name: "식물의 호흡", list: ["식물의 세포 호흡과 낮과 밤의 기체 교환 특징","광합성 산물의 이동 및 전환, 저장 형태 분석"] }
+                ]},
+                { title: "6. 동물과 에너지", sub: [
+                    { id: "m2-6-1", name: "소화", list: ["3대 영양소 및 부영양소의 기능과 검출 반응","소화 기관별 소화 효소의 영양소 분해 작용 이해","소장 융털을 통한 영양소의 최종 흡수 구조"] },
+                    { id: "m2-6-2", name: "순환", list: ["심장의 구조 및 동맥·정맥·모세혈관의 혈류 특성","혈액의 성분과 기능, 온몸 순환 및 폐순환 경로"] },
+                    { id: "m2-6-3", name: "호흡", list: ["호흡계 구조 및 압력 변화에 따른 호흡 운동 원리","폐포와 조직세포 사이의 분압 차에 의한 기체 교환"] },
+                    { id: "m2-6-4", name: "배설", list: ["노폐물 생성과 신장(네프론)을 통한 배설 과정","소화·순환·호흡·배설 기관계의 통합적 작용"] }
+                ]},
+                { title: "7. 전기와 자기", sub: [
+                    { id: "m2-7-1", name: "전기의 발생", list: ["마찰 전기의 원인 및 정전기 유도 현상 분석","검전기를 이용한 물체의 대전 상태 확인 원리"] },
+                    { id: "m2-7-2", name: "전기 회로와 에너지", list: ["전류, 전압, 저항의 관계(옴의 법칙 공식 연산)","저항의 직렬연결과 병렬연결 시 회로 변화 판별","소비 전력 개념과 전기 에너지의 전환 적용"] },
+                    { id: "m2-7-3", name: "전류와 자기 작용", list: ["전류가 흐르는 도선/코일 주변의 자기장 방향","자기장 속 도선이 받는 힘(전자기력)과 전동기 원리"] }
+                ]},
+                { title: "8. 별과 우주", sub: [
+                    { id: "m2-8-1", name: "별의 특성", list: ["연주시차를 이용한 별까지의 거리 측정식 도출","별의 밝기와 등급(겉보기/절대 등급), 표면 온도"] },
+                    { id: "m2-8-2", name: "은하와 우주", list: ["우리 은하의 구성 천체(성단, 성운) 분포","우주 팽창설의 증거 및 외부 은하 관측 역사"] }
+                ]}
+            ],
+            mid3: [
+                { title: "1. 화학 반응의 규칙과 에너지 변화", sub: [
+                    { id: "m3-1-1", name: "물질 변화와 반응식", list: ["물리 변화와 화학 변화의 분자 배열적 차이점","화학 반응을 계수로 나타내는 화학 반응식 완성법"] },
+                    { id: "m3-1-2", name: "화학 반응의 규칙", list: ["질량 보존 법칙과 일정 성분비 법칙의 수식 증명","기체 반응 법칙 법칙 및 반응 시 에너지 출입(발열/흡열)"] }
+                ]},
+                { title: "2. 기권과 날씨", sub: [
+                    { id: "m3-2-1", name: "기권과 지구 기온", list: ["기권의 4개 층상 구조와 지구 복사 평형 매커니즘","온실 효과의 원인과 지구 온난화 환경 문제 연계"] },
+                    { id: "m3-2-2", name: "구름과 강수", list: ["포화 수증기량 곡선 해석 및 상대 습도 도출 연산","단열 팽창에 의한 구름 생성 및 강수 이론(빙정설)"] },
+                    { id: "m3-2-3", name: "기압과 바람", list: ["기압의 측정과 고기압/저기압 분포에 따른 바람 발생"] },
+                    { id: "m3-2-4", name: "날씨의 변화", list: ["우리나라 주변 기단 분포와 온난/한랭 전선 특징","일기도 기상 기호 해석 및 계절별 날씨 분석"] }
+                ]},
+                { title: "3. 운동과 에너지", sub: [
+                    { id: "m3-3-1", name: "운동의 기록", list: ["시간-거리, 시간-속력 그래프 해석과 등속 운동","중력만 받아 떨어지는 자유 낙하 운동의 등가속도 특징"] },
+                    { id: "m3-3-2", name: "일과 에너지", list: ["과학에서의 일의 계산식 및 일-에너지 전환 원리","중력 위치에너지와 운동에너지 공식 매칭 연산"] }
+                ]},
+                { title: "4. 자극과 반응", sub: [
+                    { id: "m3-4-1", name: "감각 기관", list: ["눈, 귀, 코, 혀, 피부의 구조적 명칭과 자극 수용","각 감각 기관에서 대뇌로 이어지는 자극 전달 경로"] },
+                    { id: "m3-4-2", name: "신경계와 항상성", list: ["중추 신경계와 말초 신경계 기능 및 반사 경로","호르몬의 특성 및 체온, 혈당량 항상성 조절 매커니즘"] }
+                ]}
+            ]
+        };
+
+        let currentGrade = "mid1";
+        let targetSolutionCell = null; 
+
+        function switchGrade(gradeKey) {
+            currentGrade = gradeKey;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + gradeKey).classList.add('active');
+            
+            renderScopeWidget();
+            renderReportTables();
+            loadSavedState();
+            calcProgressGauge();
+            syncFilenameAndSave();
+            hideMacroPopover();
+        }
+
+        function renderScopeWidget() {
+            const root = document.getElementById('scope-widget-root');
+            root.innerHTML = "";
+            const currentUnits = CURRICULUM_DATA[currentGrade];
+            
+            currentUnits.forEach((unit, idx) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = "scope-group";
+                let subHtml = "";
+                unit.sub.forEach(subUnit => {
+                    subHtml += `<label class="sub-scope-label"><input type="checkbox" checked class="sub-scope-checkbox" data-target="${subUnit.id}" onchange="toggleSubRow(this)"> ${subUnit.name}</label>`;
+                });
+                groupDiv.innerHTML = `<label class="group-header-label"><input type="checkbox" checked class="group-header-checkbox" data-idx="${idx}" onchange="toggleBigBlock('${currentGrade}-${idx}', this)">${unit.title}</label><div class="sub-group-grid">${subHtml}</div>`;
+                root.appendChild(groupDiv);
+            });
+        }
+
+        function renderReportTables() {
+            const root = document.getElementById('report-table-root');
+            root.innerHTML = "";
+            const currentUnits = CURRICULUM_DATA[currentGrade];
+
+            currentUnits.forEach((unit, idx) => {
+                const blockDiv = document.createElement('div');
+                blockDiv.className = `unit-block ${currentGrade}-block-${idx}`;
+                blockDiv.id = `${currentGrade}-unit-idx-${idx}`;
+                
+                let rowsHtml = "";
+                unit.sub.forEach(subUnit => {
+                    let listHtml = `<ul class="content-list">`;
+                    subUnit.list.forEach(li => { listHtml += `<li>${li}</li>`; });
+                    listHtml += `</ul>`;
+
+                    rowsHtml += `
+                        <tr class="check-row" id="${subUnit.id}-row">
+                            <td class="text-center" style="font-weight:700; width:22%;">${subUnit.name}</td>
+                            <td class="content-td" contenteditable="true" id="${subUnit.id}-content" oninput="saveCurrentState()">${listHtml}</td>
+                            <td class="grade-td">
+                                <div class="btn-group">
+                                    <button type="button" class="btn-grade" onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">A</button>
+                                    <button type="button" class="btn-grade" onclick="selectGradeBtn(this, 'B', '${subUnit.id}')">B</button>
+                                    <button type="button" class="btn-grade" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>
+                                </div>
+                                <span class="print-only-badge" id="${subUnit.id}-badge">-</span>
+                            </td>
+                            <td class="solution-td" contenteditable="true" id="${subUnit.id}-solution" onfocus="showMacroPopover(this, event)" oninput="saveCurrentState()">-</td>
+                        </tr>
+                    `;
+                });
+
+                blockDiv.innerHTML = `
+                    <div class="table-title">${unit.title}</div>
+                    <table class="checklist-table">
+                        <thead>
+                            <tr><th>중단원</th><th>주요 내용 <span class="editable-tag">수정 가능</span></th><th>진단평가</th><th>SOLUTION <span class="editable-tag">수정 가능</span></th></tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                `;
+                root.appendChild(blockDiv);
+            });
+        }
+
+        function showMacroPopover(cell, event) {
+            targetSolutionCell = cell;
+            const popover = document.getElementById('solution-macro-popover');
+            const rect = cell.getBoundingClientRect();
+            popover.style.top = (rect.bottom + window.scrollY) + "px";
+            popover.style.left = (rect.left + window.scrollX) + "px";
+            popover.style.display = "flex";
+            event.stopPropagation();
+        }
+
+        function hideMacroPopover() { document.getElementById('solution-macro-popover').style.display = "none"; }
+        document.addEventListener('click', function(e) { if (!e.target.closest('#solution-macro-popover') && !e.target.closest('.solution-td')) { hideMacroPopover(); } });
+
+        function injectMacro(text, isDangerColor) {
+            if (targetSolutionCell) {
+                targetSolutionCell.innerHTML = text;
+                targetSolutionCell.className = isDangerColor ? "solution-td sol-c" : "solution-td";
+                saveCurrentState();
+            }
+            hideMacroPopover();
+        }
+
+        // 이미지 저장 시 '수정 가능' 글씨를 스텔스 모드로 임시 삭제하는 로직
+        function saveAsImageFile() {
+            hideMacroPopover();
+            
+            // 캡처 전에 editable-tag 들을 모두 찾아서 숨김 처리
+            const editableTags = document.querySelectorAll('.editable-tag');
+            editableTags.forEach(tag => tag.style.display = 'none');
+
+            const target = document.getElementById('capture-target-paper');
+            html2canvas(target, { scale: 2, useCORS: true, backgroundColor: "#ffffff", logging: false }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = document.title + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                // 캡처가 끝나면 다시 화면에 원래대로 보여줌
+                editableTags.forEach(tag => tag.style.display = 'inline-block');
+            });
+        }
+
+        function resetCurrentReport() {
+            if (confirm("🚨 주의! 현재 학년 탭에 작성된 학생 등급 점수와 변경 내역이 전부 초기화되고 기본 상태로 되돌아갑니다. 진행하시겠습니까?")) {
+                localStorage.removeItem('nature_checklist_v4_state_' + currentGrade);
+                switchGrade(currentGrade);
+            }
+        }
+
+        function toggleBigBlock(key, checkbox) {
+            const gradeKey = key.split('-')[0];
+            const idx = key.split('-')[1];
+            const block = document.getElementById(`${gradeKey}-unit-idx-${idx}`);
+            if (block) block.style.display = checkbox.checked ? "block" : "none";
+            const parent = checkbox.closest('.scope-group');
+            parent.querySelectorAll('.sub-scope-checkbox').forEach(cb => {
+                cb.checked = checkbox.checked;
+                const r = document.getElementById(`${cb.getAttribute('data-target')}-row`);
+                if (r) r.style.display = checkbox.checked ? "" : "none";
+            });
+            calcProgressGauge();
+            saveCurrentState();
+        }
+
+        function toggleSubRow(checkbox) {
+            const targetId = checkbox.getAttribute('data-target');
+            const row = document.getElementById(`${targetId}-row`);
+            if (row) row.style.display = checkbox.checked ? "" : "none";
+            const parent = checkbox.closest('.scope-group');
+            const bigCb = parent.querySelector('.group-header-checkbox');
+            const subCbs = parent.querySelectorAll('.sub-scope-checkbox');
+            const hasAny = Array.from(subCbs).some(c => c.checked);
+            const idx = bigCb.getAttribute('data-idx');
+            const block = document.getElementById(`${currentGrade}-unit-idx-${idx}`);
+            if (!hasAny) { bigCb.checked = false; if (block) block.style.display = "none"; } else { if (!bigCb.checked) { bigCb.checked = true; if (block) block.style.display = "block"; } }
+            calcProgressGauge();
+            saveCurrentState();
+        }
+
+        function setAllScopes(status) {
+            document.querySelectorAll('.group-header-checkbox').forEach(cb => { cb.checked = status; const idx = cb.getAttribute('data-idx'); const block = document.getElementById(`${currentGrade}-unit-idx-${idx}`); if (block) block.style.display = status ? "block" : "none"; });
+            document.querySelectorAll('.sub-scope-checkbox').forEach(cb => { cb.checked = status; const r = document.getElementById(`${cb.getAttribute('data-target')}-row`); if (r) r.style.display = status ? "" : "none"; });
+            calcProgressGauge();
+            saveCurrentState();
+        }
+
+        function selectGradeBtn(btn, grade, subUnitId) {
+            const btnGroup = btn.parentElement;
+            const row = btnGroup.closest('tr');
+            const solCell = row.querySelector('.solution-td');
+            const printBadge = row.querySelector('.print-only-badge');
+
+            btnGroup.querySelectorAll('.btn-grade').forEach(s => s.classList.remove('active-a', 'active-b', 'active-c'));
+            
+            if (grade === 'A') { btn.classList.add('active-a'); solCell.innerHTML = "심화 문제 풀이 유지"; solCell.className = "solution-td"; printBadge.innerHTML = "A"; printBadge.style.cssText = "background-color: #e8f5e9; color: #2e7d32; display:inline-block;"; } 
+            else if (grade === 'B') { btn.classList.add('active-b'); solCell.innerHTML = "원포인트 강의 후 추가문제"; solCell.className = "solution-td"; printBadge.innerHTML = "B"; printBadge.style.cssText = "background-color: #fff3e0; color: #e65100; display:inline-block;"; } 
+            else if (grade === 'C') { btn.classList.add('active-c'); solCell.innerHTML = "재학습 + 직전 보강 필참"; solCell.className = "solution-td sol-c"; printBadge.innerHTML = "C"; printBadge.style.cssText = "background-color: #ffebee; color: #c62828; display:inline-block;"; }
+            calcProgressGauge();
+            saveCurrentState();
+        }
+
+        function calcProgressGauge() {
+            const visibleRows = document.querySelectorAll('#report-table-root .check-row');
+            let totalCount = 0; let gradedCount = 0;
+            visibleRows.forEach(row => { if (window.getComputedStyle(row).display !== 'none') { totalCount++; if (row.querySelector('.active-a, .active-b, .active-c')) gradedCount++; } });
+            const percentage = totalCount > 0 ? Math.round((gradedCount / totalCount) * 100) : 0;
+            document.getElementById('gauge-bar').style.width = percentage + "%";
+            document.getElementById('gauge-txt').innerHTML = percentage + "%";
+        }
+
+        function syncFilenameAndSave() {
+            const sName = document.getElementById('student-name').value.trim() || "미입력";
+            const sSchool = document.getElementById('school-name').value.trim() || "학원";
+            const sExam = document.getElementById('exam-type').value;
+            let gradeLabel = currentGrade === "mid2" ? "중2과학" : (currentGrade === "mid3" ? "중3과학" : "중1과학");
+            document.title = `[네이처과학] ${sName}학생_${sSchool}_${gradeLabel}_${sExam}_완벽내신_체크리스트`;
+            saveCurrentState();
+        }
+
+        function addText(text) { document.getElementById('opinion-textarea').innerHTML += text; saveCurrentState(); }
+
+        function saveCurrentState() {
+            const stateObj = {
+                grade: currentGrade,
+                studentName: document.getElementById('student-name').value,
+                schoolName: document.getElementById('school-name').value,
+                examType: document.getElementById('exam-type').value,
+                opinion: document.getElementById('opinion-textarea').innerHTML,
+                customEdits: {}, activeGrades: {}
+            };
+
+            CURRICULUM_DATA[currentGrade].forEach(unit => {
+                unit.sub.forEach(s => {
+                    const contentEl = document.getElementById(`${s.id}-content`);
+                    const solEl = document.getElementById(`${s.id}-solution`);
+                    if (contentEl) stateObj.customEdits[s.id + "_content"] = contentEl.innerHTML;
+                    if (solEl) stateObj.customEdits[s.id + "_sol"] = solEl.innerHTML;
+
+                    const row = document.getElementById(`${s.id}-row`);
+                    if (row) {
+                        if (row.querySelector('.active-a')) stateObj.activeGrades[s.id] = 'A';
+                        else if (row.querySelector('.active-b')) stateObj.activeGrades[s.id] = 'B';
+                        else if (row.querySelector('.active-c')) stateObj.activeGrades[s.id] = 'C';
+                    }
+                });
+            });
+
+            localStorage.setItem('nature_checklist_v4_state_' + currentGrade, JSON.stringify(stateObj));
+            localStorage.setItem('nature_meta_name', stateObj.studentName);
+            localStorage.setItem('nature_meta_school', stateObj.schoolName);
+            localStorage.setItem('nature_meta_exam', stateObj.examType);
+        }
+
+        function loadSavedState() {
+            if (localStorage.getItem('nature_meta_name')) document.getElementById('student-name').value = localStorage.getItem('nature_meta_name');
+            if (localStorage.getItem('nature_meta_school')) document.getElementById('school-name').value = localStorage.getItem('nature_meta_school');
+            if (localStorage.getItem('nature_meta_exam')) document.getElementById('exam-type').value = localStorage.getItem('nature_meta_exam');
+
+            const saved = localStorage.getItem('nature_checklist_v4_state_' + currentGrade);
+            if (!saved) return;
+
+            const stateObj = JSON.parse(saved);
+            if (stateObj.opinion) document.getElementById('opinion-textarea').innerHTML = stateObj.opinion;
+
+            CURRICULUM_DATA[currentGrade].forEach(unit => {
+                unit.sub.forEach(s => {
+                    if (stateObj.customEdits[s.id + "_content"]) {
+                        const contentEl = document.getElementById(`${s.id}-content`);
+                        if (contentEl) contentEl.innerHTML = stateObj.customEdits[s.id + "_content"];
+                    }
+                    if (stateObj.customEdits[s.id + "_sol"]) {
+                        const solEl = document.getElementById(`${s.id}-solution`);
+                        if (solEl) solEl.innerHTML = stateObj.customEdits[s.id + "_sol"];
+                    }
+
+                    if (stateObj.activeGrades[s.id]) {
+                        const g = stateObj.activeGrades[s.id];
+                        const row = document.getElementById(`${s.id}-row`);
+                        if (row) {
+                            const btn = row.querySelector(`.btn-grade:nth-child(${g==='A'?1:(g==='B'?2:3)})`);
+                            if (btn) selectGradeBtn(btn, g, s.id);
+                        }
+                    }
+                });
+            });
+        }
+
+        window.onload = function() { switchGrade('mid1'); }
+    </script>
+</body>
+</html>
