@@ -389,34 +389,62 @@
         function hideMacroPopover() { document.getElementById('solution-macro-popover').style.display = "none"; }
         document.addEventListener('click', function(e) { if (!e.target.closest('#solution-macro-popover') && !e.target.closest('.solution-td')) { hideMacroPopover(); } });
 
-        function injectMacro(text, isDangerColor) {
-            if (targetSolutionCell) {
-                targetSolutionCell.innerHTML = text;
-                targetSolutionCell.className = isDangerColor ? "solution-td sol-c" : "solution-td";
-                saveCurrentState();
-            }
-            hideMacroPopover();
+      function injectMacro(text, isDangerColor) {
+    if (targetSolutionCell) {
+        let currentText = targetSolutionCell.innerText.trim();
+        
+        // 기존에 적힌 내용이 없거나 대시(-)만 있으면 새로 넣고, 있으면 뒤에 이어 붙이기
+        if (currentText === "-" || currentText === "") {
+            targetSolutionCell.innerHTML = text;
+        } else {
+            targetSolutionCell.innerHTML = currentText + " + " + text;
         }
+        
+        // 하나라도 빨간색(경고성) 처방문구면 셀 색상 유지
+        if (isDangerColor || targetSolutionCell.classList.contains('sol-c')) {
+            targetSolutionCell.className = "solution-td sol-c";
+        }
+        
+        saveCurrentState();
+    }
+    // 하단 hideMacroPopover(); 문구를 삭제해서 여러 개 연속 클릭할 수 있게 유지함!
+}
 
         // 이미지 저장 시 '수정 가능' 글씨를 스텔스 모드로 임시 삭제하는 로직
         function saveAsImageFile() {
-            hideMacroPopover();
-            
-            // 캡처 전에 editable-tag 들을 모두 찾아서 숨김 처리
-            const editableTags = document.querySelectorAll('.editable-tag');
-            editableTags.forEach(tag => tag.style.display = 'none');
+    hideMacroPopover(); // 팝오버 닫기
+    
+    // 1. 캡처용 화면으로 임시 변환 (등급 버튼 숨기고, 체크된 등급 문자만 노출)
+    const btnGroups = document.querySelectorAll('.btn-group');
+    const badges = document.querySelectorAll('.print-only-badge');
+    const tags = document.querySelectorAll('.editable-tag');
+    
+    btnGroups.forEach(g => g.style.display = 'none');
+    tags.forEach(t => t.style.display = 'none');
+    badges.forEach(b => {
+        if (b.innerText !== '-') b.style.display = 'inline-block';
+    });
 
-            const target = document.getElementById('capture-target-paper');
-            html2canvas(target, { scale: 2, useCORS: true, backgroundColor: "#ffffff", logging: false }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = document.title + '.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                // 캡처가 끝나면 다시 화면에 원래대로 보여줌
-                editableTags.forEach(tag => tag.style.display = 'inline-block');
-            });
-        }
+    // 기존 대지 ID 또는 클래스로 정밀 타겟팅
+    const target = document.getElementById('capture-target- 대지') || document.getElementById('capture-target-paper') || document.querySelector('.report-paper');
+    
+    html2canvas(target, {
+        scale: 2, 
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = document.title + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // 2. 캡처 완료 후 원래 화면 상태로 복원 (선생님 조작용 버튼 다시 보이기)
+        btnGroups.forEach(g => g.style.display = 'flex');
+        tags.forEach(t => t.style.display = 'inline-block');
+        badges.forEach(b => b.style.display = 'none');
+    });
+}
 
         function resetCurrentReport() {
             if (confirm("🚨 주의! 현재 학년 탭에 작성된 학생 등급 점수와 변경 내역이 전부 초기화되고 기본 상태로 되돌아갑니다. 진행하시겠습니까?")) {
