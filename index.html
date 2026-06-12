@@ -35,7 +35,7 @@
         );
         color: var(--ink);
         margin: 0;
-        padding: 18px 18px 128px;
+        padding: 18px 18px 28px;
       }
       button,
       input,
@@ -71,6 +71,8 @@
         min-width: 0;
         display: flex;
         justify-content: center;
+        /* 우측 상단 고정 액션 독과 겹치지 않도록 상단 여백 확보 */
+        padding-top: 96px;
       }
 
       /* [학년 선택 마스터 컨트롤 세그먼트] */
@@ -250,7 +252,11 @@
           var(--unit-color, var(--brand-2)) 55%,
           #ffffff
         );
-        color: color-mix(in srgb, var(--unit-color, var(--brand-2)) 75%, #111c3a);
+        color: color-mix(
+          in srgb,
+          var(--unit-color, var(--brand-2)) 75%,
+          #111c3a
+        );
       }
       .sub-scope-label input {
         width: 15px;
@@ -430,10 +436,10 @@
         transition: background 0.16s ease;
       }
       .check-row.grade-a {
-        background: #f3fbf5;
+        background: #eef6fe;
       }
       .check-row.grade-b {
-        background: #fffaf0;
+        background: #fffdf0;
       }
       .check-row.grade-c {
         background: #fff5f5;
@@ -501,17 +507,17 @@
           box-shadow 0.15s ease;
       }
       .btn-grade.active-a {
-        background-color: #e8f5e9 !important;
-        color: #2e7d32 !important;
-        border-color: #2e7d32 !important;
+        background-color: #e3f0fc !important;
+        color: #1565c0 !important;
+        border-color: #1565c0 !important;
       }
       .btn-grade.active-b {
-        background-color: #fff3e0 !important;
-        color: #e65100 !important;
-        border-color: #e65100 !important;
+        background-color: #fff6cc !important;
+        color: #a87900 !important;
+        border-color: #e0a800 !important;
       }
       .btn-grade.active-c {
-        background-color: #ffebee !important;
+        background-color: #ffe1e1 !important;
         color: #c62828 !important;
         border-color: #c62828 !important;
       }
@@ -751,36 +757,40 @@
         text-align: justify;
       }
 
-      /* [하단 고정형 버튼 바] */
-      .summary-bar {
+      /* [우측 상단 고정 액션 독] */
+      .action-dock {
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: rgba(24, 49, 83, 0.97);
-        padding: 13px 24px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
-        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.18);
+        top: 18px;
+        right: 18px;
         z-index: 9999;
-        border-top: 3px solid var(--gold);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        background: rgba(24, 49, 83, 0.97);
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(214, 175, 55, 0.5);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
         backdrop-filter: blur(10px);
       }
-      .summary-info {
-        color: #ffffff;
-        font-size: 12px;
+      .action-dock-buttons {
+        display: flex;
+        gap: 8px;
+      }
+      .action-dock-status {
+        color: #f4d98a;
+        font-size: 11.5px;
         font-weight: 800;
-        margin-right: 6px;
-        min-width: 190px;
         text-align: right;
+        white-space: nowrap;
       }
       .btn-action-print,
-      .btn-action-image {
+      .btn-action-image,
+      .btn-action-reports {
         border: none;
-        padding: 12px 26px;
-        font-size: 14px;
+        padding: 10px 16px;
+        font-size: 13px;
         font-weight: 900;
         border-radius: 6px;
         cursor: pointer;
@@ -788,6 +798,11 @@
         transition:
           transform 0.15s ease,
           box-shadow 0.15s ease;
+      }
+      .btn-action-print:hover,
+      .btn-action-image:hover,
+      .btn-action-reports:hover {
+        transform: translateY(-1px);
       }
       .btn-action-print {
         background-color: var(--gold);
@@ -797,10 +812,157 @@
         background-color: var(--brand-2);
         color: #ffffff;
       }
+      .btn-action-reports {
+        background-color: #ffffff;
+        color: var(--brand);
+        border: 1px solid #cdd7e4;
+      }
+
+      /* 헤더 입력칸 placeholder (남색 배경 위) */
+      .meta-input::placeholder {
+        color: rgba(255, 255, 255, 0.55);
+        font-weight: 700;
+      }
+
+      /* [저장된 리포트 모달] */
+      .reports-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(10, 18, 30, 0.5);
+        z-index: 10030;
+      }
+      .reports-modal.open {
+        display: flex;
+      }
+      .reports-modal-panel {
+        width: min(720px, 100%);
+        max-height: min(720px, calc(100vh - 36px));
+        display: flex;
+        flex-direction: column;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+        padding: 18px;
+      }
+      .reports-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .reports-modal-title {
+        color: var(--brand);
+        font-size: 17px;
+        font-weight: 900;
+      }
+      .reports-modal-header-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .reports-new-btn {
+        border: 1px solid var(--brand-2);
+        background: var(--brand-2);
+        color: #ffffff;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12.5px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .reports-new-btn:hover {
+        background: #285f63;
+      }
+      .reports-list {
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .reports-empty {
+        color: var(--ink-soft);
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        padding: 28px 12px;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+      }
+      .report-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 14px;
+        background: #fbfdff;
+      }
+      .report-item.current {
+        border-color: var(--brand-2);
+        box-shadow: inset 0 0 0 1px var(--brand-2);
+        background: #f0f7f6;
+      }
+      .report-item-info {
+        min-width: 0;
+      }
+      .report-item-name {
+        font-size: 14.5px;
+        font-weight: 900;
+        color: var(--ink);
+      }
+      .report-item-meta {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--brand);
+        margin-top: 2px;
+      }
+      .report-item-time {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--ink-soft);
+        margin-top: 2px;
+      }
+      .report-item-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .report-load-btn,
+      .report-del-btn {
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .report-load-btn {
+        border: 1px solid var(--brand);
+        background: var(--brand);
+        color: #ffffff;
+      }
+      .report-load-btn:hover {
+        background: #24466e;
+      }
+      .report-del-btn {
+        border: 1px solid #d9b3b8;
+        background: #ffffff;
+        color: var(--danger);
+      }
+      .report-del-btn:hover {
+        background: #fbeaec;
+      }
 
       @media (max-width: 860px) {
         body {
-          padding: 14px 10px 168px;
+          padding: 14px 10px 96px;
+        }
+        .report-workspace {
+          padding-top: 0;
         }
         .app-shell {
           display: block;
@@ -889,14 +1051,24 @@
         .btn-grade {
           min-width: 42px;
         }
-        .summary-bar {
-          flex-wrap: wrap;
-          padding: 12px;
+        /* 모바일에서는 액션 독을 하단 고정 바로 전환 */
+        .action-dock {
+          top: auto;
+          right: 0;
+          left: 0;
+          bottom: 0;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 6px;
+          border-radius: 0;
+          border: none;
+          border-top: 3px solid var(--gold);
         }
-        .summary-info {
-          min-width: 100%;
+        .action-dock-buttons {
+          justify-content: center;
+        }
+        .action-dock-status {
           text-align: center;
-          margin: 0;
         }
         .btn-action-print,
         .btn-action-image {
@@ -1069,7 +1241,7 @@
             id="tab-mid1"
             onclick="switchGrade('mid1')"
           >
-            중1 과학 리포트
+            중1
           </button>
           <button
             type="button"
@@ -1077,7 +1249,7 @@
             id="tab-mid2"
             onclick="switchGrade('mid2')"
           >
-            중2 과학 리포트
+            중2
           </button>
           <button
             type="button"
@@ -1085,7 +1257,7 @@
             id="tab-mid3"
             onclick="switchGrade('mid3')"
           >
-            중3 과학 리포트
+            중3
           </button>
         </div>
 
@@ -1114,7 +1286,7 @@
               class="btn-master btn-master-reset"
               onclick="resetCurrentReport()"
             >
-              새 학생 레포트 작성
+              새 체크리스트 만들기
             </button>
           </div>
           <div class="scope-group-container" id="scope-widget-root"></div>
@@ -1135,7 +1307,8 @@
                   type="text"
                   id="student-name"
                   class="meta-input"
-                  value="네이처"
+                  value=""
+                  placeholder="학생 이름"
                   oninput="syncFilenameAndSave()"
                 />
               </div>
@@ -1145,7 +1318,8 @@
                   type="text"
                   id="school-name"
                   class="meta-input"
-                  value="네이처중"
+                  value=""
+                  placeholder="학교명"
                   oninput="syncFilenameAndSave()"
                 />
               </div>
@@ -1266,18 +1440,63 @@
         </div>
       </main>
     </div>
-    <div class="summary-bar no-print">
-      <div class="summary-info" id="report-status">평가 0개 완료</div>
-      <button type="button" class="btn-action-print" onclick="printReport()">
-        🖨️ 인쇄 / PDF 저장
-      </button>
-      <button
-        type="button"
-        class="btn-action-image"
-        onclick="saveAsImageFile()"
+    <div class="action-dock no-print">
+      <div class="action-dock-buttons">
+        <button
+          type="button"
+          class="btn-action-reports"
+          onclick="openReportsModal()"
+        >
+          📁 저장된 리포트
+        </button>
+        <button type="button" class="btn-action-print" onclick="printReport()">
+          🖨️ 인쇄 / PDF
+        </button>
+        <button
+          type="button"
+          class="btn-action-image"
+          onclick="saveAsImageFile()"
+        >
+          📸 이미지 저장
+        </button>
+      </div>
+      <div class="action-dock-status" id="report-status">평가 0개 완료</div>
+    </div>
+
+    <div
+      class="reports-modal no-print"
+      id="reports-modal"
+      onclick="closeReportsModal(event)"
+    >
+      <div
+        class="reports-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reports-modal-title"
       >
-        📸 이미지 저장
-      </button>
+        <div class="reports-modal-header">
+          <div class="reports-modal-title" id="reports-modal-title">
+            📁 저장된 리포트
+          </div>
+          <div class="reports-modal-header-actions">
+            <button
+              type="button"
+              class="reports-new-btn"
+              onclick="startNewReport()"
+            >
+              ＋ 새 리포트 시작
+            </button>
+            <button
+              type="button"
+              class="feedback-modal-close"
+              onclick="closeReportsModal()"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+        <div class="reports-list" id="reports-list"></div>
+      </div>
     </div>
 
     <div
@@ -1378,11 +1597,11 @@
       const CURRICULUM_DATA = {
         mid1: [
           {
-            title: "1. 과학과 인류의 지속가능한 삶",
+            title: "1. 화학반응의 규칙과 에너지 변화",
             sub: [
               {
                 id: "m1-1-1",
-                name: "과학과 인류의 삶",
+                name: "물질 변화와 화학 반응식",
                 list: [
                   "과학적 탐구 방법의 프로세스 이해",
                   "과학의 발전이 인류 문명에 미친 영향",
@@ -1873,6 +2092,48 @@
               },
             ],
           },
+          {
+            title: "5. 생식과 유전",
+            sub: [
+              {
+                id: "m3-5-1",
+                name: "생식과 유전",
+                list: [
+                  "눈, 귀, 코, 혀, 피부의 구조적 명칭과 자극 수용",
+                  "각 감각 기관에서 대뇌로 이어지는 자극 전달 경로",
+                ],
+              },
+              {
+                id: "m3-4-2",
+                name: "신경계와 항상성",
+                list: [
+                  "중추 신경계와 말초 신경계 기능 및 반사 경로",
+                  "호르몬의 특성 및 체온, 혈당량 항상성 조절 매커니즘",
+                ],
+              },
+            ],
+          },
+          {
+            title: "4. 자극과 반응",
+            sub: [
+              {
+                id: "m3-4-1",
+                name: "감각 기관",
+                list: [
+                  "눈, 귀, 코, 혀, 피부의 구조적 명칭과 자극 수용",
+                  "각 감각 기관에서 대뇌로 이어지는 자극 전달 경로",
+                ],
+              },
+              {
+                id: "m3-4-2",
+                name: "신경계와 항상성",
+                list: [
+                  "중추 신경계와 말초 신경계 기능 및 반사 경로",
+                  "호르몬의 특성 및 체온, 혈당량 항상성 조절 매커니즘",
+                ],
+              },
+            ],
+          },
         ],
       };
 
@@ -1896,27 +2157,25 @@
         A: {
           className: "active-a",
           rowClass: "grade-a",
-          text: "완료",
           style:
-            "background-color: #e8f5e9; color: #2e7d32; display:inline-block;",
+            "background-color: #e3f0fc; color: #1565c0; border:1px solid #1565c0; display:inline-block;",
         },
         B: {
           className: "active-b",
           rowClass: "grade-b",
-          text: "완료",
           style:
-            "background-color: #fff3e0; color: #e65100; display:inline-block;",
+            "background-color: #fff6cc; color: #a87900; border:1px solid #e0a800; display:inline-block;",
         },
         C: {
           className: "active-c",
           rowClass: "grade-c",
-          text: "완료",
           style:
-            "background-color: #ffebee; color: #c62828; display:inline-block;",
+            "background-color: #ffe1e1; color: #c62828; border:1px solid #c62828; display:inline-block;",
         },
       };
 
-      function switchGrade(gradeKey) {
+      async function switchGrade(gradeKey) {
+        await flushSave(); // 떠나는 학년 리포트 자동 저장
         currentGrade = gradeKey;
         document
           .querySelectorAll(".tab-btn")
@@ -1925,8 +2184,8 @@
 
         renderScopeWidget();
         renderReportTables();
-        loadSavedState();
-        syncFilenameAndSave();
+        await loadCurrentGradeFromDB(); // 같은 학생의 해당 학년 저장본이 있으면 불러오기
+        updateTitle();
         hideMacroPopover();
         updateStatus();
       }
@@ -1980,7 +2239,7 @@
                                 </div>
                                 <span class="print-only-badge" id="${subUnit.id}-badge">-</span>
                             </td>
-                            <td class="solution-td" data-label="SOLUTION" contenteditable="true" id="${subUnit.id}-solution" onfocus="showMacroPopover(this, event)" oninput="saveCurrentState()">-</td>
+                            <td class="solution-td" data-label="SOLUTION" contenteditable="true" id="${subUnit.id}-solution" onfocus="showMacroPopover(this, event)" oninput="saveCurrentState()"></td>
                         </tr>
                     `;
           });
@@ -2135,11 +2394,10 @@
       function resetCurrentReport() {
         if (
           confirm(
-            "🚨 주의! 현재 학년 탭에 작성된 학생 등급 점수와 변경 내역이 전부 초기화되고 기본 상태로 되돌아갑니다. 진행하시겠습니까?",
+            "새 리포트를 시작합니다.\n현재 작성 중인 내용은 자동 저장되어 '저장된 리포트' 목록에서 다시 불러올 수 있습니다.\n계속할까요?",
           )
         ) {
-          localStorage.removeItem("nature_checklist_v4_state_" + currentGrade);
-          switchGrade(currentGrade);
+          startNewReport();
         }
       }
 
@@ -2209,7 +2467,6 @@
         const meta = GRADE_META[grade];
         if (!row || !meta) return;
         const btnGroup = row.querySelector(".btn-group");
-        const solCell = row.querySelector(".solution-td");
         const printBadge = row.querySelector(".print-only-badge");
 
         row.classList.remove("grade-a", "grade-b", "grade-c");
@@ -2226,10 +2483,7 @@
           );
         if (targetBtn) targetBtn.classList.add(meta.className);
 
-        if (!options.preserveSolution) {
-          solCell.innerHTML = meta.text;
-        }
-        solCell.className = grade === "C" ? "solution-td sol-c" : "solution-td";
+        // SOLUTION 칸은 진단평가와 독립적인 자유 입력란 — 등급 선택 시 건드리지 않는다.
         printBadge.innerHTML = grade;
         printBadge.style.cssText = meta.style;
       }
@@ -2242,7 +2496,7 @@
         updateStatus();
       }
 
-      function syncFilenameAndSave() {
+      function updateTitle() {
         const sName =
           document.getElementById("student-name").value.trim() || "미입력";
         const sSchool =
@@ -2255,7 +2509,11 @@
               ? "중3과학"
               : "중1과학";
         document.title = `[네이처과학] ${sName}학생_${sSchool}_${gradeLabel}_${sExam}_완벽내신_체크리스트`;
-        saveCurrentState();
+      }
+
+      function syncFilenameAndSave() {
+        updateTitle();
+        scheduleSave();
       }
 
       let feedbackCandidates = [];
@@ -2569,7 +2827,73 @@
         });
       }
 
-      function saveCurrentState() {
+      /* ============================================================
+         IndexedDB 기반 다중 리포트 자동 저장/불러오기
+         - 리포트는 (학년 + 이름 + 학교 + 시험)으로 구분된다.
+         - 편집 시 자동 저장되고, 초기화해도 저장본은 남는다.
+         ============================================================ */
+      const DB_NAME = "nature_checklist_db";
+      const DB_STORE = "reports";
+      let _dbPromise = null;
+      let lastSavedId = null; // 현재 작업 중인 리포트가 저장된 id
+      let saveTimer = null;
+      let DEFAULT_OPINION = "";
+
+      function openDB() {
+        if (_dbPromise) return _dbPromise;
+        _dbPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(DB_STORE)) {
+              const store = db.createObjectStore(DB_STORE, { keyPath: "id" });
+              store.createIndex("updatedAt", "updatedAt");
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+        return _dbPromise;
+      }
+      async function idbPut(record) {
+        const db = await openDB();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, "readwrite");
+          tx.objectStore(DB_STORE).put(record);
+          tx.oncomplete = () => res();
+          tx.onerror = () => rej(tx.error);
+        });
+      }
+      async function idbDelete(id) {
+        const db = await openDB();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, "readwrite");
+          tx.objectStore(DB_STORE).delete(id);
+          tx.oncomplete = () => res();
+          tx.onerror = () => rej(tx.error);
+        });
+      }
+      async function idbGet(id) {
+        const db = await openDB();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, "readonly");
+          const r = tx.objectStore(DB_STORE).get(id);
+          r.onsuccess = () => res(r.result || null);
+          r.onerror = () => rej(r.error);
+        });
+      }
+      async function idbGetAll() {
+        const db = await openDB();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, "readonly");
+          const r = tx.objectStore(DB_STORE).getAll();
+          r.onsuccess = () => res(r.result || []);
+          r.onerror = () => rej(r.error);
+        });
+      }
+
+      // 현재 화면 상태를 객체로 직렬화
+      function buildStateObj() {
         const stateObj = {
           grade: currentGrade,
           studentName: document.getElementById("student-name").value,
@@ -2581,11 +2905,9 @@
           activeGrades: {},
           scopeSelections: {},
         };
-
         document.querySelectorAll(".sub-scope-checkbox").forEach((cb) => {
           stateObj.scopeSelections[cb.getAttribute("data-target")] = cb.checked;
         });
-
         CURRICULUM_DATA[currentGrade].forEach((unit) => {
           unit.sub.forEach((s) => {
             const contentEl = document.getElementById(`${s.id}-content`);
@@ -2593,7 +2915,6 @@
             if (contentEl)
               stateObj.customEdits[s.id + "_content"] = contentEl.innerHTML;
             if (solEl) stateObj.customEdits[s.id + "_sol"] = solEl.innerHTML;
-
             const row = document.getElementById(`${s.id}-row`);
             if (row) {
               if (row.querySelector(".active-a"))
@@ -2605,70 +2926,268 @@
             }
           });
         });
-
-        localStorage.setItem(
-          "nature_checklist_v4_state_" + currentGrade,
-          JSON.stringify(stateObj),
-        );
-        localStorage.setItem("nature_meta_name", stateObj.studentName);
-        localStorage.setItem("nature_meta_school", stateObj.schoolName);
-        localStorage.setItem("nature_meta_exam", stateObj.examType);
+        return stateObj;
       }
 
-      function loadSavedState() {
-        if (localStorage.getItem("nature_meta_name"))
-          document.getElementById("student-name").value =
-            localStorage.getItem("nature_meta_name");
-        if (localStorage.getItem("nature_meta_school"))
-          document.getElementById("school-name").value =
-            localStorage.getItem("nature_meta_school");
-        if (localStorage.getItem("nature_meta_exam"))
-          document.getElementById("exam-type").value =
-            localStorage.getItem("nature_meta_exam");
+      function computeReportId(state) {
+        return [
+          state.grade,
+          (state.studentName || "").trim(),
+          (state.schoolName || "").trim(),
+          state.examType,
+        ].join("|");
+      }
 
-        const saved = localStorage.getItem(
-          "nature_checklist_v4_state_" + currentGrade,
+      // 이름도 등급도 없는 빈 리포트는 저장하지 않는다(쓰레기 레코드 방지)
+      function hasContent(state) {
+        return (
+          (state.studentName || "").trim() !== "" ||
+          Object.keys(state.activeGrades).length > 0
         );
-        if (!saved) return;
+      }
 
-        const stateObj = JSON.parse(saved);
-        if (stateObj.opinion)
-          document.getElementById("opinion-textarea").innerHTML =
-            stateObj.opinion;
+      async function persistCurrentReport() {
+        const state = buildStateObj();
+        if (!hasContent(state)) return;
+        const id = computeReportId(state);
+        const record = Object.assign({}, state, { id, updatedAt: Date.now() });
+        try {
+          if (lastSavedId && lastSavedId !== id) {
+            // 이름/학교/시험이 바뀐 경우 → 같은 리포트를 새 식별자로 이동
+            await idbDelete(lastSavedId);
+          }
+          await idbPut(record);
+          lastSavedId = id;
+        } catch (e) {
+          console.warn("자동 저장 실패", e);
+        }
+      }
+
+      function scheduleSave() {
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          saveTimer = null;
+          persistCurrentReport();
+        }, 500);
+      }
+      async function flushSave() {
+        if (saveTimer) {
+          clearTimeout(saveTimer);
+          saveTimer = null;
+        }
+        await persistCurrentReport();
+      }
+      // 기존 코드의 모든 saveCurrentState() 호출 → 자동 저장 예약
+      function saveCurrentState() {
+        scheduleSave();
+      }
+
+      // 저장된 상태 객체를 현재 화면(currentGrade 테이블이 이미 렌더된 상태)에 적용
+      function applyStateObj(state) {
+        document.getElementById("student-name").value = state.studentName || "";
+        document.getElementById("school-name").value = state.schoolName || "";
+        if (state.examType)
+          document.getElementById("exam-type").value = state.examType;
+        document.getElementById("opinion-textarea").innerHTML =
+          state.opinion || DEFAULT_OPINION;
+
         document.querySelectorAll(".opinion-chip").forEach((chip) => {
-          const selected = (stateObj.selectedKeywords || []).includes(
+          const selected = (state.selectedKeywords || []).includes(
             chip.dataset.keyword || chip.textContent.trim(),
           );
           chip.classList.toggle("selected", selected);
           chip.setAttribute("aria-pressed", selected ? "true" : "false");
         });
-        restoreScopeSelections(stateObj.scopeSelections || {});
+        restoreScopeSelections(state.scopeSelections || {});
 
         CURRICULUM_DATA[currentGrade].forEach((unit) => {
           unit.sub.forEach((s) => {
-            if (stateObj.customEdits[s.id + "_content"]) {
+            if (state.customEdits && state.customEdits[s.id + "_content"]) {
               const contentEl = document.getElementById(`${s.id}-content`);
               if (contentEl)
-                contentEl.innerHTML = stateObj.customEdits[s.id + "_content"];
+                contentEl.innerHTML = state.customEdits[s.id + "_content"];
             }
-            if (stateObj.customEdits[s.id + "_sol"]) {
+            if (state.customEdits && state.customEdits[s.id + "_sol"]) {
               const solEl = document.getElementById(`${s.id}-solution`);
-              if (solEl) solEl.innerHTML = stateObj.customEdits[s.id + "_sol"];
+              if (solEl) solEl.innerHTML = state.customEdits[s.id + "_sol"];
             }
-
-            if (stateObj.activeGrades[s.id]) {
-              const g = stateObj.activeGrades[s.id];
+            if (state.activeGrades && state.activeGrades[s.id]) {
+              const g = state.activeGrades[s.id];
               const row = document.getElementById(`${s.id}-row`);
-              if (row) {
-                const btn = row.querySelector(
-                  `.btn-grade:nth-child(${g === "A" ? 1 : g === "B" ? 2 : 3})`,
-                );
-                if (btn) applyGradeState(row, g, { preserveSolution: true });
-              }
+              if (row) applyGradeState(row, g, { preserveSolution: true });
             }
           });
         });
         updateStatus();
+      }
+
+      // 현재 학년+메타에 해당하는 저장본이 있으면 불러온다 (탭 전환 시 사용)
+      async function loadCurrentGradeFromDB() {
+        const id = computeReportId(buildStateObj());
+        try {
+          const record = await idbGet(id);
+          if (record) {
+            applyStateObj(record);
+            lastSavedId = record.id;
+          } else {
+            lastSavedId = null;
+          }
+        } catch (e) {
+          console.warn("불러오기 실패", e);
+          lastSavedId = null;
+        }
+      }
+
+      /* ---------- 저장된 리포트 목록 모달 ---------- */
+      function gradeLabelOf(grade) {
+        return grade === "mid2" ? "중2" : grade === "mid3" ? "중3" : "중1";
+      }
+      function formatTimestamp(ts) {
+        const d = new Date(ts);
+        const p = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+      }
+
+      function openReportsModal() {
+        renderReportsList();
+        document.getElementById("reports-modal")?.classList.add("open");
+      }
+      function closeReportsModal(event) {
+        if (event && !event.target.classList.contains("reports-modal")) return;
+        document.getElementById("reports-modal")?.classList.remove("open");
+      }
+
+      async function renderReportsList() {
+        const root = document.getElementById("reports-list");
+        if (!root) return;
+        root.innerHTML = "";
+        let reports = [];
+        try {
+          reports = await idbGetAll();
+        } catch (e) {
+          console.warn(e);
+        }
+        reports.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+        if (!reports.length) {
+          const empty = document.createElement("div");
+          empty.className = "reports-empty";
+          empty.textContent =
+            "아직 저장된 리포트가 없습니다. 이름을 입력하고 평가를 시작하면 자동으로 저장됩니다.";
+          root.appendChild(empty);
+          return;
+        }
+
+        reports.forEach((rep) => {
+          const item = document.createElement("div");
+          item.className = "report-item";
+          if (rep.id === lastSavedId) item.classList.add("current");
+
+          const info = document.createElement("div");
+          info.className = "report-item-info";
+          const name = document.createElement("div");
+          name.className = "report-item-name";
+          name.textContent = (rep.studentName || "").trim() || "(이름 미입력)";
+          const metaLine = document.createElement("div");
+          metaLine.className = "report-item-meta";
+          const counts = rep.activeGrades
+            ? Object.values(rep.activeGrades)
+            : [];
+          const cA = counts.filter((g) => g === "A").length;
+          const cB = counts.filter((g) => g === "B").length;
+          const cC = counts.filter((g) => g === "C").length;
+          metaLine.textContent =
+            `${gradeLabelOf(rep.grade)} · ${(rep.schoolName || "").trim() || "학교 미입력"} · ${rep.examType || ""}` +
+            `  |  A ${cA} / B ${cB} / C ${cC}`;
+          const timeLine = document.createElement("div");
+          timeLine.className = "report-item-time";
+          timeLine.textContent = rep.updatedAt
+            ? "최근 저장 " + formatTimestamp(rep.updatedAt)
+            : "";
+          info.appendChild(name);
+          info.appendChild(metaLine);
+          info.appendChild(timeLine);
+
+          const actions = document.createElement("div");
+          actions.className = "report-item-actions";
+          const loadBtn = document.createElement("button");
+          loadBtn.type = "button";
+          loadBtn.className = "report-load-btn";
+          loadBtn.textContent = "불러오기";
+          loadBtn.addEventListener("click", () => loadReport(rep.id));
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "report-del-btn";
+          delBtn.textContent = "삭제";
+          delBtn.addEventListener("click", () => deleteReport(rep.id, rep));
+          actions.appendChild(loadBtn);
+          actions.appendChild(delBtn);
+
+          item.appendChild(info);
+          item.appendChild(actions);
+          root.appendChild(item);
+        });
+      }
+
+      async function loadReport(id) {
+        await flushSave(); // 현재 작업 중인 내용 보존
+        let record = null;
+        try {
+          record = await idbGet(id);
+        } catch (e) {
+          console.warn(e);
+        }
+        if (!record) {
+          alert("리포트를 찾을 수 없습니다.");
+          renderReportsList();
+          return;
+        }
+        currentGrade = record.grade;
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document.getElementById("tab-" + currentGrade)?.classList.add("active");
+        renderScopeWidget();
+        renderReportTables();
+        applyStateObj(record);
+        lastSavedId = record.id;
+        updateTitle();
+        hideMacroPopover();
+        updateStatus();
+        closeReportsModal();
+      }
+
+      async function deleteReport(id, rep) {
+        const label = rep && rep.studentName ? rep.studentName : "이 리포트";
+        if (!confirm(`'${label}' 리포트를 삭제할까요? 되돌릴 수 없습니다.`))
+          return;
+        try {
+          await idbDelete(id);
+        } catch (e) {
+          console.warn(e);
+        }
+        if (id === lastSavedId) lastSavedId = null;
+        renderReportsList();
+      }
+
+      // 새 빈 리포트 시작 (저장본은 그대로 유지)
+      async function startNewReport() {
+        await flushSave();
+        lastSavedId = null;
+        document.getElementById("student-name").value = "";
+        document.getElementById("school-name").value = "";
+        document.getElementById("exam-type").selectedIndex = 0;
+        document.getElementById("opinion-textarea").innerHTML = DEFAULT_OPINION;
+        document.querySelectorAll(".opinion-chip").forEach((chip) => {
+          chip.classList.remove("selected");
+          chip.setAttribute("aria-pressed", "false");
+        });
+        renderScopeWidget();
+        renderReportTables();
+        updateTitle();
+        hideMacroPopover();
+        updateStatus();
+        closeReportsModal();
       }
 
       function setPrintDate() {
@@ -2676,13 +3195,29 @@
         if (!el) return;
         const now = new Date();
         el.textContent = `발급일 ${now.getFullYear()}. ${String(
-          now.getMonth() + 1
+          now.getMonth() + 1,
         ).padStart(2, "0")}. ${String(now.getDate()).padStart(2, "0")}`;
       }
 
-      window.onload = function () {
-        switchGrade("mid1");
+      window.onload = async function () {
+        // 기본 종합의견 문구 보관 (새 리포트 시작 시 복원용)
+        DEFAULT_OPINION =
+          document.getElementById("opinion-textarea").innerHTML;
         setPrintDate();
+
+        currentGrade = "mid1";
+        renderScopeWidget();
+        renderReportTables();
+        updateTitle();
+        updateStatus();
+
+        // 페이지를 열면 초기화 대신, 저장된 리포트가 있으면 목록을 먼저 보여준다.
+        try {
+          const reports = await idbGetAll();
+          if (reports.length) openReportsModal();
+        } catch (e) {
+          console.warn("저장된 리포트 조회 실패", e);
+        }
       };
     </script>
   </body>
