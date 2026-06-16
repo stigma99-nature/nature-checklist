@@ -1454,6 +1454,14 @@
           margin-bottom: 0 !important;
           overflow: visible !important;
         }
+        /* 단원 설정에서 끈(숨긴) 소단원·단원은 인쇄에서도 숨긴다.
+           위 display:table-row !important 가 인라인 display:none 을 덮어쓰지
+           않도록, 더 높은 우선순위로 다시 숨김 처리한다. */
+        .checklist-table tr[style*="display: none"],
+        .check-row[style*="display: none"],
+        .unit-block[style*="display: none"] {
+          display: none !important;
+        }
         .checklist-table td {
           display: table-cell !important;
           width: auto;
@@ -1514,7 +1522,9 @@
         }
       }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- html2canvas-pro: 기존 html2canvas의 드롭인 대체. color-mix()/color() 등
+         최신 CSS 색상 함수를 지원해 이미지 저장 실패를 막는다. 전역명은 동일(html2canvas). -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -2902,6 +2912,7 @@
           return;
         }
 
+        rememberSchoolPreset(); // 이 학교의 단원 선택을 기억(다음에 자동 적용)
         window.print();
       }
 
@@ -2925,8 +2936,53 @@
         }
       }
 
+      // html2canvas는 input/select의 텍스트를 위로 붙여 잘라 그리는 버그가 있다.
+      // 캡처하는 순간에만 같은 값을 가진 일반 span 으로 바꿔 정확히 렌더되게 한다.
+      function swapMetaFieldsForCapture() {
+        const ctrls = [
+          document.getElementById("student-name"),
+          document.getElementById("school-name"),
+          document.getElementById("exam-type"),
+        ].filter(Boolean);
+        const created = [];
+        ctrls.forEach((ctrl) => {
+          const text =
+            ctrl.tagName === "SELECT"
+              ? (ctrl.options[ctrl.selectedIndex] || {}).text || ""
+              : ctrl.value || "";
+          const cs = getComputedStyle(ctrl);
+          const span = document.createElement("span");
+          span.className = "capture-meta-text";
+          span.textContent = text;
+          span.style.color = "#ffffff";
+          span.style.fontSize = cs.fontSize;
+          span.style.fontWeight = cs.fontWeight;
+          span.style.fontFamily = cs.fontFamily;
+          span.style.letterSpacing = cs.letterSpacing;
+          span.style.whiteSpace = "nowrap";
+          span.style.lineHeight = "1.5";
+          span.style.padding = "2px 4px";
+          span.style.borderBottom =
+            cs.borderBottomWidth +
+            " " +
+            cs.borderBottomStyle +
+            " " +
+            cs.borderBottomColor;
+          ctrl.style.display = "none";
+          ctrl.parentNode.insertBefore(span, ctrl);
+          created.push({ ctrl, span });
+        });
+        return () => {
+          created.forEach(({ ctrl, span }) => {
+            if (span.parentNode) span.parentNode.removeChild(span);
+            ctrl.style.display = "";
+          });
+        };
+      }
+
       function saveAsImageFile() {
         if (!ensureReadyForOutput("이미지 저장")) return;
+        rememberSchoolPreset(); // 이 학교의 단원 선택을 기억(다음에 자동 적용)
         hideMacroPopover();
 
         const btnGroups = document.querySelectorAll(".btn-group");
@@ -2937,7 +2993,9 @@
         );
 
         let captureFailed = false;
+        const restoreMetaFields = swapMetaFieldsForCapture();
         const restoreCaptureChrome = () => {
+          restoreMetaFields();
           btnGroups.forEach((g) => (g.style.display = "flex"));
           tags.forEach((t) => (t.style.display = "inline-block"));
           captureOnlyControls.forEach((el) => (el.style.display = ""));
@@ -2971,7 +3029,8 @@
             link.href = canvas.toDataURL("image/png");
             link.click();
           })
-          .catch(() => {
+          .catch((err) => {
+            console.warn("이미지 저장 실패", err);
             captureFailed = true;
             if (statusText)
               statusText.textContent =
@@ -3083,17 +3142,80 @@
         updateStatus();
       }
 
-      // 현재 학교+학년+시험에 해당하는 프리셋이 있으면 단원 설정에 적용
+      /* ── 학교별 단원 선택 자동 학습(브라우저 저장) ──
+         사용자가 인쇄/이미지 저장을 누르면 그때의 (학교+학년+시험)별 단원 선택을
+         기억해 두고, 다음에 같은 학교명을 입력하면 자동으로 복원한다. */
+      const LEARNED_PRESETS_KEY = "nature_learned_school_presets";
+
+      function loadLearnedPresets() {
+        try {
+          return JSON.parse(localStorage.getItem(LEARNED_PRESETS_KEY) || "{}") || {};
+        } catch (e) {
+          return {};
+        }
+      }
+      function saveLearnedPresets(obj) {
+        try {
+          localStorage.setItem(LEARNED_PRESETS_KEY, JSON.stringify(obj));
+        } catch (e) {
+          console.warn("학교 프리셋 저장 실패", e);
+        }
+      }
+
+      // 현재 단원 설정(체크 상태)을 sub-unit 단위 맵으로 수집
+      function getCurrentScopeSelections() {
+        const map = {};
+        document.querySelectorAll(".sub-scope-checkbox").forEach((cb) => {
+          map[cb.getAttribute("data-target")] = cb.checked;
+        });
+        return map;
+      }
+
+      // 현재 (학교+학년+시험)의 단원 선택을 학습 저장 (인쇄/이미지 저장 시 호출)
+      function rememberSchoolPreset() {
+        const school = document.getElementById("school-name").value.trim();
+        if (!school) return;
+        const exam = document.getElementById("exam-type").value;
+        const store = loadLearnedPresets();
+        if (!store[school]) store[school] = {};
+        if (!store[school][currentGrade]) store[school][currentGrade] = {};
+        store[school][currentGrade][exam] = {
+          scope: getCurrentScopeSelections(),
+          updatedAt: Date.now(),
+        };
+        saveLearnedPresets(store);
+      }
+
+      // 현재 학교+학년+시험에 해당하는 프리셋이 있으면 단원 설정에 적용.
+      // ① 사용자가 학습시킨 저장값 우선 → ② 코드 내장 예시(SCHOOL_PRESETS) 순.
       function applySchoolPreset() {
         const school = document.getElementById("school-name").value.trim();
+        if (!school) return false;
         const exam = document.getElementById("exam-type").value;
+
+        // ① 학습된 프리셋 (sub-unit 단위로 정확히 복원)
+        const learned = loadLearnedPresets();
+        const entry =
+          learned[school] &&
+          learned[school][currentGrade] &&
+          learned[school][currentGrade][exam];
+        if (entry && entry.scope) {
+          restoreScopeSelections(entry.scope);
+          saveCurrentState();
+          updateStatus();
+          return true;
+        }
+
+        // ② 코드에 내장된 예시 프리셋 (대단원 번호 기준)
         const preset =
           SCHOOL_PRESETS[school] &&
           SCHOOL_PRESETS[school][currentGrade] &&
           SCHOOL_PRESETS[school][currentGrade][exam];
-        if (preset === undefined) return false; // 프리셋 없음 → 현재 설정 유지
-        applyScopeUnits(preset);
-        return true;
+        if (preset !== undefined) {
+          applyScopeUnits(preset);
+          return true;
+        }
+        return false; // 프리셋 없음 → 현재 설정 유지
       }
 
       // 학교명을 입력할 때: 저장 + 입력한 학교명이 프리셋과 정확히 일치하면
@@ -3351,11 +3473,24 @@
       // 서버리스 함수(/api/ai)에 프롬프트를 보내 결과 텍스트만 받아온다.
       // 실제 OpenAI 호출과 API 키 사용은 서버에서만 이뤄진다.
       async function callOpenAIResponses(prompt) {
-        const res = await fetch("/api/ai", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-        });
+        // 파일을 직접 열면(file://) 서버 함수(/api/ai)에 접근할 수 없다.
+        if (location.protocol !== "http:" && location.protocol !== "https:") {
+          throw new Error(
+            "AI 기능은 배포된 주소(Vercel) 또는 로컬 서버에서만 동작합니다. HTML 파일을 직접 열지 말고 배포 주소로 접속해 주세요.",
+          );
+        }
+        let res;
+        try {
+          res = await fetch("/api/ai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt }),
+          });
+        } catch (e) {
+          throw new Error(
+            "서버에 연결하지 못했습니다. 배포 환경(Vercel) 또는 로컬 서버에서 실행 중인지 확인해 주세요.",
+          );
+        }
         let data = {};
         try {
           data = await res.json();
