@@ -2151,8 +2151,10 @@
         "#6a4f86", // plum
       ];
       const unitColor = (idx) => UNIT_COLORS[idx % UNIT_COLORS.length];
-      const OPENAI_API_KEY = "a1a51e2a416b45f98e9462ccfb5dbfd3"; // 여기에 OpenAI API Key를 넣어 사용하세요.
+
+      const OPENAI_API_KEY = ""; // 여기에 OpenAI API Key를 넣어 사용하세요.
       const OPENAI_MODEL = "gpt-5.4-mini";
+
       const GRADE_META = {
         A: {
           className: "active-a",
@@ -2228,31 +2230,31 @@
             listHtml += `</ul>`;
 
             rowsHtml += `
-                        <tr class="check-row" id="${subUnit.id}-row">
-                            <td class="text-center" data-label="중단원" style="font-weight:700; width:22%;">${subUnit.name}</td>
-                            <td class="content-td" data-label="주요 내용" contenteditable="true" id="${subUnit.id}-content" oninput="saveCurrentState()">${listHtml}</td>
-                            <td class="grade-td" data-label="진단평가">
-                                <div class="btn-group">
-                                    <button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">A</button>
-                                    <button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${subUnit.id}')">B</button>
-                                    <button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>
-                                </div>
-                                <span class="print-only-badge" id="${subUnit.id}-badge">-</span>
-                            </td>
-                            <td class="solution-td" data-label="SOLUTION" contenteditable="true" id="${subUnit.id}-solution" onfocus="showMacroPopover(this, event)" oninput="saveCurrentState()"></td>
-                        </tr>
-                    `;
+                              <tr class="check-row" id="${subUnit.id}-row">
+                                  <td class="text-center" data-label="중단원" style="font-weight:700; width:22%;">${subUnit.name}</td>
+                                  <td class="content-td" data-label="주요 내용" contenteditable="true" id="${subUnit.id}-content" oninput="saveCurrentState()">${listHtml}</td>
+                                  <td class="grade-td" data-label="진단평가">
+                                      <div class="btn-group">
+                                          <button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">A</button>
+                                          <button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${subUnit.id}')">B</button>
+                                          <button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>
+                                      </div>
+                                      <span class="print-only-badge" id="${subUnit.id}-badge">-</span>
+                                  </td>
+                                  <td class="solution-td" data-label="SOLUTION" contenteditable="true" id="${subUnit.id}-solution" onfocus="showMacroPopover(this, event)" oninput="saveCurrentState()"></td>
+                              </tr>
+                          `;
           });
 
           blockDiv.innerHTML = `
-                    <div class="table-title">${unit.title}</div>
-                    <table class="checklist-table">
-                        <thead>
-                            <tr><th>중단원</th><th>주요 내용 <span class="editable-tag">수정 가능</span></th><th>진단평가</th><th>SOLUTION <span class="editable-tag">수정 가능</span></th></tr>
-                        </thead>
-                        <tbody>${rowsHtml}</tbody>
-                    </table>
-                `;
+                          <div class="table-title">${unit.title}</div>
+                          <table class="checklist-table">
+                              <thead>
+                                  <tr><th>중단원</th><th>주요 내용 <span class="editable-tag">수정 가능</span></th><th>진단평가</th><th>SOLUTION <span class="editable-tag">수정 가능</span></th></tr>
+                              </thead>
+                              <tbody>${rowsHtml}</tbody>
+                          </table>
+                      `;
           root.appendChild(blockDiv);
         });
       }
@@ -2623,12 +2625,12 @@
         root.innerHTML = feedbackCandidates
           .map(
             (candidate, idx) => `
-                <div class="candidate-card">
-                    <div class="candidate-title">${candidate.title || `후보 ${idx + 1}`}</div>
-                    <div class="candidate-text">${escapeHtml(candidate.text || "")}</div>
-                    <button type="button" class="candidate-apply" onclick="applyFeedbackCandidate(${idx})">적용</button>
-                </div>
-            `,
+                      <div class="candidate-card">
+                          <div class="candidate-title">${candidate.title || `후보 ${idx + 1}`}</div>
+                          <div class="candidate-text">${escapeHtml(candidate.text || "")}</div>
+                          <button type="button" class="candidate-apply" onclick="applyFeedbackCandidate(${idx})">적용</button>
+                      </div>
+                  `,
           )
           .join("");
         if (status)
@@ -2757,6 +2759,186 @@
         }
       }
 
+      /* ───────── AI 종합의견 도우미 (OpenAI, 서버리스 프록시 경유) ───────── */
+
+      function setFeedbackStatus(msg) {
+        const s = document.getElementById("feedback-status");
+        if (s) s.textContent = msg;
+      }
+
+      function parseJsonLoose(text) {
+        // ```json ... ``` 펜스 제거 후 파싱, 실패 시 본문에서 첫 {…} 추출
+        const cleaned = String(text)
+          .replace(/^```json\s*|\s*```$/g, "")
+          .trim();
+        try {
+          return JSON.parse(cleaned);
+        } catch (e) {
+          const m = cleaned.match(/\{[\s\S]*\}/);
+          if (m) return JSON.parse(m[0]);
+          throw e;
+        }
+      }
+
+      // 서버리스 함수(/api/ai)에 프롬프트를 보내 결과 텍스트만 받아온다.
+      // 실제 OpenAI 호출과 API 키 사용은 서버에서만 이뤄진다.
+      async function callOpenAIResponses(prompt) {
+        const res = await fetch("/api/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        });
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (e) {}
+        if (!res.ok) {
+          throw new Error(data.error || `요청 실패: ${res.status}`);
+        }
+        return (data.text || "").trim();
+      }
+
+      // 버튼 비활성/상태표시/에러처리를 감싸는 실행 헬퍼
+      async function runAiTask(btnId, workingMsg, fn) {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.disabled = true;
+        setFeedbackStatus(workingMsg);
+        try {
+          await fn();
+        } catch (e) {
+          console.warn(e);
+          setFeedbackStatus(
+            "AI 요청에 실패했습니다. 잠시 후 다시 시도해 주세요. (" +
+              (e && e.message ? e.message.slice(0, 120) : e) +
+              ")",
+          );
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      }
+
+      // ① 종합의견에 넣으면 좋은 키워드 추천
+      async function suggestOpinionKeywords() {
+        const context = collectFeedbackContext();
+        if (!context.items.length) {
+          setFeedbackStatus("표시된 단원이 없어 분석할 수 없습니다.");
+          return;
+        }
+        await runAiTask(
+          "ai-keywords-btn",
+          "AI가 진단 내용을 분석해 핵심 키워드를 정리하는 중...",
+          async () => {
+            const prompt = [
+              "당신은 중등 과학 학원의 베테랑 지도교사를 돕는 보조입니다.",
+              "아래 학생 진단 데이터(JSON)를 분석해, 네이쳐 과학학원 선생님이 학부모님께 보낼 '종합 의견'에 언급하면 좋은 핵심 키워드/포인트를 제안하세요.",
+              "조건:",
+              "- 학부모님께 전하는 정중한 안내 맥락입니다.",
+              "- 각 항목은 짧은 한국어 명사구로 작성하세요. (예: '개념 이해 우수', '서술형 답안 보완 필요', '오답 정리 습관 권장')",
+              "- 강점과 보완점을 균형 있게 포함하고, 최대 8개까지.",
+              "- 데이터에 근거가 없는 내용은 지어내지 마세요.",
+              '반드시 JSON만 반환하세요. 형식: {"keywords":["...","..."]}',
+              "",
+              JSON.stringify(context),
+            ].join("\n");
+            const text = await callOpenAIResponses(prompt);
+            const parsed = parseJsonLoose(text);
+            const keywords = (parsed.keywords || [])
+              .map((k) => String(k).trim())
+              .filter(Boolean)
+              .slice(0, 10);
+            if (!keywords.length)
+              throw new Error("키워드를 생성하지 못했습니다.");
+            renderKeywordSuggestions(keywords);
+            setFeedbackStatus(
+              `AI가 키워드 ${keywords.length}개를 제안했습니다. 모달에서 눌러 의견란에 추가하세요.`,
+            );
+          },
+        );
+      }
+
+      let keywordSuggestions = [];
+      function renderKeywordSuggestions(keywords) {
+        keywordSuggestions = keywords;
+        const body = document.getElementById("feedback-modal-body");
+        const title = document.getElementById("feedback-modal-title");
+        if (title) title.textContent = "💡 종합 의견에 넣으면 좋은 키워드";
+        body.innerHTML =
+          '<p class="fb-help">선생님이 직접 작성하시되, 아래 키워드를 참고하세요. 키워드를 누르면 의견란 끝에 추가됩니다. (문장은 선생님이 자연스럽게 다듬어 주세요.)</p>' +
+          '<div class="kw-suggest-grid">' +
+          keywords
+            .map(
+              (k, i) =>
+                `<button type="button" class="kw-suggest-chip" data-idx="${i}" onclick="insertKeyword(${i}, this)">＋ ${escapeHtml(k)}</button>`,
+            )
+            .join("") +
+          "</div>";
+        openFeedbackModal();
+      }
+
+      function insertKeyword(i, btn) {
+        const k = keywordSuggestions[i];
+        if (!k) return;
+        const editor = document.getElementById("opinion-textarea");
+        const current = editor.innerHTML.trim();
+        const piece = escapeHtml(k);
+        editor.innerHTML = current
+          ? current + (current.endsWith("<br>") ? "" : "<br>") + "· " + piece
+          : "· " + piece;
+        if (btn) btn.classList.add("used");
+        saveCurrentState();
+        setFeedbackStatus(`'${k}' 키워드를 의견란에 추가했습니다.`);
+      }
+
+      // ② 선생님이 쓴 글을 학부모용으로 정중하게 다듬기
+      async function polishOpinion() {
+        const editor = document.getElementById("opinion-textarea");
+        const draft = getTextFromElement(editor);
+        if (!draft) {
+          setFeedbackStatus(
+            "먼저 의견을 작성해 주세요. 작성하신 내용을 AI가 정중하게 다듬어 드립니다.",
+          );
+          editor.focus();
+          return;
+        }
+        const context = collectFeedbackContext();
+        await runAiTask(
+          "ai-polish-btn",
+          "AI가 학부모님께 보낼 정중한 문장으로 다듬는 중...",
+          async () => {
+            const prompt = [
+              "당신은 네이쳐 과학학원 선생님이 학부모님께 보내는 글을 정중하고 예의 바르게 다듬는 보조입니다.",
+              "아래 [선생님 초안]을, 의미와 사실은 그대로 유지하면서 더 정중하고 따뜻하며 매끄러운 학부모 안내문으로 다듬어 주세요.",
+              "조건:",
+              "- 학부모님께 학생의 전체 진단 내용을 전하는 글입니다. 존댓말로, 예의 바르고 배려 있는 어조로 작성하세요.",
+              "- 초안에 없는 사실·평가·수치를 새로 지어내지 마세요.",
+              "- 너무 딱딱하지 않게, 그러나 정중하게. 한 문단으로.",
+              "- 3가지 버전을 제안하세요. (예: '정중하고 간결한 버전', '따뜻하고 상세한 버전', '실행 계획이 포함된 버전')",
+              '반드시 JSON만 반환하세요. 형식: {"versions":[{"title":"...","text":"..."},{"title":"...","text":"..."},{"title":"...","text":"..."}]}',
+              "",
+              "[참고 진단 요약] " +
+                JSON.stringify({
+                  gradeLabel: context.gradeLabel,
+                  examType: context.examType,
+                  counts: context.counts,
+                }),
+              "[선생님 초안]",
+              draft,
+            ].join("\n");
+            const text = await callOpenAIResponses(prompt);
+            const parsed = parseJsonLoose(text);
+            const versions = (parsed.versions || [])
+              .filter((v) => v && v.text)
+              .slice(0, 3);
+            if (!versions.length)
+              throw new Error("다듬은 결과를 생성하지 못했습니다.");
+            renderFeedbackCandidates(versions);
+            setFeedbackStatus(
+              "AI가 다듬은 제안입니다. ‘이 표현 적용’을 누르면 의견란에 반영됩니다.",
+            );
+          },
+        );
+      }
+
       function getSelectedKeywords() {
         return Array.from(
           document.querySelectorAll(".opinion-chip.selected"),
@@ -2828,10 +3010,10 @@
       }
 
       /* ============================================================
-         IndexedDB 기반 다중 리포트 자동 저장/불러오기
-         - 리포트는 (학년 + 이름 + 학교 + 시험)으로 구분된다.
-         - 편집 시 자동 저장되고, 초기화해도 저장본은 남는다.
-         ============================================================ */
+               IndexedDB 기반 다중 리포트 자동 저장/불러오기
+               - 리포트는 (학년 + 이름 + 학교 + 시험)으로 구분된다.
+               - 편집 시 자동 저장되고, 초기화해도 저장본은 남는다.
+               ============================================================ */
       const DB_NAME = "nature_checklist_db";
       const DB_STORE = "reports";
       let _dbPromise = null;
@@ -3201,8 +3383,7 @@
 
       window.onload = async function () {
         // 기본 종합의견 문구 보관 (새 리포트 시작 시 복원용)
-        DEFAULT_OPINION =
-          document.getElementById("opinion-textarea").innerHTML;
+        DEFAULT_OPINION = document.getElementById("opinion-textarea").innerHTML;
         setPrintDate();
 
         currentGrade = "mid1";
