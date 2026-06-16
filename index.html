@@ -304,13 +304,16 @@
         padding: 22px 26px;
         margin-bottom: 28px;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 18px;
+        flex-direction: column; /* 제목 아래에 학생정보가 오도록 세로 배치 */
+        align-items: stretch;
+        gap: 16px;
         color: #ffffff;
         position: relative;
         z-index: 5;
         border-radius: 6px;
+      }
+      .header-section > div:first-child {
+        min-width: 0;
       }
       .logo-area {
         font-size: 12px;
@@ -327,12 +330,14 @@
 
       .student-meta-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(96px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
         background: transparent;
         padding: 10px 14px;
         border-radius: 6px;
         border: 1px solid rgba(214, 175, 55, 0.35);
+        flex: 0 0 auto; /* 세로 스택에서 제목 아래 한 줄로 */
+        min-width: 0;
       }
       .meta-cell {
         display: flex;
@@ -713,6 +718,53 @@
         background: var(--brand-2);
         color: #ffffff;
       }
+      .feedback-action-soft {
+        background: var(--brand-2);
+        border-color: var(--brand-2);
+      }
+      .feedback-action-soft:hover {
+        background: #285f63;
+      }
+      .feedback-action:disabled {
+        opacity: 0.6;
+        cursor: progress;
+      }
+      .fb-help {
+        color: var(--ink-soft);
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.55;
+        margin: 0 0 12px;
+      }
+      .kw-suggest-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .kw-suggest-chip {
+        border: 1px solid var(--brand-2);
+        background: #f3fafa;
+        color: var(--brand-2);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          background 0.15s ease,
+          color 0.15s ease;
+      }
+      .kw-suggest-chip:hover {
+        transform: translateY(-1px);
+        background: var(--brand-2);
+        color: #ffffff;
+      }
+      .kw-suggest-chip.used {
+        background: var(--brand-2);
+        color: #ffffff;
+        opacity: 0.7;
+      }
       .chip-container {
         display: flex;
         flex-wrap: wrap;
@@ -860,101 +912,292 @@
         font-size: 17px;
         font-weight: 900;
       }
-      .reports-modal-header-actions {
-        display: flex;
-        gap: 8px;
-      }
-      .reports-new-btn {
-        border: 1px solid var(--brand-2);
-        background: var(--brand-2);
-        color: #ffffff;
-        border-radius: 6px;
-        padding: 8px 12px;
+      .reports-modal-sub {
         font-size: 12.5px;
-        font-weight: 900;
-        cursor: pointer;
+        font-weight: 700;
+        color: var(--ink-soft);
+        margin-top: 3px;
       }
-      .reports-new-btn:hover {
-        background: #285f63;
+      /* 검색 + 학년 필터 툴바 */
+      .reports-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .reports-search {
+        flex: 1 1 200px;
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+        background: #f7faff;
+      }
+      .reports-search:focus {
+        outline: none;
+        border-color: var(--brand-2);
+        background: #ffffff;
+      }
+      .reports-filter {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+      .rf-chip {
+        border: 1px solid var(--line);
+        background: #ffffff;
+        color: var(--ink-soft);
+        border-radius: 999px;
+        padding: 7px 13px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .rf-chip:hover {
+        border-color: var(--brand-2);
+      }
+      .rf-chip.active {
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #ffffff;
       }
       .reports-list {
         overflow: auto;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
       }
       .reports-empty {
         color: var(--ink-soft);
         font-size: 13px;
         font-weight: 600;
         text-align: center;
-        padding: 28px 12px;
+        padding: 32px 16px;
         border: 1px dashed var(--line);
-        border-radius: 8px;
+        border-radius: 10px;
+        line-height: 1.6;
       }
-      .report-item {
+      .reports-empty .re-emoji {
+        font-size: 34px;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      /* 새 리포트 만들기 카드 */
+      .report-new-card {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 12px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 12px 14px;
-        background: #fbfdff;
+        border: 2px dashed var(--brand-2);
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: #f3fafa;
+        color: var(--brand-2);
+        cursor: pointer;
+        transition: all 0.15s ease;
       }
-      .report-item.current {
-        border-color: var(--brand-2);
-        box-shadow: inset 0 0 0 1px var(--brand-2);
-        background: #f0f7f6;
+      .report-new-card:hover {
+        background: #e8f5f5;
+        transform: translateY(-1px);
       }
-      .report-item-info {
-        min-width: 0;
+      .report-new-card .rnc-plus {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--brand-2);
+        color: #ffffff;
+        font-size: 22px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        line-height: 1;
       }
-      .report-item-name {
+      .report-new-card .rnc-title {
         font-size: 14.5px;
         font-weight: 900;
-        color: var(--ink);
       }
-      .report-item-meta {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--brand);
-        margin-top: 2px;
-      }
-      .report-item-time {
-        font-size: 11px;
+      .report-new-card .rnc-desc {
+        font-size: 11.5px;
         font-weight: 600;
         color: var(--ink-soft);
         margin-top: 2px;
       }
-      .report-item-actions {
-        display: flex;
-        gap: 6px;
-        flex-shrink: 0;
+
+      /* 저장 리포트 카드 */
+      .report-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: #ffffff;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          border-color 0.15s ease;
       }
-      .report-load-btn,
-      .report-del-btn {
-        border-radius: 6px;
-        padding: 8px 12px;
+      .report-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(24, 49, 83, 0.12);
+        border-color: var(--brand-2);
+      }
+      .report-card.current {
+        border-color: var(--brand-2);
+        box-shadow: inset 0 0 0 1.5px var(--brand-2);
+        background: #f5fbfb;
+      }
+      .rc-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .rc-grade {
+        flex-shrink: 0;
         font-size: 12px;
         font-weight: 900;
-        cursor: pointer;
-      }
-      .report-load-btn {
-        border: 1px solid var(--brand);
-        background: var(--brand);
         color: #ffffff;
+        border-radius: 7px;
+        padding: 6px 9px;
+        line-height: 1;
+        margin-top: 1px;
       }
-      .report-load-btn:hover {
-        background: #24466e;
+      .rc-grade-mid1 {
+        background: #2f6f73;
       }
-      .report-del-btn {
-        border: 1px solid #d9b3b8;
-        background: #ffffff;
-        color: var(--danger);
+      .rc-grade-mid2 {
+        background: #3a5a9c;
       }
-      .report-del-btn:hover {
+      .rc-grade-mid3 {
+        background: #8a5a2b;
+      }
+      .rc-id {
+        flex: 1;
+        min-width: 0;
+      }
+      .rc-name {
+        font-size: 15px;
+        font-weight: 900;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .rc-current-tag {
+        font-size: 10px;
+        font-weight: 900;
+        color: var(--brand-2);
+        background: #d9efef;
+        border-radius: 999px;
+        padding: 2px 7px;
+      }
+      .rc-meta {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink-soft);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .rc-del {
+        flex-shrink: 0;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--ink-soft);
+        font-size: 15px;
+        border-radius: 7px;
+        padding: 5px 8px;
+        cursor: pointer;
+        line-height: 1;
+        transition: all 0.15s ease;
+      }
+      .rc-del:hover {
         background: #fbeaec;
+        color: var(--danger);
+        border-color: #e6c2c7;
+      }
+      /* 분포 막대 */
+      .rc-bar {
+        display: flex;
+        height: 12px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: #eef2f7;
+        margin: 12px 0 8px;
+      }
+      .rc-bar .seg {
+        height: 100%;
+      }
+      .rc-bar .seg-a {
+        background: #1565c0;
+      }
+      .rc-bar .seg-b {
+        background: #e0a800;
+      }
+      .rc-bar .seg-c {
+        background: #c62828;
+      }
+      .rc-bar-empty {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9.5px;
+        font-weight: 800;
+        color: #9aa7b8;
+      }
+      .rc-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .rc-legend {
+        display: flex;
+        gap: 10px;
+      }
+      .rc-legend .lg {
+        font-size: 11.5px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .rc-legend .lg::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+      }
+      .rc-legend .lg-a {
+        color: #1565c0;
+      }
+      .rc-legend .lg-a::before {
+        background: #1565c0;
+      }
+      .rc-legend .lg-b {
+        color: #a87900;
+      }
+      .rc-legend .lg-b::before {
+        background: #e0a800;
+      }
+      .rc-legend .lg-c {
+        color: #c62828;
+      }
+      .rc-legend .lg-c::before {
+        background: #c62828;
+      }
+      .rc-progress {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-soft);
       }
 
       @media (max-width: 860px) {
@@ -999,11 +1242,13 @@
           padding: 18px;
         }
         .student-meta-grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
+          flex: 0 1 auto; /* 모바일에선 데스크톱용 flex-basis(320px) 영향 제거 */
         }
         .meta-input,
         .meta-select {
           width: 100%;
+          min-width: 0; /* 좁은 폭에서 컬럼이 컨테이너에 맞게 줄어들도록 */
           text-align: left;
         }
         .checklist-table,
@@ -1098,7 +1343,7 @@
         }
         @page {
           size: A4;
-          margin: 14mm 0 16mm;
+          margin: 9mm 10mm 11mm;
         }
         html,
         body {
@@ -1147,7 +1392,7 @@
           border: none !important;
           width: 100% !important;
           min-height: 0 !important;
-          padding: 0 14mm !important;
+          padding: 0 !important;
           margin: 0 !important;
           display: block;
           position: static;
@@ -1162,12 +1407,12 @@
 
         /* 헤더가 첫 페이지에서 잘리지 않도록 */
         .header-section {
-          margin-bottom: 18px;
-          padding: 16px 20px;
+          margin-bottom: 14px;
+          padding: 12px 16px;
           page-break-inside: avoid;
         }
         .main-title {
-          font-size: 22px;
+          font-size: 20px;
         }
 
         /* 단원 블록·행이 페이지 경계에서 쪼개지지 않도록 */
@@ -1178,17 +1423,57 @@
           page-break-inside: avoid;
         }
         .unit-block {
-          margin-bottom: 16px;
+          margin-bottom: 11px;
+        }
+        .table-title {
+          padding: 6px 14px;
+          font-size: 12.5px;
+        }
+        .opinion-section {
+          margin-top: 14px;
         }
 
-        /* 여러 페이지로 넘어갈 때 표 머리글 반복 */
-        .checklist-table thead {
-          display: table-header-group;
+        /* A4 인쇄 폭(≈794px)은 max-width:860px 규칙을 발동시켜 표가 모바일
+           '카드' 레이아웃으로 바뀐다. 인쇄에서는 원래의 표 형태로 되돌린다 */
+        .checklist-table {
+          display: table !important;
+          width: 100% !important;
+          table-layout: fixed;
         }
-        .checklist-table th,
+        .checklist-table thead {
+          display: table-header-group !important; /* 페이지마다 머리글 반복 */
+        }
+        .checklist-table tbody {
+          display: table-row-group !important;
+        }
+        .checklist-table tr,
+        .check-row {
+          display: table-row !important;
+          border: 0 !important;
+          border-radius: 0 !important;
+          margin-bottom: 0 !important;
+          overflow: visible !important;
+        }
         .checklist-table td {
+          display: table-cell !important;
+          width: auto;
+          border: 1px solid #c9d1dc !important;
+          border-radius: 0 !important;
+          text-align: left;
           padding: 7px 8px;
           font-size: 11.4px;
+        }
+        .checklist-table th {
+          padding: 7px 8px;
+          font-size: 11.4px;
+        }
+        /* 카드 레이아웃에서 셀 앞에 붙던 라벨(중단원/주요내용 등) 숨김 */
+        .checklist-table td::before {
+          content: none !important;
+          display: none !important;
+        }
+        .grade-td {
+          text-align: center !important;
         }
 
         .print-only-badge {
@@ -1320,7 +1605,7 @@
                   class="meta-input"
                   value=""
                   placeholder="학교명"
-                  oninput="syncFilenameAndSave()"
+                  oninput="onSchoolNameInput()"
                 />
               </div>
               <div class="meta-cell">
@@ -1328,13 +1613,14 @@
                 <select
                   id="exam-type"
                   class="meta-select"
-                  onchange="syncFilenameAndSave()"
+                  onchange="onExamChange()"
                 >
                   <option value="1학기 중간고사">1학기 중간 대비</option>
-                  <option value="1학기 기말고사">1학기 기말 대비</option>
+                  <option selected value="1학기 기말고사">
+                    1학기 기말 대비
+                  </option>
                   <option value="2학기 중간고사">2학기 중간 대비</option>
                   <option value="2학기 기말고사">2학기 기말 대비</option>
-                  <option value="직전 파이널 모의고사">직전 파이널</option>
                 </select>
               </div>
             </div>
@@ -1343,20 +1629,29 @@
           <div id="report-table-root"></div>
 
           <div class="opinion-section">
-            <div class="opinion-title">지도교사 종합 피드백 의견</div>
             <div class="feedback-generator no-print">
               <div class="feedback-generator-row">
                 <button
                   type="button"
                   class="feedback-action"
-                  id="feedback-generate-btn"
-                  onclick="generateFeedbackCandidates()"
+                  id="ai-keywords-btn"
+                  onclick="suggestOpinionKeywords()"
                 >
-                  분석하기
+                  💡 키워드 추천
+                </button>
+                <button
+                  type="button"
+                  class="feedback-action feedback-action-soft"
+                  id="ai-polish-btn"
+                  onclick="polishOpinion()"
+                >
+                  ✨ AI로 다듬기
                 </button>
               </div>
               <div class="feedback-status" id="feedback-status">
-                현재 체크리스트 전체 내용을 종합해 후보 3개를 생성합니다.
+                학생 진단 내용을 바탕으로 의견에 넣으면 좋은 키워드를 AI가
+                제안합니다. 작성하신 글은 ‘AI로 다듬기’로 학부모님께 보낼 정중한
+                문장으로 정리해 드립니다.
               </div>
             </div>
             <div class="chip-container no-print">
@@ -1423,13 +1718,13 @@
               contenteditable="true"
               oninput="saveCurrentState()"
             >
-              현재 전반적인 개념 이해도는 양호하나 특정 응용 문제 풀이 및 고난도
+              <!-- 현재 전반적인 개념 이해도는 양호하나 특정 응용 문제 풀이 및 고난도
               심화 유형에 대한 훈련이 다소 부족한 상태입니다. 학교별 출제 경향을
               고려할 때, 틀린 문제와 연계된 심화 이론을 완벽히 정립하고 시험장에
               들어가야 실수를 줄일 수 있습니다. 따라서 다가오는 직전 보강
               시험에는 반드시 필참할 수 있도록 지도해주시고, 추가로 배부된
               고난도 시크릿 모의고사 문항을 마저 모두 풀어 제출할 수 있도록
-              가정에서도 함께 점검 및 격려 부탁드립니다.
+              가정에서도 함께 점검 및 격려 부탁드립니다. -->
             </div>
           </div>
 
@@ -1475,23 +1770,62 @@
         aria-labelledby="reports-modal-title"
       >
         <div class="reports-modal-header">
-          <div class="reports-modal-title" id="reports-modal-title">
-            📁 저장된 리포트
+          <div>
+            <div class="reports-modal-title" id="reports-modal-title">
+              📁 저장된 리포트
+            </div>
+            <div class="reports-modal-sub" id="reports-modal-sub">
+              카드를 누르면 해당 리포트를 불러옵니다
+            </div>
           </div>
-          <div class="reports-modal-header-actions">
+          <button
+            type="button"
+            class="feedback-modal-close"
+            onclick="closeReportsModal()"
+          >
+            닫기
+          </button>
+        </div>
+        <div class="reports-toolbar" id="reports-toolbar">
+          <input
+            type="text"
+            id="reports-search"
+            class="reports-search"
+            placeholder="🔍 학생 이름·학교로 검색"
+            oninput="filterReportsList()"
+          />
+          <div class="reports-filter" id="reports-filter">
             <button
               type="button"
-              class="reports-new-btn"
-              onclick="startNewReport()"
+              class="rf-chip active"
+              data-grade="all"
+              onclick="setReportFilter(this, 'all')"
             >
-              ＋ 새 리포트 시작
+              전체
             </button>
             <button
               type="button"
-              class="feedback-modal-close"
-              onclick="closeReportsModal()"
+              class="rf-chip"
+              data-grade="mid1"
+              onclick="setReportFilter(this, 'mid1')"
             >
-              닫기
+              중1
+            </button>
+            <button
+              type="button"
+              class="rf-chip"
+              data-grade="mid2"
+              onclick="setReportFilter(this, 'mid2')"
+            >
+              중2
+            </button>
+            <button
+              type="button"
+              class="rf-chip"
+              data-grade="mid3"
+              onclick="setReportFilter(this, 'mid3')"
+            >
+              중3
             </button>
           </div>
         </div>
@@ -1522,7 +1856,7 @@
             닫기
           </button>
         </div>
-        <div class="candidate-grid" id="feedback-candidates"></div>
+        <div id="feedback-modal-body"></div>
       </div>
     </div>
 
@@ -1594,18 +1928,57 @@
     </div>
 
     <script>
+      /* ───────────────────────────────────────────────────────────
+         학교별 시험 범위 프리셋 (예시 데이터)
+         구조: 학교명 → 학년(mid1/mid2/mid3) → 시험종류 → 포함할 "대단원 번호" 배열
+           · 대단원 번호는 '단원 설정'에 보이는 1. 2. 3. … 순서와 같습니다.
+           · 전체 범위는 숫자 배열 대신 문자열 "all" 로 적을 수 있습니다.
+           · 시험종류 값(아래 시험 select 와 동일):
+             "1학기 중간고사" "1학기 기말고사" "2학기 중간고사"
+             "2학기 기말고사" "직전 파이널 모의고사"
+         ※ 아래는 동작 확인용 예시입니다. 실제 학교명/범위로 자유롭게
+            추가·수정하세요. 학교명을 정확히 입력하면 단원 범위가 자동 적용됩니다.
+         ─────────────────────────────────────────────────────────── */
+      const SCHOOL_PRESETS = {
+        예시중학교: {
+          mid1: {
+            "1학기 중간고사": [1, 2],
+            "1학기 기말고사": [3, 4],
+            "2학기 중간고사": [5],
+            "2학기 기말고사": [6, 7],
+            "직전 파이널 모의고사": "all",
+          },
+          mid2: {
+            "1학기 중간고사": [1, 2],
+            "1학기 기말고사": [3, 4],
+            "직전 파이널 모의고사": "all",
+          },
+          mid3: {
+            "1학기 중간고사": [1, 2],
+            "직전 파이널 모의고사": "all",
+          },
+        },
+        예시여자중학교: {
+          mid1: {
+            "1학기 중간고사": [1, 2, 3],
+            "1학기 기말고사": [4, 5],
+            "직전 파이널 모의고사": "all",
+          },
+        },
+      };
+
       const CURRICULUM_DATA = {
         mid1: [
           {
-            title: "1. 화학반응의 규칙과 에너지 변화",
+            title: "1. 과학과 인류의 지속가능한 삶",
             sub: [
               {
                 id: "m1-1-1",
-                name: "물질 변화와 화학 반응식",
+                name: "과학과 인류의 지속가능한 삶",
                 list: [
-                  "과학적 탐구 방법의 프로세스 이해",
-                  "과학의 발전이 인류 문명에 미친 영향",
-                  "환경 보전과 지속가능한 삶의 연계성",
+                  "과학적 탐구 과정과 탐구 방법 이해",
+                  "과학의 발전이 인류 문명에 미친 영향 파악",
+                  "과학기술과 지속가능한 삶의 관계 이해",
                 ],
               },
             ],
@@ -1617,27 +1990,27 @@
                 id: "m1-2-1",
                 name: "생물의 구성",
                 list: [
-                  "세포의 기본 구조 및 기능 분석",
-                  "동물세포 and 식물세포의 차이점 및 특징",
-                  "세포-조직-기관-개체로 이어지는 구성 단계",
+                  "세포의 기본 구조와 각 기관의 기능 이해",
+                  "동물세포와 식물세포의 공통점과 차이점 비교",
+                  "세포-조직-기관-기관계-개체의 구성 단계 이해",
                 ],
               },
               {
                 id: "m1-2-2",
                 name: "생물다양성과 분류",
                 list: [
-                  "생물다양성의 정의 및 변이의 발생 원인",
-                  "생물을 체계적으로 분류하는 목적과 방법",
-                  "생물의 5계 분화 체계론의 이해",
+                  "생물다양성의 의미와 생물 다양성이 나타나는 이유 이해",
+                  "생물을 분류하는 기준과 분류 체계 이해",
+                  "생물의 5계 분류 체계와 각 계의 특징 비교",
                 ],
               },
               {
                 id: "m1-2-3",
                 name: "생물다양성보전",
                 list: [
-                  "생물다양성 보전이 인류에게 필요한 이유",
-                  "생물다양성 감소를 초래하는 주요 원인 파악",
-                  "생태계 유지를 위한 구체적인 실천 원칙",
+                  "생물다양성 보전이 필요한 이유 이해",
+                  "생물다양성 감소의 주요 원인 파악",
+                  "생물다양성 보전을 위한 실천 방법 탐색",
                 ],
               },
             ],
@@ -1649,25 +2022,27 @@
                 id: "m1-3-1",
                 name: "온도와 열의 이동",
                 list: [
-                  "물질을 구성하는 입자의 운동과 온도의 관계",
-                  "두 물질이 접촉할 때 일어나는 열평형 현상",
-                  "열이 이동하는 세 가지 방식 (전도·대류·복사)",
+                  "입자의 운동과 온도의 관계 이해",
+                  "온도가 다른 물체 사이에서 일어나는 열평형 현상 이해",
+                  "전도·대류·복사를 통한 열의 이동 방식 비교",
                 ],
               },
               {
                 id: "m1-3-2",
                 name: "비열",
                 list: [
-                  "비열의 고유 정의와 물리적 의미 이해",
-                  "우리 생활 속에서 비열을 활용하는 대표적 사례",
+                  "비열의 의미와 물질에 따른 비열 차이 이해",
+                  "비열이 큰 물질과 작은 물질의 온도 변화 비교",
+                  "생활 속 비열의 활용 사례 분석",
                 ],
               },
               {
                 id: "m1-3-3",
                 name: "열팽창",
                 list: [
-                  "온도 변화에 따른 고체·액체의 열팽창 원리",
-                  "산업 및 실생활 속 열팽창 설계 활용 사례",
+                  "온도 변화에 따른 고체·액체·기체의 열팽창 이해",
+                  "물질의 종류에 따른 열팽창 정도 비교",
+                  "생활과 산업에서 열팽창이 활용되거나 고려되는 사례 분석",
                 ],
               },
             ],
@@ -1677,18 +2052,29 @@
             sub: [
               {
                 id: "m1-4-1",
-                name: "입자의 운동과 상태",
+                name: "입자의 운동",
                 list: [
-                  "확산과 증발 현상을 통한 입자의 운동 증명",
-                  "고체, 액체, 기체 세 가지 상태의 분자적 특징",
+                  "확산과 증발 현상을 통해 입자의 운동 이해",
+                  "온도에 따른 입자 운동의 변화 설명",
+                  "입자 운동으로 물질의 상태를 해석하는 방법 이해",
                 ],
               },
               {
                 id: "m1-4-2",
-                name: "상태변화와 에너지",
+                name: "물질의 상태와 상태변화",
                 list: [
-                  "열에너지를 흡수하거나 방출하는 상태변화 매칭",
-                  "상태 변화 시 출입하는 열에너지의 실생활 이용",
+                  "고체·액체·기체의 입자 배열과 운동 특징 비교",
+                  "융해·응고·기화·액화·승화의 상태 변화 구분",
+                  "상태 변화가 일어날 때 물질의 성질이 유지됨을 이해",
+                ],
+              },
+              {
+                id: "m1-4-3",
+                name: "상태 변화와 열에너지",
+                list: [
+                  "상태 변화 과정에서 열에너지의 흡수와 방출 구분",
+                  "상태 변화가 일어나는 동안 온도가 일정하게 유지되는 이유 이해",
+                  "상태 변화와 열에너지를 활용한 생활 속 사례 분석",
                 ],
               },
             ],
@@ -1700,32 +2086,36 @@
                 id: "m1-5-1",
                 name: "힘의 표현과 평형",
                 list: [
-                  "힘의 3요소를 이용한 화살표 작도법",
-                  "두 힘의 합력 공식과 평형을 이루는 조건",
+                  "힘의 크기·방향·작용점을 이용해 힘을 화살표로 표현",
+                  "한 물체에 작용하는 여러 힘의 합력 구하기",
+                  "두 힘이 평형을 이루는 조건 이해",
                 ],
               },
               {
                 id: "m1-5-2",
                 name: "여러 가지 힘(1)",
                 list: [
-                  "지구 질량에 의한 중력의 특징과 크기(무게)",
-                  "탄성력의 방향성 및 훅의 법칙 개념 응용",
+                  "중력의 의미와 무게가 생기는 원리 이해",
+                  "탄성력의 방향과 크기에 영향을 주는 요인 파악",
+                  "용수철의 늘어난 길이와 탄성력의 관계 이해",
                 ],
               },
               {
                 id: "m1-5-3",
                 name: "여러 가지 힘(2)",
                 list: [
-                  "접촉면에서 작용하는 마찰력의 크기 결정 요인",
-                  "유체 속 물체에 작용하는 부력의 발생 원리",
+                  "마찰력의 방향과 크기에 영향을 주는 요인 이해",
+                  "유체 속 물체에 작용하는 부력의 발생 원리 설명",
+                  "마찰력과 부력이 생활 속에서 작용하는 사례 분석",
                 ],
               },
               {
                 id: "m1-5-4",
-                name: "힘과 운동 변화",
+                name: "힘의 작용과 운동상태 변화",
                 list: [
-                  "알짜힘이 0일 때 물체의 운동 상태 (관성)",
-                  "힘의 작용에 따른 속력 및 운동 방향의 변화",
+                  "알짜힘이 0일 때 물체의 운동 상태 이해",
+                  "힘의 작용에 따른 속력 변화와 운동 방향 변화 설명",
+                  "힘과 운동 상태 변화의 관계를 사례에 적용",
                 ],
               },
             ],
@@ -1737,24 +2127,27 @@
                 id: "m1-6-1",
                 name: "기체의 압력",
                 list: [
-                  "압력의 기본 정의와 단면적당 힘의 관계식",
-                  "기체 분자의 충돌로 인해 발생하는 압력의 원인",
+                  "압력의 의미와 단위 면적당 작용하는 힘의 관계 이해",
+                  "기체 분자의 충돌로 압력이 발생하는 원리 설명",
+                  "기체 압력이 생활 속에서 나타나는 사례 분석",
                 ],
               },
               {
                 id: "m1-6-2",
-                name: "기체의 압력과 부피",
+                name: "기체의 압력과 부피 관계",
                 list: [
-                  "보일의 법칙(일정 온도에서 압력과 부피의 관계)",
-                  "압력 변화에 따른 분자 운동 모형 시각화",
+                  "일정한 온도에서 기체의 압력과 부피 관계 이해",
+                  "보일 법칙을 이용한 기체의 부피 변화 예측",
+                  "압력 변화에 따른 기체 분자 운동 모형 해석",
                 ],
               },
               {
                 id: "m1-6-3",
-                name: "기체의 온도와 부피",
+                name: "기체의 온도와 부피 관계",
                 list: [
-                  "샤를의 법칙(일정 압력에서 온도와 부피의 관계)",
-                  "온도 상승에 따른 기체 분자 충돌 및 속도 변화",
+                  "일정한 압력에서 기체의 온도와 부피 관계 이해",
+                  "샤를 법칙을 이용한 기체의 부피 변화 예측",
+                  "온도 변화에 따른 기체 분자 운동 변화 설명",
                 ],
               },
             ],
@@ -1766,69 +2159,94 @@
                 id: "m1-7-1",
                 name: "태양계의 구성",
                 list: [
-                  "태양 및 행성, 소행성 등 태양계 천체 특징",
-                  "천체 망원경의 기본 광학 메커니즘과 조작법",
+                  "태양과 행성 등 태양계 천체의 특징 이해",
+                  "행성의 크기·거리·표면 환경 비교",
+                  "천체 망원경의 기본 원리와 사용 방법 이해",
                 ],
               },
               {
                 id: "m1-7-2",
                 name: "지구의 운동",
                 list: [
-                  "지구 자전축 기준의 자전과 이로 인한 일주 현상",
-                  "지구 공전 궤도와 별자리의 연주 운동 분포 원리",
+                  "지구의 자전과 공전에 따른 천체의 겉보기 운동 이해",
+                  "낮과 밤, 계절 변화가 나타나는 원리 설명",
+                  "별자리의 연주 운동과 지구 공전의 관계 이해",
                 ],
               },
               {
                 id: "m1-7-3",
                 name: "달의 운동",
                 list: [
-                  "달의 공전 주기율과 위치에 따른 위상 변화",
-                  "일식 현상과 월식 현상의 기하학적 조건 비교",
+                  "달의 공전과 위치 변화에 따른 달의 위상 이해",
+                  "달의 위상 변화 주기와 관측 방법 파악",
+                  "일식과 월식이 일어나는 조건 비교",
                 ],
               },
             ],
           },
         ],
+
         mid2: [
           {
             title: "1. 물질의 특성",
             sub: [
               {
                 id: "m2-1-1",
-                name: "혼합물의 분리(1)",
+                name: "물질의 특성",
                 list: [
-                  "순물질과 혼합물의 기본 정의와 예시 분별",
-                  "밀도 차를 이용한 고체 및 액체 혼합물의 분리 원리",
+                  "물질의 특성을 구별하는 기준 이해",
+                  "밀도·녹는점·끓는점·용해도 등 물질의 특성 비교",
+                  "물질의 특성을 이용해 물질을 구별하는 방법 적용",
                 ],
               },
               {
                 id: "m2-1-2",
+                name: "혼합물의 분리(1)",
+                list: [
+                  "순물질과 혼합물의 차이 이해",
+                  "밀도 차를 이용한 혼합물의 분리 원리 이해",
+                  "거름과 분별 깔때기를 이용한 분리 방법 적용",
+                ],
+              },
+              {
+                id: "m2-1-3",
                 name: "혼합물의 분리(2)",
                 list: [
-                  "용해도 차(재결정)를 이용한 분리 메커니즘",
-                  "끓는점 및 녹는점 차이(증류)를 이용한 분리법 이해",
+                  "용해도 차를 이용한 재결정의 원리 이해",
+                  "끓는점 차를 이용한 증류의 원리 이해",
+                  "혼합물의 성질에 알맞은 분리 방법 선택",
                 ],
               },
             ],
           },
           {
-            title: "2. 지권의 구성",
+            title: "2. 지권의 변화",
             sub: [
               {
                 id: "m2-2-1",
-                name: "지권의 구성과 암석",
+                name: "지권의 구성",
                 list: [
-                  "지구계 구성 요소 및 지권의 층상 구조 특성",
-                  "화성암·퇴적암·변성암 종류와 암석의 순환",
-                  "광물의 특징 및 풍화 작용과 토양 형성",
+                  "지구계의 구성 요소와 지권의 층상 구조 이해",
+                  "광물의 특징과 암석을 이루는 주요 성분 파악",
+                  "풍화 작용과 토양 형성 과정 이해",
                 ],
               },
               {
                 id: "m2-2-2",
-                name: "판의 이동과 경계",
+                name: "암석의 종류와 순환",
                 list: [
-                  "대륙 이동설과 판 구조론의 기본 개념 체계",
-                  "화산대, 지진대 분포와 판의 경계 특징 분석",
+                  "화성암·퇴적암·변성암의 생성 과정과 특징 비교",
+                  "암석이 순환하는 과정 이해",
+                  "암석의 특징을 바탕으로 암석의 종류 구별",
+                ],
+              },
+              {
+                id: "m2-2-3",
+                name: "대륙 이동과 판의 경계",
+                list: [
+                  "대륙 이동설과 판 구조론의 기본 개념 이해",
+                  "판의 경계에서 나타나는 지형과 지각 변동 설명",
+                  "화산대와 지진대의 분포를 판의 운동과 연결해 해석",
                 ],
               },
             ],
@@ -1840,24 +2258,27 @@
                 id: "m2-3-1",
                 name: "빛과 물체의 상",
                 list: [
-                  "빛의 반사 법칙과 거울에 의한 상의 특징",
-                  "빛의 굴절 및 렌즈의 광학적 상 형성 원리",
+                  "빛의 반사 법칙과 거울에 의한 상의 특징 이해",
+                  "빛의 굴절과 렌즈에 의한 상의 형성 원리 이해",
+                  "거울과 렌즈의 종류에 따른 상의 차이 비교",
                 ],
               },
               {
                 id: "m2-3-2",
                 name: "물체의 색과 합성",
                 list: [
-                  "빛의 삼원색 합성 원리 및 실생활 적용",
-                  "물체의 색이 결정되는 반사와 흡수의 매커니즘",
+                  "빛의 삼원색과 색의 합성 원리 이해",
+                  "물체의 색이 빛의 반사와 흡수로 결정되는 원리 설명",
+                  "조명과 색 필터에 따른 물체 색 변화 예측",
                 ],
               },
               {
                 id: "m2-3-3",
                 name: "파동과 소리",
                 list: [
-                  "파동의 발생과 전달 메커니즘(종파/횡파)",
-                  "소리의 3요소(세기·맵시·높낮이) 분석",
+                  "파동의 발생과 전달 과정 이해",
+                  "횡파와 종파의 특징 비교",
+                  "소리의 세기·높낮이·맵시를 파동의 성질과 연결",
                 ],
               },
             ],
@@ -1869,16 +2290,18 @@
                 id: "m2-4-1",
                 name: "원소와 화합물",
                 list: [
-                  "원소와 화합물의 차이 및 원자 구조 이해",
-                  "원소 기호와 화학식을 이용한 물질의 표현법",
+                  "원소와 화합물의 차이 이해",
+                  "원자와 분자의 개념을 바탕으로 물질의 구성 설명",
+                  "원소 기호와 화학식을 이용해 물질 표현",
                 ],
               },
               {
                 id: "m2-4-2",
                 name: "물질의 구성 입자",
                 list: [
-                  "독립된 입자인 분자의 개념 원리 정립",
-                  "전하를 띠는 이온의 형성 과정 및 확인 앙금 반응",
+                  "원자·분자·이온의 차이 이해",
+                  "이온이 형성되는 과정과 전하의 종류 설명",
+                  "앙금 생성 반응을 이용해 이온의 존재 확인",
                 ],
               },
             ],
@@ -1890,16 +2313,18 @@
                 id: "m2-5-1",
                 name: "광합성",
                 list: [
-                  "광합성이 일어나는 장소(엽록체)와 생성 물질",
-                  "광합성에 영향을 미치는 환경 요인 분석 훈련",
+                  "광합성이 일어나는 장소와 필요한 물질 이해",
+                  "광합성으로 생성되는 물질과 에너지 전환 과정 설명",
+                  "빛의 세기·이산화 탄소 농도 등 광합성에 영향을 주는 요인 분석",
                 ],
               },
               {
                 id: "m2-5-2",
                 name: "식물의 호흡",
                 list: [
-                  "식물의 세포 호흡과 낮과 밤의 기체 교환 특징",
-                  "광합성 산물의 이동 및 전환, 저장 형태 분석",
+                  "식물의 세포 호흡과 광합성의 관계 이해",
+                  "낮과 밤에 일어나는 기체 교환의 차이 설명",
+                  "광합성 산물의 이동과 저장 과정 이해",
                 ],
               },
             ],
@@ -1911,33 +2336,36 @@
                 id: "m2-6-1",
                 name: "소화",
                 list: [
-                  "3대 영양소 및 부영양소의 기능과 검출 반응",
-                  "소화 기관별 소화 효소의 영양소 분해 작용 이해",
-                  "소장 융털을 통한 영양소의 최종 흡수 구조",
+                  "영양소의 종류와 기능 이해",
+                  "소화 기관별 소화 과정과 소화 효소의 작용 설명",
+                  "소장 융털을 통한 영양소 흡수 구조 이해",
                 ],
               },
               {
                 id: "m2-6-2",
                 name: "순환",
                 list: [
-                  "심장의 구조 및 동맥·정맥·모세혈관의 혈류 특성",
-                  "혈액의 성분과 기능, 온몸 순환 및 폐순환 경로",
+                  "심장의 구조와 혈액이 이동하는 경로 이해",
+                  "동맥·정맥·모세혈관의 구조와 기능 비교",
+                  "혈액의 성분과 온몸 순환·폐순환 과정 설명",
                 ],
               },
               {
                 id: "m2-6-3",
                 name: "호흡",
                 list: [
-                  "호흡계 구조 및 압력 변화에 따른 호흡 운동 원리",
-                  "폐포와 조직세포 사이의 분압 차에 의한 기체 교환",
+                  "호흡 기관의 구조와 호흡 운동의 원리 이해",
+                  "폐포와 모세혈관 사이의 기체 교환 과정 설명",
+                  "세포 호흡과 에너지 생성의 관계 이해",
                 ],
               },
               {
                 id: "m2-6-4",
                 name: "배설",
                 list: [
-                  "노폐물 생성과 신장(네프론)을 통한 배설 과정",
-                  "소화·순환·호흡·배설 기관계의 통합적 작용",
+                  "노폐물이 생성되는 과정과 배설의 필요성 이해",
+                  "신장의 구조와 오줌이 만들어지는 과정 설명",
+                  "소화·순환·호흡·배설 기관계의 통합적 작용 이해",
                 ],
               },
             ],
@@ -1949,25 +2377,27 @@
                 id: "m2-7-1",
                 name: "전기의 발생",
                 list: [
-                  "마찰 전기의 원인 및 정전기 유도 현상 분석",
-                  "검전기를 이용한 물체의 대전 상태 확인 원리",
+                  "마찰 전기가 발생하는 원리 이해",
+                  "정전기 유도 현상과 대전된 물체의 상호작용 설명",
+                  "검전기를 이용해 물체의 대전 상태 확인",
                 ],
               },
               {
                 id: "m2-7-2",
                 name: "전기 회로와 에너지",
                 list: [
-                  "전류, 전압, 저항의 관계(옴의 법칙 공식 연산)",
-                  "저항의 직렬연결과 병렬연결 시 회로 변화 판별",
-                  "소비 전력 개념과 전기 에너지의 전환 적용",
+                  "전류·전압·저항의 관계와 옴의 법칙 이해",
+                  "저항의 직렬연결과 병렬연결에 따른 회로 변화 비교",
+                  "소비 전력과 전기 에너지의 전환 사례 분석",
                 ],
               },
               {
                 id: "m2-7-3",
                 name: "전류와 자기 작용",
                 list: [
-                  "전류가 흐르는 도선/코일 주변의 자기장 방향",
-                  "자기장 속 도선이 받는 힘(전자기력)과 전동기 원리",
+                  "전류가 흐르는 도선 주위에 생기는 자기장 이해",
+                  "코일 주위 자기장의 방향과 세기에 영향을 주는 요인 파악",
+                  "자기장 속 도선이 받는 힘과 전동기의 원리 설명",
                 ],
               },
             ],
@@ -1979,39 +2409,53 @@
                 id: "m2-8-1",
                 name: "별의 특성",
                 list: [
-                  "연주시차를 이용한 별까지의 거리 측정식 도출",
-                  "별의 밝기와 등급(겉보기/절대 등급), 표면 온도",
+                  "연주시차를 이용해 별까지의 거리 구하기",
+                  "별의 겉보기 등급과 절대 등급의 차이 이해",
+                  "별의 색과 표면 온도의 관계 설명",
                 ],
               },
               {
                 id: "m2-8-2",
                 name: "은하와 우주",
                 list: [
-                  "우리 은하의 구성 천체(성단, 성운) 분포",
-                  "우주 팽창설의 증거 및 외부 은하 관측 역사",
+                  "우리은하의 구조와 구성 천체 이해",
+                  "성단·성운·외부 은하의 특징 비교",
+                  "우주 팽창의 증거와 외부 은하 관측의 의미 파악",
                 ],
               },
             ],
           },
         ],
+
         mid3: [
           {
             title: "1. 화학 반응의 규칙과 에너지 변화",
             sub: [
               {
                 id: "m3-1-1",
-                name: "물질 변화와 반응식",
+                name: "물리 변화와 화학 반응식",
                 list: [
-                  "물리 변화와 화학 변화의 분자 배열적 차이점",
-                  "화학 반응을 계수로 나타내는 화학 반응식 완성법",
+                  "물리 변화와 화학 변화의 차이 이해",
+                  "화학 반응을 원자 배열 변화로 설명",
+                  "화학 반응식을 계수로 맞추는 방법 익히기",
                 ],
               },
               {
                 id: "m3-1-2",
-                name: "화학 반응의 규칙",
+                name: "질량 보존 법칙, 일정 성분비 법칙",
                 list: [
-                  "질량 보존 법칙과 일정 성분비 법칙의 수식 증명",
-                  "기체 반응 법칙 법칙 및 반응 시 에너지 출입(발열/흡열)",
+                  "질량 보존 법칙을 입자 모형과 실험 결과로 설명",
+                  "일정 성분비 법칙을 통해 화합물의 성분 질량비 이해",
+                  "화학 반응에서 반응물과 생성물의 질량 관계 해석",
+                ],
+              },
+              {
+                id: "m3-1-3",
+                name: "기체 반응 법칙, 화학 반응에서의 에너지 출입",
+                list: [
+                  "기체 반응 법칙을 이용해 기체의 부피 관계 해석",
+                  "화학 반응에서 에너지 출입이 일어나는 이유 이해",
+                  "발열 반응과 흡열 반응의 차이와 사례 비교",
                 ],
               },
             ],
@@ -2023,29 +2467,36 @@
                 id: "m3-2-1",
                 name: "기권과 지구 기온",
                 list: [
-                  "기권의 4개 층상 구조와 지구 복사 평형 매커니즘",
-                  "온실 효과의 원인과 지구 온난화 환경 문제 연계",
+                  "기권의 층상 구조와 각 층의 특징 이해",
+                  "복사 평형을 통해 지구의 평균 기온이 유지되는 원리 설명",
+                  "온실 효과와 지구 온난화의 관계 이해",
                 ],
               },
               {
                 id: "m3-2-2",
                 name: "구름과 강수",
                 list: [
-                  "포화 수증기량 곡선 해석 및 상대 습도 도출 연산",
-                  "단열 팽창에 의한 구름 생성 및 강수 이론(빙정설)",
+                  "포화 수증기량과 상대 습도의 관계 이해",
+                  "공기의 단열 팽창과 구름 생성 과정 설명",
+                  "강수가 만들어지는 과정과 강수 이론 이해",
                 ],
               },
               {
                 id: "m3-2-3",
                 name: "기압과 바람",
-                list: ["기압의 측정과 고기압/저기압 분포에 따른 바람 발생"],
+                list: [
+                  "기압의 의미와 기압을 측정하는 방법 이해",
+                  "고기압과 저기압 주변의 공기 이동 설명",
+                  "기압 차에 의해 바람이 발생하는 원리 이해",
+                ],
               },
               {
                 id: "m3-2-4",
                 name: "날씨의 변화",
                 list: [
-                  "우리나라 주변 기단 분포와 온난/한랭 전선 특징",
-                  "일기도 기상 기호 해석 및 계절별 날씨 분석",
+                  "우리나라 주변 기단의 특징과 계절별 날씨 이해",
+                  "온난 전선과 한랭 전선의 구조와 날씨 변화 비교",
+                  "일기도의 기상 기호를 해석해 날씨를 예측",
                 ],
               },
             ],
@@ -2055,18 +2506,20 @@
             sub: [
               {
                 id: "m3-3-1",
-                name: "운동의 기록",
+                name: "운동",
                 list: [
-                  "시간-거리, 시간-속력 그래프 해석과 등속 운동",
-                  "중력만 받아 떨어지는 자유 낙하 운동의 등가속도 특징",
+                  "시간-거리 그래프와 시간-속력 그래프 해석",
+                  "등속 운동의 특징과 속력 계산 방법 이해",
+                  "자유 낙하 운동의 특징과 중력의 영향 설명",
                 ],
               },
               {
                 id: "m3-3-2",
                 name: "일과 에너지",
                 list: [
-                  "과학에서의 일의 계산식 및 일-에너지 전환 원리",
-                  "중력 위치에너지와 운동에너지 공식 매칭 연산",
+                  "과학에서의 일의 의미와 계산 방법 이해",
+                  "일과 에너지 전환의 관계 설명",
+                  "운동에너지와 위치에너지의 의미와 변화 분석",
                 ],
               },
             ],
@@ -2078,16 +2531,18 @@
                 id: "m3-4-1",
                 name: "감각 기관",
                 list: [
-                  "눈, 귀, 코, 혀, 피부의 구조적 명칭과 자극 수용",
-                  "각 감각 기관에서 대뇌로 이어지는 자극 전달 경로",
+                  "눈·귀·코·혀·피부의 구조와 기능 이해",
+                  "감각 기관이 자극을 받아들이는 과정 설명",
+                  "감각 신경을 통해 자극이 대뇌로 전달되는 경로 이해",
                 ],
               },
               {
                 id: "m3-4-2",
-                name: "신경계와 항상성",
+                name: "신경계와 호르몬",
                 list: [
-                  "중추 신경계와 말초 신경계 기능 및 반사 경로",
-                  "호르몬의 특성 및 체온, 혈당량 항상성 조절 매커니즘",
+                  "중추 신경계와 말초 신경계의 구조와 기능 이해",
+                  "자극에 대한 반응 경로와 반사 작용 설명",
+                  "호르몬의 특성과 항상성 조절 과정 이해",
                 ],
               },
             ],
@@ -2097,46 +2552,113 @@
             sub: [
               {
                 id: "m3-5-1",
-                name: "생식과 유전",
+                name: "세포분열",
                 list: [
-                  "눈, 귀, 코, 혀, 피부의 구조적 명칭과 자극 수용",
-                  "각 감각 기관에서 대뇌로 이어지는 자극 전달 경로",
+                  "체세포 분열의 과정과 생장과의 관계 이해",
+                  "감수분열의 과정과 생식세포 형성 원리 이해",
+                  "체세포 분열과 감수분열의 차이점 비교",
                 ],
               },
               {
-                id: "m3-4-2",
-                name: "신경계와 항상성",
+                id: "m3-5-2",
+                name: "사람의 발생",
                 list: [
-                  "중추 신경계와 말초 신경계 기능 및 반사 경로",
-                  "호르몬의 특성 및 체온, 혈당량 항상성 조절 매커니즘",
+                  "생식세포의 형성과 수정 과정 이해",
+                  "수정란에서 태아로 발달하는 과정 설명",
+                  "사람의 발생 과정에서 세포분열과 분화의 역할 이해",
+                ],
+              },
+              {
+                id: "m3-5-3",
+                name: "멘델의 유전 원리",
+                list: [
+                  "우열의 원리와 분리의 법칙 이해",
+                  "멘델의 유전 법칙을 이용한 유전 형질 예측",
+                  "유전자형과 표현형의 관계 해석",
+                ],
+              },
+              {
+                id: "m3-5-4",
+                name: "사람의 유전",
+                list: [
+                  "사람의 다양한 유전 형질과 유전 방식 이해",
+                  "가계도를 이용해 유전 형질의 전달 과정 해석",
+                  "염색체 이상과 유전 질환의 기본 개념 이해",
                 ],
               },
             ],
           },
           {
-            title: "4. 자극과 반응",
+            title: "6. 에너지 전환과 보존",
             sub: [
               {
-                id: "m3-4-1",
-                name: "감각 기관",
+                id: "m3-6-1",
+                name: "역학적 에너지 전환과 보존",
                 list: [
-                  "눈, 귀, 코, 혀, 피부의 구조적 명칭과 자극 수용",
-                  "각 감각 기관에서 대뇌로 이어지는 자극 전달 경로",
+                  "운동에너지와 위치에너지의 의미와 계산 방법 이해",
+                  "물체의 운동 과정에서 역학적 에너지 전환 설명",
+                  "마찰이 없을 때 역학적 에너지가 보존됨을 이해",
                 ],
               },
               {
-                id: "m3-4-2",
-                name: "신경계와 항상성",
+                id: "m3-6-2",
+                name: "전기 에너지의 발생과 전환",
                 list: [
-                  "중추 신경계와 말초 신경계 기능 및 반사 경로",
-                  "호르몬의 특성 및 체온, 혈당량 항상성 조절 매커니즘",
+                  "전자기 유도에 의한 전기 에너지 발생 원리 이해",
+                  "발전기에서 운동 에너지가 전기 에너지로 전환되는 과정 설명",
+                  "전기 에너지가 빛·열·운동 에너지로 전환되는 사례 분석",
+                ],
+              },
+            ],
+          },
+          {
+            title: "7. 별과 우주",
+            sub: [
+              {
+                id: "m3-7-1",
+                name: "별까지의 거리",
+                list: [
+                  "연주시차를 이용해 가까운 별까지의 거리 구하기",
+                  "광년과 파섹 등 천문학적 거리 단위 이해",
+                  "별까지의 거리를 측정하는 방법의 한계와 의미 파악",
+                ],
+              },
+              {
+                id: "m3-7-2",
+                name: "별의 성질",
+                list: [
+                  "별의 밝기와 등급의 관계 이해",
+                  "별의 색과 표면 온도의 관계 설명",
+                  "별의 질량·밝기·온도를 바탕으로 별의 특징 비교",
+                ],
+              },
+              {
+                id: "m3-7-3",
+                name: "은하와 우주",
+                list: [
+                  "우리은하의 구조와 태양계의 위치 이해",
+                  "외부 은하의 종류와 특징 비교",
+                  "우주 팽창의 증거와 빅뱅 우주론의 기본 개념 이해",
+                ],
+              },
+            ],
+          },
+          {
+            title: "8. 과학기술과 인류 문명",
+            sub: [
+              {
+                id: "m3-8-1",
+                name: "과학기술과 인류 문명",
+                list: [
+                  "과학기술의 발달이 인류 생활에 미친 영향 이해",
+                  "과학기술이 가져온 사회적·환경적 문제 분석",
+                  "미래 사회에서 과학기술을 책임 있게 활용하는 태도 탐색",
                 ],
               },
             ],
           },
         ],
       };
-
       let currentGrade = "mid1";
       let targetSolutionCell = null;
       // 단원별 구분 색상 (흰색 글씨가 잘 보이는 진한 톤, 최대 8단원)
@@ -2151,10 +2673,8 @@
         "#6a4f86", // plum
       ];
       const unitColor = (idx) => UNIT_COLORS[idx % UNIT_COLORS.length];
-
-      const OPENAI_API_KEY = ""; // 여기에 OpenAI API Key를 넣어 사용하세요.
-      const OPENAI_MODEL = "gpt-5.4-mini";
-
+      // OpenAI 키/모델은 서버(Vercel 서버리스 함수 /api/ai)에서 환경변수로 관리합니다.
+      // 브라우저에는 키를 두지 않습니다. (Vercel Settings → Environment Variables)
       const GRADE_META = {
         A: {
           className: "active-a",
@@ -2187,6 +2707,8 @@
         renderScopeWidget();
         renderReportTables();
         await loadCurrentGradeFromDB(); // 같은 학생의 해당 학년 저장본이 있으면 불러오기
+        // 저장본이 없고 프리셋 학교라면, 해당 학년 시험 범위를 자동 적용
+        if (!lastSavedId) applySchoolPreset();
         updateTitle();
         hideMacroPopover();
         updateStatus();
@@ -2230,31 +2752,31 @@
             listHtml += `</ul>`;
 
             rowsHtml += `
-                              <tr class="check-row" id="${subUnit.id}-row">
-                                  <td class="text-center" data-label="중단원" style="font-weight:700; width:22%;">${subUnit.name}</td>
-                                  <td class="content-td" data-label="주요 내용" contenteditable="true" id="${subUnit.id}-content" oninput="saveCurrentState()">${listHtml}</td>
-                                  <td class="grade-td" data-label="진단평가">
-                                      <div class="btn-group">
-                                          <button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">A</button>
-                                          <button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${subUnit.id}')">B</button>
-                                          <button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>
-                                      </div>
-                                      <span class="print-only-badge" id="${subUnit.id}-badge">-</span>
-                                  </td>
-                                  <td class="solution-td" data-label="SOLUTION" contenteditable="true" id="${subUnit.id}-solution" onfocus="showMacroPopover(this, event)" oninput="saveCurrentState()"></td>
-                              </tr>
-                          `;
+                        <tr class="check-row" id="${subUnit.id}-row">
+                            <td class="text-center" data-label="중단원" style="font-weight:700; width:22%;">${subUnit.name}</td>
+                            <td class="content-td" data-label="주요 내용" contenteditable="true" id="${subUnit.id}-content" oninput="saveCurrentState()">${listHtml}</td>
+                            <td class="grade-td" data-label="진단평가">
+                                <div class="btn-group">
+                                    <button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">A</button>
+                                    <button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${subUnit.id}')">B</button>
+                                    <button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>
+                                </div>
+                                <span class="print-only-badge" id="${subUnit.id}-badge">-</span>
+                            </td>
+                            <td class="solution-td" data-label="SOLUTION" contenteditable="true" id="${subUnit.id}-solution" onfocus="showMacroPopover(this, event)" oninput="saveCurrentState()"></td>
+                        </tr>
+                    `;
           });
 
           blockDiv.innerHTML = `
-                          <div class="table-title">${unit.title}</div>
-                          <table class="checklist-table">
-                              <thead>
-                                  <tr><th>중단원</th><th>주요 내용 <span class="editable-tag">수정 가능</span></th><th>진단평가</th><th>SOLUTION <span class="editable-tag">수정 가능</span></th></tr>
-                              </thead>
-                              <tbody>${rowsHtml}</tbody>
-                          </table>
-                      `;
+                    <div class="table-title">${unit.title}</div>
+                    <table class="checklist-table">
+                        <thead>
+                            <tr><th>중단원</th><th>주요 내용 <span class="editable-tag">수정 가능</span></th><th>진단평가</th><th>SOLUTION <span class="editable-tag">수정 가능</span></th></tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                `;
           root.appendChild(blockDiv);
         });
       }
@@ -2310,8 +2832,76 @@
         return false;
       }
 
+      // SOLUTION이 비어 있는(또는 "-"만 있는) 표시 중인 행
+      function getEmptySolutionRows() {
+        return getVisibleRows().filter((row) => {
+          const sol = getTextFromElement(row.querySelector(".solution-td"));
+          return sol === "" || sol === "-";
+        });
+      }
+
+      function rowLabel(row) {
+        return getTextFromElement(row.querySelector("td"));
+      }
+
+      // 인쇄/이미지 저장 전 필수 입력 검증.
+      // 진단평가·SOLUTION·이름·학교명 중 하나라도 비어 있으면 차단(false 반환).
+      function ensureReadyForOutput(actionLabel) {
+        // 1) 진단평가(A/B/C) 미선택 항목
+        const ungraded = getUngradedRows();
+        if (ungraded.length) {
+          const preview = ungraded.slice(0, 5).map(rowLabel).join(", ");
+          const suffix =
+            ungraded.length > 5 ? ` 외 ${ungraded.length - 5}개` : "";
+          alert(
+            `진단평가(A/B/C)를 선택하지 않은 항목이 ${ungraded.length}개 있습니다.\n${preview}${suffix}\n\n모든 항목을 평가해야 ${actionLabel}할 수 있습니다.`,
+          );
+          ungraded[0].scrollIntoView({ behavior: "smooth", block: "center" });
+          return false;
+        }
+        // 2) SOLUTION 미입력 항목
+        const noSol = getEmptySolutionRows();
+        if (noSol.length) {
+          const preview = noSol.slice(0, 5).map(rowLabel).join(", ");
+          const suffix = noSol.length > 5 ? ` 외 ${noSol.length - 5}개` : "";
+          alert(
+            `SOLUTION이 비어 있는 항목이 ${noSol.length}개 있습니다.\n${preview}${suffix}\n\n모든 항목의 SOLUTION을 입력해야 ${actionLabel}할 수 있습니다.`,
+          );
+          noSol[0].scrollIntoView({ behavior: "smooth", block: "center" });
+          return false;
+        }
+        // 3) 학생 이름·학교명
+        const nameEl = document.getElementById("student-name");
+        const schoolEl = document.getElementById("school-name");
+        const name = nameEl.value.trim();
+        const school = schoolEl.value.trim();
+        const missing = [];
+        if (!name) missing.push("학생 이름");
+        if (!school) missing.push("학교명");
+        if (missing.length) {
+          alert(
+            `${missing.join(", ")}을(를) 입력해야 ${actionLabel}할 수 있습니다.`,
+          );
+          (name ? schoolEl : nameEl).focus();
+          return false;
+        }
+        return true;
+      }
+
       function printReport() {
-        if (!ensureAllRowsGraded("인쇄/PDF 저장")) return;
+        if (!ensureReadyForOutput("인쇄/PDF 저장")) return;
+
+        // 모든 필수 항목이 채워진 상태 — 이름·학교명이 맞는지 한 번 더 확인
+        const name = document.getElementById("student-name").value.trim();
+        const school = document.getElementById("school-name").value.trim();
+        if (
+          !confirm(
+            `아래 정보가 맞는지 확인해 주세요.\n\n· 학생 이름 : ${name}\n· 학교명 : ${school}\n\n이대로 인쇄/PDF 저장을 진행할까요?`,
+          )
+        ) {
+          return;
+        }
+
         window.print();
       }
 
@@ -2331,11 +2921,12 @@
 
           saveCurrentState();
           updateStatus();
+          hideMacroPopover(); // 항목 하나 선택하면 팝오버 자동 닫기
         }
       }
 
       function saveAsImageFile() {
-        if (!ensureAllRowsGraded("이미지 저장")) return;
+        if (!ensureReadyForOutput("이미지 저장")) return;
         hideMacroPopover();
 
         const btnGroups = document.querySelectorAll(".btn-group");
@@ -2463,6 +3054,58 @@
         });
         saveCurrentState();
         updateStatus();
+      }
+
+      /* ───────── 학교 프리셋: 입력한 학교명이 프리셋과 일치하면 단원 자동 적용 ───────── */
+
+      // 대단원 번호 배열(또는 "all")로 단원 설정 체크 상태를 일괄 지정
+      function applyScopeUnits(spec) {
+        const all = spec === "all";
+        const set = new Set((Array.isArray(spec) ? spec : []).map(Number));
+        document.querySelectorAll(".scope-group").forEach((group) => {
+          const groupCb = group.querySelector(".group-header-checkbox");
+          const idx = Number(groupCb.getAttribute("data-idx"));
+          const on = all || set.has(idx + 1); // 대단원 번호 = idx+1
+          groupCb.checked = on;
+          const block = document.getElementById(
+            `${currentGrade}-unit-idx-${idx}`,
+          );
+          if (block) block.style.display = on ? "block" : "none";
+          group.querySelectorAll(".sub-scope-checkbox").forEach((cb) => {
+            cb.checked = on;
+            const r = document.getElementById(
+              `${cb.getAttribute("data-target")}-row`,
+            );
+            if (r) r.style.display = on ? "" : "none";
+          });
+        });
+        saveCurrentState();
+        updateStatus();
+      }
+
+      // 현재 학교+학년+시험에 해당하는 프리셋이 있으면 단원 설정에 적용
+      function applySchoolPreset() {
+        const school = document.getElementById("school-name").value.trim();
+        const exam = document.getElementById("exam-type").value;
+        const preset =
+          SCHOOL_PRESETS[school] &&
+          SCHOOL_PRESETS[school][currentGrade] &&
+          SCHOOL_PRESETS[school][currentGrade][exam];
+        if (preset === undefined) return false; // 프리셋 없음 → 현재 설정 유지
+        applyScopeUnits(preset);
+        return true;
+      }
+
+      // 학교명을 입력할 때: 저장 + 입력한 학교명이 프리셋과 정확히 일치하면
+      // 해당 학년·시험 단원 범위를 자동 적용
+      function onSchoolNameInput() {
+        syncFilenameAndSave();
+        applySchoolPreset();
+      }
+
+      function onExamChange() {
+        syncFilenameAndSave();
+        applySchoolPreset(); // 프리셋 학교면 시험 변경 시 범위 자동 갱신
       }
 
       function applyGradeState(row, grade, options = {}) {
@@ -2618,23 +3261,25 @@
         ];
       }
 
-      function renderFeedbackCandidates(candidates, sourceLabel) {
+      function renderFeedbackCandidates(candidates) {
         feedbackCandidates = candidates.slice(0, 3);
-        const root = document.getElementById("feedback-candidates");
-        const status = document.getElementById("feedback-status");
-        root.innerHTML = feedbackCandidates
-          .map(
-            (candidate, idx) => `
-                      <div class="candidate-card">
-                          <div class="candidate-title">${candidate.title || `후보 ${idx + 1}`}</div>
-                          <div class="candidate-text">${escapeHtml(candidate.text || "")}</div>
-                          <button type="button" class="candidate-apply" onclick="applyFeedbackCandidate(${idx})">적용</button>
-                      </div>
-                  `,
-          )
-          .join("");
-        if (status)
-          status.textContent = `${sourceLabel} 후보 ${feedbackCandidates.length}개 생성 완료`;
+        const body = document.getElementById("feedback-modal-body");
+        const title = document.getElementById("feedback-modal-title");
+        if (title) title.textContent = "✨ 이런 표현은 어떨까요?";
+        body.innerHTML =
+          '<p class="fb-help">선생님이 작성하신 내용을 바탕으로 AI가 학부모님께 보낼 정중한 문장으로 다듬어 보았습니다. 마음에 드는 표현을 적용해 보세요.</p>' +
+          '<div class="candidate-grid">' +
+          feedbackCandidates
+            .map(
+              (candidate, idx) => `
+                <div class="candidate-card">
+                    <div class="candidate-title">${escapeHtml(candidate.title || `제안 ${idx + 1}`)}</div>
+                    <div class="candidate-text">${escapeHtml(candidate.text || "")}</div>
+                    <button type="button" class="candidate-apply" onclick="applyFeedbackCandidate(${idx})">이 표현 적용</button>
+                </div>`,
+            )
+            .join("") +
+          "</div>";
         openFeedbackModal();
       }
 
@@ -2680,83 +3325,6 @@
               content.type === "output_text" || content.type === "text",
           );
         return firstText?.text || "";
-      }
-
-      async function generateOpenAIFeedbackCandidates(context, apiKey, model) {
-        const prompt = [
-          "중등 과학 학원 리포트의 지도교사 종합 피드백 후보 3개를 작성하세요.",
-          "입력 데이터의 학생 정보, 시험명, 표시된 모든 단원, 주요 내용, 평가(A/B/C/-), SOLUTION을 종합하세요.",
-          "각 후보는 참고용으로 짧은 한국어 1문단이어야 합니다. 2문장 이내로 쓰고, 강점과 보완 포인트를 자연스럽게 포함하세요.",
-          '반드시 JSON만 반환하세요. 형식: {"candidates":[{"title":"...","text":"..."},{"title":"...","text":"..."},{"title":"...","text":"..."}]}',
-          "",
-          JSON.stringify(context),
-        ].join("\n");
-
-        const response = await fetch("https://api.openai.com/v1/responses", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            input: prompt,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || `OpenAI 요청 실패: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const text = extractOpenAIText(data).trim();
-        const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, ""));
-        if (!Array.isArray(parsed.candidates) || parsed.candidates.length < 3) {
-          throw new Error("OpenAI 응답에 후보 3개가 없습니다.");
-        }
-        return parsed.candidates.slice(0, 3);
-      }
-
-      async function generateFeedbackCandidates() {
-        const context = collectFeedbackContext();
-        const status = document.getElementById("feedback-status");
-        const button = document.getElementById("feedback-generate-btn");
-        const apiKey = OPENAI_API_KEY.trim();
-
-        if (!context.items.length) {
-          if (status)
-            status.textContent = "표시된 단원이 없어 후보를 만들 수 없습니다.";
-          return;
-        }
-
-        if (button) button.disabled = true;
-        if (status)
-          status.textContent = apiKey
-            ? "OpenAI 분석 중..."
-            : "체크리스트 분석 중...";
-
-        try {
-          if (apiKey) {
-            const candidates = await generateOpenAIFeedbackCandidates(
-              context,
-              apiKey,
-              OPENAI_MODEL,
-            );
-            renderFeedbackCandidates(candidates, "OpenAI 분석");
-          } else {
-            const candidates = buildLocalFeedbackCandidates(context);
-            renderFeedbackCandidates(candidates, "기본 분석");
-          }
-        } catch (error) {
-          console.warn(error);
-          renderFeedbackCandidates(
-            buildLocalFeedbackCandidates(context),
-            "OpenAI 실패 후 기본 분석",
-          );
-        } finally {
-          if (button) button.disabled = false;
-        }
       }
 
       /* ───────── AI 종합의견 도우미 (OpenAI, 서버리스 프록시 경유) ───────── */
@@ -3010,10 +3578,10 @@
       }
 
       /* ============================================================
-               IndexedDB 기반 다중 리포트 자동 저장/불러오기
-               - 리포트는 (학년 + 이름 + 학교 + 시험)으로 구분된다.
-               - 편집 시 자동 저장되고, 초기화해도 저장본은 남는다.
-               ============================================================ */
+         IndexedDB 기반 다중 리포트 자동 저장/불러오기
+         - 리포트는 (학년 + 이름 + 학교 + 시험)으로 구분된다.
+         - 편집 시 자동 저장되고, 초기화해도 저장본은 남는다.
+         ============================================================ */
       const DB_NAME = "nature_checklist_db";
       const DB_STORE = "reports";
       let _dbPromise = null;
@@ -3224,6 +3792,12 @@
       function gradeLabelOf(grade) {
         return grade === "mid2" ? "중2" : grade === "mid3" ? "중3" : "중1";
       }
+      // 해당 학년 전체 평가 항목 수 (완료율 계산용)
+      function gradeTotalOf(grade) {
+        const units = CURRICULUM_DATA[grade];
+        if (!units) return 0;
+        return units.reduce((sum, unit) => sum + unit.sub.length, 0);
+      }
       function formatTimestamp(ts) {
         const d = new Date(ts);
         const p = (n) => String(n).padStart(2, "0");
@@ -3239,76 +3813,177 @@
         document.getElementById("reports-modal")?.classList.remove("open");
       }
 
+      // 모달이 들고 있는 전체 리포트 목록과 현재 필터 상태
+      let allReports = [];
+      let reportFilter = "all";
+
       async function renderReportsList() {
-        const root = document.getElementById("reports-list");
-        if (!root) return;
-        root.innerHTML = "";
-        let reports = [];
+        // 검색/필터 초기화
+        reportFilter = "all";
+        const searchEl = document.getElementById("reports-search");
+        if (searchEl) searchEl.value = "";
+        document.querySelectorAll("#reports-filter .rf-chip").forEach((c) => {
+          c.classList.toggle("active", c.dataset.grade === "all");
+        });
+
         try {
-          reports = await idbGetAll();
+          allReports = await idbGetAll();
         } catch (e) {
           console.warn(e);
+          allReports = [];
         }
-        reports.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        allReports.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        paintReports();
+      }
 
-        if (!reports.length) {
+      function setReportFilter(btn, grade) {
+        reportFilter = grade;
+        document.querySelectorAll("#reports-filter .rf-chip").forEach((c) => {
+          c.classList.toggle("active", c === btn);
+        });
+        paintReports();
+      }
+
+      function filterReportsList() {
+        paintReports();
+      }
+
+      function reportCounts(rep) {
+        const counts = rep.activeGrades ? Object.values(rep.activeGrades) : [];
+        return {
+          a: counts.filter((g) => g === "A").length,
+          b: counts.filter((g) => g === "B").length,
+          c: counts.filter((g) => g === "C").length,
+          total: counts.length,
+        };
+      }
+
+      function paintReports() {
+        const root = document.getElementById("reports-list");
+        const toolbar = document.getElementById("reports-toolbar");
+        const sub = document.getElementById("reports-modal-sub");
+        if (!root) return;
+        root.innerHTML = "";
+
+        // 저장본이 하나도 없을 때: 툴바 숨기고 안내 + 새 리포트 카드
+        if (!allReports.length) {
+          if (toolbar) toolbar.style.display = "none";
+          if (sub) sub.textContent = "첫 리포트를 만들어 보세요";
+          root.appendChild(buildNewReportCard());
           const empty = document.createElement("div");
           empty.className = "reports-empty";
-          empty.textContent =
-            "아직 저장된 리포트가 없습니다. 이름을 입력하고 평가를 시작하면 자동으로 저장됩니다.";
+          empty.innerHTML =
+            '<span class="re-emoji">🗂️</span>아직 저장된 리포트가 없습니다.<br />학생 이름을 입력하고 평가를 시작하면 자동으로 저장됩니다.';
           root.appendChild(empty);
           return;
         }
 
-        reports.forEach((rep) => {
-          const item = document.createElement("div");
-          item.className = "report-item";
-          if (rep.id === lastSavedId) item.classList.add("current");
+        if (toolbar) toolbar.style.display = "flex";
+        if (sub)
+          sub.textContent = `저장된 리포트 ${allReports.length}개 · 카드를 누르면 불러옵니다`;
 
-          const info = document.createElement("div");
-          info.className = "report-item-info";
-          const name = document.createElement("div");
-          name.className = "report-item-name";
-          name.textContent = (rep.studentName || "").trim() || "(이름 미입력)";
-          const metaLine = document.createElement("div");
-          metaLine.className = "report-item-meta";
-          const counts = rep.activeGrades
-            ? Object.values(rep.activeGrades)
-            : [];
-          const cA = counts.filter((g) => g === "A").length;
-          const cB = counts.filter((g) => g === "B").length;
-          const cC = counts.filter((g) => g === "C").length;
-          metaLine.textContent =
-            `${gradeLabelOf(rep.grade)} · ${(rep.schoolName || "").trim() || "학교 미입력"} · ${rep.examType || ""}` +
-            `  |  A ${cA} / B ${cB} / C ${cC}`;
-          const timeLine = document.createElement("div");
-          timeLine.className = "report-item-time";
-          timeLine.textContent = rep.updatedAt
-            ? "최근 저장 " + formatTimestamp(rep.updatedAt)
-            : "";
-          info.appendChild(name);
-          info.appendChild(metaLine);
-          info.appendChild(timeLine);
+        // 새 리포트 카드는 항상 최상단
+        root.appendChild(buildNewReportCard());
 
-          const actions = document.createElement("div");
-          actions.className = "report-item-actions";
-          const loadBtn = document.createElement("button");
-          loadBtn.type = "button";
-          loadBtn.className = "report-load-btn";
-          loadBtn.textContent = "불러오기";
-          loadBtn.addEventListener("click", () => loadReport(rep.id));
-          const delBtn = document.createElement("button");
-          delBtn.type = "button";
-          delBtn.className = "report-del-btn";
-          delBtn.textContent = "삭제";
-          delBtn.addEventListener("click", () => deleteReport(rep.id, rep));
-          actions.appendChild(loadBtn);
-          actions.appendChild(delBtn);
-
-          item.appendChild(info);
-          item.appendChild(actions);
-          root.appendChild(item);
+        // 검색어 + 학년 필터 적용
+        const q = (document.getElementById("reports-search")?.value || "")
+          .trim()
+          .toLowerCase();
+        const filtered = allReports.filter((rep) => {
+          if (reportFilter !== "all" && rep.grade !== reportFilter)
+            return false;
+          if (!q) return true;
+          const hay =
+            `${rep.studentName || ""} ${rep.schoolName || ""}`.toLowerCase();
+          return hay.includes(q);
         });
+
+        if (!filtered.length) {
+          const empty = document.createElement("div");
+          empty.className = "reports-empty";
+          empty.innerHTML =
+            '<span class="re-emoji">🔍</span>조건에 맞는 리포트가 없습니다.';
+          root.appendChild(empty);
+          return;
+        }
+
+        filtered.forEach((rep) => root.appendChild(buildReportCard(rep)));
+      }
+
+      function buildNewReportCard() {
+        const card = document.createElement("div");
+        card.className = "report-new-card";
+        card.innerHTML =
+          '<div class="rnc-plus">＋</div>' +
+          '<div><div class="rnc-title">새 리포트 만들기</div>' +
+          '<div class="rnc-desc">빈 체크리스트로 새 학생 평가를 시작합니다</div></div>';
+        card.addEventListener("click", () => startNewReport());
+        return card;
+      }
+
+      function buildReportCard(rep) {
+        const { a, b, c, total } = reportCounts(rep);
+        const all = gradeTotalOf(rep.grade);
+        const isCurrent = rep.id === lastSavedId;
+
+        const card = document.createElement("div");
+        card.className = "report-card" + (isCurrent ? " current" : "");
+        card.addEventListener("click", () => loadReport(rep.id));
+
+        const name = (rep.studentName || "").trim() || "(이름 미입력)";
+        const school = (rep.schoolName || "").trim() || "학교 미입력";
+        const meta = `${school} · ${rep.examType || "시험 미지정"}`;
+        const timeText = rep.updatedAt
+          ? "최근 저장 " + formatTimestamp(rep.updatedAt)
+          : "";
+
+        // 상단: 학년 배지 · 이름/메타 · 삭제
+        const top = document.createElement("div");
+        top.className = "rc-top";
+        top.innerHTML =
+          `<span class="rc-grade rc-grade-${rep.grade}">${gradeLabelOf(rep.grade)}</span>` +
+          `<div class="rc-id"><div class="rc-name">${escapeHtml(name)}` +
+          (isCurrent ? '<span class="rc-current-tag">현재 열림</span>' : "") +
+          `</div><div class="rc-meta">${escapeHtml(meta)}</div></div>`;
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "rc-del";
+        delBtn.title = "삭제";
+        delBtn.textContent = "🗑";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deleteReport(rep.id, rep);
+        });
+        top.appendChild(delBtn);
+        card.appendChild(top);
+
+        // 분포 막대
+        const bar = document.createElement("div");
+        bar.className = "rc-bar";
+        if (total === 0) {
+          bar.innerHTML = '<div class="rc-bar-empty">아직 평가 전</div>';
+        } else {
+          const w = (n) => ((n / total) * 100).toFixed(1) + "%";
+          bar.innerHTML =
+            (a ? `<span class="seg seg-a" style="width:${w(a)}"></span>` : "") +
+            (b ? `<span class="seg seg-b" style="width:${w(b)}"></span>` : "") +
+            (c ? `<span class="seg seg-c" style="width:${w(c)}"></span>` : "");
+        }
+        card.appendChild(bar);
+
+        // 하단: 범례 + 진행도
+        const foot = document.createElement("div");
+        foot.className = "rc-foot";
+        foot.innerHTML =
+          '<div class="rc-legend">' +
+          `<span class="lg lg-a">우수 ${a}</span>` +
+          `<span class="lg lg-b">보통 ${b}</span>` +
+          `<span class="lg lg-c">미흡 ${c}</span>` +
+          "</div>" +
+          `<div class="rc-progress">평가 ${total}${all ? " / " + all : ""}${timeText ? " · " + timeText : ""}</div>`;
+        card.appendChild(foot);
+
+        return card;
       }
 
       async function loadReport(id) {
@@ -3349,7 +4024,9 @@
           console.warn(e);
         }
         if (id === lastSavedId) lastSavedId = null;
-        renderReportsList();
+        // 검색/필터 상태는 유지한 채 목록만 갱신
+        allReports = allReports.filter((r) => r.id !== id);
+        paintReports();
       }
 
       // 새 빈 리포트 시작 (저장본은 그대로 유지)
