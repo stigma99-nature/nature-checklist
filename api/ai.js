@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPENAI_KEY;
   if (!apiKey) {
     res
       .status(500)
