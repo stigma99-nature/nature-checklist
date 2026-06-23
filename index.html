@@ -845,6 +845,74 @@
         text-align: right;
         white-space: nowrap;
       }
+      .action-dock-save {
+        font-size: 11px;
+        font-weight: 800;
+        text-align: right;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        line-height: 1;
+      }
+      .action-dock-save::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        flex-shrink: 0;
+      }
+      .action-dock-save.is-idle {
+        color: #aebbd0;
+      }
+      .action-dock-save.is-saving {
+        color: #f0d7a0;
+      }
+      .action-dock-save.is-saving::before {
+        animation: dock-pulse 0.9s ease-in-out infinite;
+      }
+      .action-dock-save.is-saved {
+        color: #86e0a3;
+      }
+      .action-dock-save.is-error {
+        color: #ff9ba6;
+      }
+      @keyframes dock-pulse {
+        0%,
+        100% {
+          opacity: 0.35;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      /* 액션 토스트 (불러오기/복제/삭제 피드백) */
+      .app-toast {
+        position: fixed;
+        left: 50%;
+        bottom: 26px;
+        transform: translate(-50%, 14px);
+        background: rgba(24, 49, 83, 0.97);
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 800;
+        padding: 11px 18px;
+        border-radius: 999px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(214, 175, 55, 0.5);
+        z-index: 10050;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.2s ease,
+          transform 0.2s ease;
+        max-width: calc(100vw - 32px);
+      }
+      .app-toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
       .btn-action-print,
       .btn-action-image,
       .btn-action-reports {
@@ -954,6 +1022,21 @@
         display: flex;
         gap: 5px;
         flex-shrink: 0;
+      }
+      .reports-sort {
+        flex-shrink: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink-soft);
+        background: #ffffff;
+        cursor: pointer;
+      }
+      .reports-sort:focus {
+        outline: none;
+        border-color: var(--brand-2);
       }
       .rf-chip {
         border: 1px solid var(--line);
@@ -1129,6 +1212,23 @@
         background: #fbeaec;
         color: var(--danger);
         border-color: #e6c2c7;
+      }
+      .rc-dup {
+        flex-shrink: 0;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--ink-soft);
+        font-size: 15px;
+        border-radius: 7px;
+        padding: 5px 8px;
+        cursor: pointer;
+        line-height: 1;
+        transition: all 0.15s ease;
+      }
+      .rc-dup:hover {
+        background: #dcefef;
+        color: var(--brand-2);
+        border-color: #bfe0e0;
       }
       /* 분포 막대 */
       .rc-bar {
@@ -1786,7 +1886,17 @@
         </button>
       </div>
       <div class="action-dock-status" id="report-status">평가 0개 완료</div>
+      <div class="action-dock-save is-idle" id="save-state">
+        입력하면 자동 저장됩니다
+      </div>
     </div>
+
+    <div
+      class="app-toast no-print"
+      id="app-toast"
+      role="status"
+      aria-live="polite"
+    ></div>
 
     <div
       class="reports-modal no-print"
@@ -1858,6 +1968,16 @@
               중3
             </button>
           </div>
+          <select
+            id="reports-sort"
+            class="reports-sort"
+            onchange="setReportSort(this.value)"
+            title="정렬 기준"
+          >
+            <option value="recent">최근 저장순</option>
+            <option value="name">이름순</option>
+            <option value="school">학교순</option>
+          </select>
         </div>
         <div class="reports-list" id="reports-list"></div>
       </div>
@@ -2755,9 +2875,9 @@
           groupDiv.style.setProperty("--unit-color", unitColor(idx));
           let subHtml = "";
           unit.sub.forEach((subUnit) => {
-            subHtml += `<label class="sub-scope-label"><input type="checkbox" checked class="sub-scope-checkbox" data-target="${subUnit.id}" onchange="toggleSubRow(this)"> ${subUnit.name}</label>`;
+            subHtml += `<label class="sub-scope-label"><input type="checkbox"  class="sub-scope-checkbox" data-target="${subUnit.id}" onchange="toggleSubRow(this)"> ${subUnit.name}</label>`;
           });
-          groupDiv.innerHTML = `<label class="group-header-label"><input type="checkbox" checked class="group-header-checkbox" data-idx="${idx}" onchange="toggleBigBlock('${currentGrade}-${idx}', this)">${unit.title}</label><div class="sub-group-grid">${subHtml}</div>`;
+          groupDiv.innerHTML = `<label class="group-header-label"><input type="checkbox"  class="group-header-checkbox" data-idx="${idx}" onchange="toggleBigBlock('${currentGrade}-${idx}', this)">${unit.title}</label><div class="sub-group-grid">${subHtml}</div>`;
           root.appendChild(groupDiv);
         });
       }
@@ -3810,6 +3930,42 @@
       let saveTimer = null;
       let DEFAULT_OPINION = "";
 
+      /* ── 저장 상태 표시 / 토스트 (저장·불러오기 UX 피드백) ── */
+      function clockHM(ts) {
+        const d = new Date(ts || Date.now());
+        const p = (n) => String(n).padStart(2, "0");
+        return `${p(d.getHours())}:${p(d.getMinutes())}`;
+      }
+      // kind: 'idle' | 'saving' | 'saved' | 'error'
+      function setSaveState(kind, ts) {
+        const el = document.getElementById("save-state");
+        if (!el) return;
+        el.classList.remove("is-idle", "is-saving", "is-saved", "is-error");
+        if (kind === "saving") {
+          el.classList.add("is-saving");
+          el.textContent = "저장 중…";
+        } else if (kind === "saved") {
+          el.classList.add("is-saved");
+          el.textContent = `${clockHM(ts)} 저장됨`;
+        } else if (kind === "error") {
+          el.classList.add("is-error");
+          el.textContent = "저장 실패 — 다시 시도해 주세요";
+        } else {
+          el.classList.add("is-idle");
+          el.textContent = "입력하면 자동 저장됩니다";
+        }
+      }
+
+      let toastTimer = null;
+      function showToast(msg) {
+        const el = document.getElementById("app-toast");
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add("show");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+      }
+
       function openDB() {
         if (_dbPromise) return _dbPromise;
         _dbPromise = new Promise((resolve, reject) => {
@@ -3920,7 +4076,10 @@
 
       async function persistCurrentReport() {
         const state = buildStateObj();
-        if (!hasContent(state)) return;
+        if (!hasContent(state)) {
+          setSaveState("idle");
+          return;
+        }
         const id = computeReportId(state);
         const record = Object.assign({}, state, { id, updatedAt: Date.now() });
         try {
@@ -3930,13 +4089,16 @@
           }
           await idbPut(record);
           lastSavedId = id;
+          setSaveState("saved", record.updatedAt);
         } catch (e) {
           console.warn("자동 저장 실패", e);
+          setSaveState("error");
         }
       }
 
       function scheduleSave() {
         if (saveTimer) clearTimeout(saveTimer);
+        setSaveState("saving");
         saveTimer = setTimeout(() => {
           saveTimer = null;
           persistCurrentReport();
@@ -4036,15 +4198,19 @@
         document.getElementById("reports-modal")?.classList.remove("open");
       }
 
-      // 모달이 들고 있는 전체 리포트 목록과 현재 필터 상태
+      // 모달이 들고 있는 전체 리포트 목록과 현재 필터/정렬 상태
       let allReports = [];
       let reportFilter = "all";
+      let reportSort = "recent"; // recent | name | school
 
       async function renderReportsList() {
-        // 검색/필터 초기화
+        // 검색/필터/정렬 초기화
         reportFilter = "all";
+        reportSort = "recent";
         const searchEl = document.getElementById("reports-search");
         if (searchEl) searchEl.value = "";
+        const sortEl = document.getElementById("reports-sort");
+        if (sortEl) sortEl.value = "recent";
         document.querySelectorAll("#reports-filter .rf-chip").forEach((c) => {
           c.classList.toggle("active", c.dataset.grade === "all");
         });
@@ -4065,6 +4231,28 @@
           c.classList.toggle("active", c === btn);
         });
         paintReports();
+      }
+
+      function setReportSort(value) {
+        reportSort = value;
+        paintReports();
+      }
+
+      // 정렬 기준에 따른 비교 함수 (이름/학교는 한글 가나다순)
+      function compareReports(a, b) {
+        if (reportSort === "name") {
+          return (a.studentName || "").localeCompare(b.studentName || "", "ko");
+        }
+        if (reportSort === "school") {
+          const s = (a.schoolName || "").localeCompare(
+            b.schoolName || "",
+            "ko",
+          );
+          return s !== 0
+            ? s
+            : (a.studentName || "").localeCompare(b.studentName || "", "ko");
+        }
+        return (b.updatedAt || 0) - (a.updatedAt || 0); // recent
       }
 
       function filterReportsList() {
@@ -4130,7 +4318,13 @@
           return;
         }
 
-        filtered.forEach((rep) => root.appendChild(buildReportCard(rep)));
+        // 선택한 기준으로 정렬하되, 현재 열려 있는 리포트는 항상 최상단에 고정
+        const sorted = filtered.slice().sort(compareReports);
+        const current = sorted.filter((r) => r.id === lastSavedId);
+        const rest = sorted.filter((r) => r.id !== lastSavedId);
+        current
+          .concat(rest)
+          .forEach((rep) => root.appendChild(buildReportCard(rep)));
       }
 
       function buildNewReportCard() {
@@ -4168,6 +4362,16 @@
           `<div class="rc-id"><div class="rc-name">${escapeHtml(name)}` +
           (isCurrent ? '<span class="rc-current-tag">현재 열림</span>' : "") +
           `</div><div class="rc-meta">${escapeHtml(meta)}</div></div>`;
+        const dupBtn = document.createElement("button");
+        dupBtn.type = "button";
+        dupBtn.className = "rc-dup";
+        dupBtn.title = "복제 (다른 학생으로 저장)";
+        dupBtn.textContent = "⧉";
+        dupBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          duplicateReport(rep.id, rep);
+        });
+        top.appendChild(dupBtn);
         const delBtn = document.createElement("button");
         delBtn.type = "button";
         delBtn.className = "rc-del";
@@ -4231,10 +4435,13 @@
         renderReportTables();
         applyStateObj(record);
         lastSavedId = record.id;
+        setSaveState("saved", record.updatedAt);
         updateTitle();
         hideMacroPopover();
         updateStatus();
         closeReportsModal();
+        const who = (record.studentName || "").trim() || "리포트";
+        showToast(`📂 '${who}' 리포트를 불러왔어요`);
       }
 
       async function deleteReport(id, rep) {
@@ -4246,10 +4453,107 @@
         } catch (e) {
           console.warn(e);
         }
-        if (id === lastSavedId) lastSavedId = null;
+        if (id === lastSavedId) {
+          lastSavedId = null;
+          setSaveState("idle");
+        }
         // 검색/필터 상태는 유지한 채 목록만 갱신
         allReports = allReports.filter((r) => r.id !== id);
         paintReports();
+        showToast(`🗑 '${label}' 리포트를 삭제했어요`);
+      }
+
+      // 복제 시 제안할 이름을 만든다.
+      //   "민준"        → "민준 (사본)"
+      //   "민준 (사본)"  → "민준 (사본2)"
+      //   "민준 (사본2)" → "민준 (사본3)"
+      // 이미 같은 이름의 리포트가 있으면 비어 있는 다음 번호까지 자동으로 올린다.
+      function suggestCopyName(record) {
+        const raw = (record.studentName || "").trim();
+        if (!raw) return "";
+        const m = raw.match(/^(.*?)\s*\(사본(\d*)\)$/);
+        const base = m && m[1].trim() ? m[1].trim() : raw;
+        // 원본이 몇 번째 사본인지: 접미사 없음=0, "(사본)"=1, "(사본N)"=N
+        const sourceIdx = m ? (m[2] ? parseInt(m[2], 10) : 1) : 0;
+        const labelFor = (k) =>
+          k <= 1 ? `${base} (사본)` : `${base} (사본${k})`;
+        const taken = (nm) => {
+          const cid = computeReportId(
+            Object.assign({}, record, { studentName: nm }),
+          );
+          return cid === record.id || allReports.some((r) => r.id === cid);
+        };
+        let k = sourceIdx + 1;
+        while (taken(labelFor(k))) k++;
+        return labelFor(k);
+      }
+
+      // 저장된 리포트를 다른 학생 이름으로 복제한다.
+      // (학교·학년·시험 정보와 모든 평가 내용을 그대로 복사하고 이름만 바꿔 새 리포트로 저장)
+      async function duplicateReport(id, rep) {
+        let record = null;
+        try {
+          record = await idbGet(id);
+        } catch (e) {
+          console.warn(e);
+        }
+        if (!record) {
+          alert("리포트를 찾을 수 없습니다.");
+          return;
+        }
+
+        const suggested = suggestCopyName(record);
+        const input = prompt(
+          "복제할 리포트의 새 학생 이름을 입력하세요.\n학교·학년·시험 정보와 모든 평가 내용이 그대로 복사됩니다.",
+          suggested,
+        );
+        if (input === null) return; // 취소
+        const newName = input.trim();
+        if (!newName) {
+          alert("학생 이름을 입력해야 복제할 수 있습니다.");
+          return;
+        }
+
+        // 이름만 바꾼 새 식별자 계산
+        const newState = Object.assign({}, record, { studentName: newName });
+        const newId = computeReportId(newState);
+        if (newId === record.id) {
+          alert("원본과 같은 이름입니다. 다른 이름으로 복제해 주세요.");
+          return;
+        }
+
+        // 동일 식별자(같은 학교·학년·시험·이름)의 리포트가 이미 있으면 덮어쓰기 확인
+        try {
+          const existing = await idbGet(newId);
+          if (
+            existing &&
+            !confirm(
+              `이미 '${newName}' 리포트가 있습니다. 복제본으로 덮어쓸까요?`,
+            )
+          )
+            return;
+        } catch (e) {
+          console.warn(e);
+        }
+
+        const newRecord = Object.assign({}, newState, {
+          id: newId,
+          updatedAt: Date.now(),
+        });
+        try {
+          await idbPut(newRecord);
+        } catch (e) {
+          console.warn("복제 실패", e);
+          alert("복제에 실패했습니다. 다시 시도해 주세요.");
+          return;
+        }
+
+        // 검색/필터 상태는 유지한 채 새 카드만 목록에 반영
+        allReports = allReports.filter((r) => r.id !== newId);
+        allReports.push(newRecord);
+        allReports.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        paintReports();
+        showToast(`📑 '${newName}' 리포트로 복제했어요`);
       }
 
       // 새 빈 리포트 시작 (저장본은 그대로 유지)
@@ -4269,7 +4573,9 @@
         updateTitle();
         hideMacroPopover();
         updateStatus();
+        setSaveState("idle");
         closeReportsModal();
+        showToast("✨ 새 리포트를 시작했어요");
       }
 
       function setPrintDate() {
@@ -4291,6 +4597,13 @@
         renderReportTables();
         updateTitle();
         updateStatus();
+
+        // ESC 키로 저장된 리포트 모달 닫기
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Escape") return;
+          const modal = document.getElementById("reports-modal");
+          if (modal && modal.classList.contains("open")) closeReportsModal();
+        });
 
         // 페이지를 열면 초기화 대신, 저장된 리포트가 있으면 목록을 먼저 보여준다.
         try {
