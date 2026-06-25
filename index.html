@@ -586,6 +586,17 @@
         color: #ffffff;
         border-color: var(--brand);
       }
+      .macro-btn-blank {
+        background: #f1f5f9;
+        color: #64748b;
+        font-weight: 800;
+        text-align: center;
+      }
+      .macro-btn-blank:hover {
+        background: #64748b;
+        color: #ffffff;
+        border-color: #64748b;
+      }
 
       /* [종합 피드백 블록] */
       .opinion-section {
@@ -836,6 +847,8 @@
       }
       .action-dock-buttons {
         display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
         gap: 8px;
       }
       .action-dock-status {
@@ -915,6 +928,7 @@
       }
       .btn-action-print,
       .btn-action-image,
+      .btn-action-copy,
       .btn-action-reports {
         border: none;
         padding: 10px 16px;
@@ -929,6 +943,7 @@
       }
       .btn-action-print:hover,
       .btn-action-image:hover,
+      .btn-action-copy:hover,
       .btn-action-reports:hover {
         transform: translateY(-1px);
       }
@@ -938,6 +953,10 @@
       }
       .btn-action-image {
         background-color: var(--brand-2);
+        color: #ffffff;
+      }
+      .btn-action-copy {
+        background-color: #3f7d5c;
         color: #ffffff;
       }
       .btn-action-reports {
@@ -1424,7 +1443,8 @@
           text-align: center;
         }
         .btn-action-print,
-        .btn-action-image {
+        .btn-action-image,
+        .btn-action-copy {
           flex: 1 1 150px;
           padding: 12px 10px;
         }
@@ -1884,6 +1904,13 @@
         >
           📸 이미지 저장
         </button>
+        <button
+          type="button"
+          class="btn-action-copy"
+          onclick="copyImageToClipboard()"
+        >
+          📋 이미지 복사
+        </button>
       </div>
       <div class="action-dock-status" id="report-status">평가 0개 완료</div>
       <div class="action-dock-save is-idle" id="save-state">
@@ -2011,6 +2038,21 @@
     </div>
 
     <div id="solution-macro-popover" class="no-print">
+      <button
+        type="button"
+        class="macro-btn macro-btn-blank"
+        onclick="setBlankSolution()"
+      >
+        ➖ 공란 (해당 없음)
+      </button>
+      <hr
+        style="
+          border: 0;
+          border-top: 1px dashed #cbd5e1;
+          width: 100%;
+          margin: 2px 0;
+        "
+      />
       <button
         type="button"
         class="macro-btn"
@@ -2982,11 +3024,12 @@
         return false;
       }
 
-      // SOLUTION이 비어 있는(또는 "-"만 있는) 표시 중인 행
+      // SOLUTION이 비어 있는 표시 중인 행.
+      // "-"는 '해당 없음'을 의도적으로 고른 값이므로 입력된 것으로 본다.
       function getEmptySolutionRows() {
         return getVisibleRows().filter((row) => {
           const sol = getTextFromElement(row.querySelector(".solution-td"));
-          return sol === "" || sol === "-";
+          return sol === "";
         });
       }
 
@@ -3073,6 +3116,17 @@
         window.print();
       }
 
+      // SOLUTION을 "해당 없음" 표시(-)로 비워 두는 선택. 기존 내용/위험색을 지운다.
+      function setBlankSolution() {
+        if (targetSolutionCell) {
+          targetSolutionCell.innerHTML = "-";
+          targetSolutionCell.className = "solution-td";
+          saveCurrentState();
+          updateStatus();
+          hideMacroPopover();
+        }
+      }
+
       function injectMacro(text, isDangerColor) {
         if (targetSolutionCell) {
           let currentText = targetSolutionCell.innerText.trim();
@@ -3137,11 +3191,9 @@
         };
       }
 
-      function saveAsImageFile() {
-        if (!ensureReadyForOutput("이미지 저장")) return;
-        rememberSchoolPreset(); // 이 학교의 단원 선택을 기억(다음에 자동 적용)
-        hideMacroPopover();
-
+      // 리포트 화면에서 버튼·태그 등 보조 UI를 잠시 숨기고 html2canvas로 캡처한 뒤
+      // 원래 상태로 되돌린다. canvas를 반환하는 Promise를 준다(이미지 저장/복사 공용).
+      function captureReportCanvas() {
         const btnGroups = document.querySelectorAll(".btn-group");
         const badges = document.querySelectorAll(".print-only-badge");
         const tags = document.querySelectorAll(".editable-tag");
@@ -3149,7 +3201,6 @@
           "#capture-target-paper .no-print",
         );
 
-        let captureFailed = false;
         const restoreMetaFields = swapMetaFieldsForCapture();
         const restoreCaptureChrome = () => {
           restoreMetaFields();
@@ -3157,11 +3208,7 @@
           tags.forEach((t) => (t.style.display = "inline-block"));
           captureOnlyControls.forEach((el) => (el.style.display = ""));
           badges.forEach((b) => (b.style.display = "none"));
-          if (!captureFailed) updateStatus();
         };
-        const statusText = document.getElementById("report-status");
-        const previousStatus = statusText ? statusText.textContent : "";
-        if (statusText) statusText.textContent = "이미지 저장 준비 중...";
         btnGroups.forEach((g) => (g.style.display = "none"));
         tags.forEach((t) => (t.style.display = "none"));
         captureOnlyControls.forEach((el) => (el.style.display = "none"));
@@ -3174,21 +3221,34 @@
           document.getElementById("capture-target-paper") ||
           document.querySelector(".report-paper");
 
-        html2canvas(target, {
+        return html2canvas(target, {
           scale: 2,
           useCORS: true,
           backgroundColor: "#ffffff",
           logging: false,
-        })
+        }).finally(restoreCaptureChrome);
+      }
+
+      function saveAsImageFile() {
+        if (!ensureReadyForOutput("이미지 저장")) return;
+        rememberSchoolPreset(); // 이 학교의 단원 선택을 기억(다음에 자동 적용)
+        hideMacroPopover();
+
+        const statusText = document.getElementById("report-status");
+        const previousStatus = statusText ? statusText.textContent : "";
+        if (statusText) statusText.textContent = "이미지 저장 준비 중...";
+
+        captureReportCanvas()
           .then((canvas) => {
             const link = document.createElement("a");
             link.download = document.title + ".png";
             link.href = canvas.toDataURL("image/png");
             link.click();
+            if (statusText) statusText.textContent = previousStatus;
+            updateStatus();
           })
           .catch((err) => {
             console.warn("이미지 저장 실패", err);
-            captureFailed = true;
             if (statusText)
               statusText.textContent =
                 "이미지 저장에 실패했습니다. 다시 시도해 주세요.";
@@ -3196,8 +3256,61 @@
               if (statusText) statusText.textContent = previousStatus;
               updateStatus();
             }, 2200);
+          });
+      }
+
+      // 리포트를 PNG로 캡처해 파일이 아닌 클립보드에 바로 복사한다.
+      // (시트·메신저 등에 Ctrl+V 로 붙여넣기용)
+      function copyImageToClipboard() {
+        if (!ensureReadyForOutput("이미지 복사")) return;
+
+        if (
+          typeof ClipboardItem === "undefined" ||
+          !navigator.clipboard ||
+          !navigator.clipboard.write
+        ) {
+          showToast(
+            "이 브라우저는 이미지 클립보드 복사를 지원하지 않아요. '이미지 저장'을 이용해 주세요.",
+          );
+          return;
+        }
+
+        rememberSchoolPreset(); // 이 학교의 단원 선택을 기억(다음에 자동 적용)
+        hideMacroPopover();
+
+        const statusText = document.getElementById("report-status");
+        const previousStatus = statusText ? statusText.textContent : "";
+        if (statusText) statusText.textContent = "이미지 복사 준비 중...";
+
+        // ClipboardItem에 Promise<Blob>를 직접 넘기면 Safari 등에서도 비동기 캡처가 허용된다.
+        const blobPromise = captureReportCanvas().then(
+          (canvas) =>
+            new Promise((resolve, reject) =>
+              canvas.toBlob(
+                (blob) =>
+                  blob ? resolve(blob) : reject(new Error("이미지 생성 실패")),
+                "image/png",
+              ),
+            ),
+        );
+
+        navigator.clipboard
+          .write([new ClipboardItem({ "image/png": blobPromise })])
+          .then(() => {
+            if (statusText) statusText.textContent = previousStatus;
+            updateStatus();
+            showToast("📋 이미지를 클립보드에 복사했어요. 시트에 Ctrl+V!");
           })
-          .finally(restoreCaptureChrome);
+          .catch((err) => {
+            console.warn("이미지 복사 실패", err);
+            if (statusText)
+              statusText.textContent =
+                "이미지 복사에 실패했습니다. 다시 시도해 주세요.";
+            setTimeout(() => {
+              if (statusText) statusText.textContent = previousStatus;
+              updateStatus();
+            }, 2200);
+          });
       }
 
       function resetCurrentReport() {
