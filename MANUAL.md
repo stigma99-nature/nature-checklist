@@ -66,7 +66,7 @@
 ### 0-3. 가장 중요한 규칙 5가지
 
 1. **이미 쓰고 있는 "열쇠 값"은 바꾸지 않는다.**
-   단원 `id`(예: `m2-1-1`), 시험 `value`(예: `1학기 중간고사`), 학년 코드(예: `mid2`)는
+   단원 `id`(예: 중단원 `m2-1-1`, 대단원 `m2-1`), 시험 `value`(예: `1학기 중간고사`), 학년 코드(예: `mid2`)는
    저장된 체크리스트와 연결되는 값입니다. 바꾸면 기존 기록이 화면에서 사라집니다(지워지지는 않음).
 2. **따옴표 · 쉼표 · 괄호 짝을 맞춘다.** JS 파일에서 하나만 빠져도 그 파일 전체가 동작하지 않습니다.
 3. **같은 이름을 두 번 만들지 않는다.** 모든 JS 파일이 이름을 함께 쓰기 때문에(4-3장), 다른 파일에 있는 이름으로
@@ -259,7 +259,7 @@ localStorage.removeItem("nature_test_db")
 | --- | --- | --- |
 | 브라우저 탭 제목 · 저장 파일 이름 | `index.html`, `js/report-header.js` | [A-1](#a-1-브라우저-탭-제목-바꾸기) · [H-1](#h-1-저장-파일-이름-형식-바꾸기) |
 | 리포트 머리말 로고 · 제목 글자 | `index.html` | [A-2](#a-2-리포트로그인-화면의-로고제목-글자-바꾸기) |
-| 로그인 화면 문구 · 버튼 글자 | `index.html`, `js/login.js` | [A-3](#a-3-로그인-화면-안내-문구버튼-글자-바꾸기) |
+| 로그인 화면 문구(안내 문단 다시 넣기) · 버튼 글자 | `index.html`, `js/login.js` | [A-3](#a-3-로그인-화면-안내-문구버튼-글자-바꾸기) |
 | 자동 저장 상태 문구 | `js/notify.js` | [A-4](#a-4-자동-저장-상태-문구-바꾸기) |
 | 토스트(잠깐 뜨는 알림) 문구 · 시간 | 문구가 있는 각 JS, `js/notify.js` | [A-5](#a-5-토스트-알림-문구시간-바꾸기) |
 | 인쇄 전 경고창 문구 | `js/export.js` | [A-6](#a-6-출력-전-경고창-문구-바꾸기) |
@@ -268,9 +268,11 @@ localStorage.removeItem("nature_test_db")
 | 인쇄 푸터 · 발급일 | `index.html`, `js/export.js` | [A-9](#a-9-인쇄-푸터-문구발급일-형식-바꾸기) |
 | 관리자 페이지 문구 | `admin/index.html` | [A-10](#a-10-관리자-페이지-문구-바꾸기) |
 | 시험 종류 추가 · 삭제 · 기본 선택 | `index.html`, `js/student-list.js` | [B-1 ~ B-4](#b-시험-종류) |
+| 시험 선택 안내 (나머지 화면 어둡게) 문구 · 어둡기 · 끄기 | `index.html`, `css/sidebar.css`, `js/student-list.js` | [A-11](#a-11-시험-선택-안내-말풍선-문구-바꾸기) · [J-7](#j-7-시험-선택-안내의-어둡기--반짝임-바꾸기--끄기) |
 | 단원 · 주요 내용 · 학년 · 처음 단원 켜짐 | `js/data/curriculum.js`, `js/config.js`, `js/student-list.js` | [C-1 ~ C-10](#c-단원-데이터-교육과정) |
 | A/B/C 색 · 글자 · 등급 추가 | `css/checklist-table.css`, `js/config.js` 외 | [D-1 ~ D-5](#d-abc-진단평가) |
-| 진단평가 메모 칸 (점수 등) | `js/checklist-table.js`, `css/checklist-table.css` | [E-1 ~ E-6](#e-진단평가-메모-칸) |
+| 진단평가 간단히(대단원별 1개) ↔ 자세히(중단원별) — 기본값 · 스위치 글자 · 한 방식으로 고정 | `js/checklist-table.js`, `index.html`, `css/checklist-table.css` | [D-6 ~ D-8](#d-6-새-체크리스트의-진단평가-방식-기본값-바꾸기) · 구조 [4-11](#4-11-진단평가-간단히--자세히-대단원별-평가) |
+| 진단평가 메모 칸 (점수 · 코멘트) | `js/checklist-table.js`, `css/checklist-table.css` | [E-1 ~ E-6](#e-진단평가-메모-칸) |
 | SOLUTION 문구 버튼 · 기본값 "-" | `index.html`, `js/checklist-table.js` | [F-1 ~ F-7](#f-solution-칸과-문구-버튼) |
 | 종합 의견 기본 문장 · 제목 · 크기 | `index.html`, `css/opinion.css` | [G-1 ~ G-4](#g-종합-의견) |
 | 머리말 칸 추가 · 이름 뒤 영문자 규칙 | `index.html`, `js/report-header.js`, `js/utils.js` | [H-2 ~ H-3](#h-2-머리말에-칸-추가하기-담당-선생님) |
@@ -415,11 +417,12 @@ index.html <head> (위 → 아래, 아래 파일이 이김)
 | 번호 | 이름 | HTML 위치 | 모양 | 동작 |
 | --- | --- | --- | --- | --- |
 | ⓪ | 로그인 화면 | `#login-screen` | `css/login.css` | `js/login.js` |
-| ① | 왼쪽 사이드바 (선생님 · 시험 · 학생 목록 · 단원 설정) | `<aside class="sidebar">` | `css/sidebar.css` | `js/student-list.js`, `js/scope-panel.js` |
-| ② | 가운데 A4 리포트 (머리말 · 표 · 종합 의견 · 인쇄 푸터) | `#capture-target-paper` | `css/report-header.css`, `css/checklist-table.css`, `css/opinion.css` | `js/report-header.js`, `js/checklist-table.js`, `js/storage.js` |
+| ① | 왼쪽 사이드바 (선생님 · 시험 · 학생 목록 · 단원 설정 + 진단평가 모두 자세히/간단히) | `<aside class="sidebar">` | `css/sidebar.css` | `js/student-list.js`, `js/scope-panel.js`, `js/checklist-table.js` |
+| ② | 가운데 A4 리포트 (머리말 · 표 + 대단원마다 "진단평가 자세히" 스위치 · 종합 의견 · 인쇄 푸터) | `#capture-target-paper` | `css/report-header.css`, `css/checklist-table.css`, `css/opinion.css` | `js/report-header.js`, `js/checklist-table.js`, `js/storage.js` |
 | ③ | 오른쪽 위 버튼 모음 (인쇄 · 이미지 · 저장 상태) | `.action-dock` | `css/action-dock.css` | `js/export.js`, `js/notify.js` |
 | ④ | 토스트 알림 | `#app-toast` | `css/action-dock.css` | `js/notify.js` 의 `showToast` |
 | ⑤ | SOLUTION 문구 팝오버 | `#solution-macro-popover` | `css/checklist-table.css` | `js/checklist-table.js` |
+| ⑥ | 시험 선택 안내 (시험이 공란이면 시험 선택 칸만 밝게, 나머지는 어둡게 + 말풍선) | `#exam-spotlight` · `#exam-spotlight-tip` | `css/sidebar.css` | `js/student-list.js` 의 `updateExamSpotlight` |
 
 화면 폭에 따른 배치 (`css/responsive.css`)
 
@@ -478,7 +481,8 @@ window.onload
  │    └─ (시험을 골랐으면) DB.getReports(학생들, 시험) → 각 학생의 A/B/C 개수 계산 (summarize)
  ├─ 이름 기억 (localStorage: nature_teacher)
  ├─ setTeacherStudents(목록) → renderStudentList()   왼쪽 목록 그리기 (반별로 묶음)
- └─ 학생이 있으면 openInitialStudent()   /   없으면 openBlankChecklist() (빈 체크리스트)
+ ├─ 학생이 있으면 openInitialStudent()   /   없으면 openBlankChecklist() (빈 체크리스트)
+ └─ updateExamSpotlight()               student-list.js: 시험이 공란이면 시험 선택 칸만 밝게, 나머지 화면은 어둡게
 ```
 
 #### (3) 시험 선택 — `js/student-list.js`
@@ -488,6 +492,7 @@ window.onload
  ├─ (빈 체크리스트면) 시험 이름만 바꾸고 끝
  ├─ confirmLeave()          지금 체크리스트 먼저 저장 (실패하면 이동할지 물어봄)
  ├─ currentExam = 새 시험, sessionStorage(nature_exam) 에 기억
+ ├─ updateExamHint() → updateExamSpotlight()  시험을 골랐으면 어두운 안내가 사라짐 (공란으로 되돌리면 다시 뜸)
  ├─ fetchTeacherStudents()  새 시험 기준 A/B/C 개수로 목록 다시 그림
  └─ 열려 있던 학생을 새 시험으로 다시 열기 (없으면 openInitialStudent)
 ```
@@ -502,8 +507,8 @@ window.onload
  5. fetchReport(학생, 시험)             storage.js → DB.getReport → Firestore 문서 하나 읽기
  6. (저장본이 없으면) findLegacyReport()  legacy-import.js: 이 브라우저의 예전 저장본 찾기
  7. renderScopeWidget()                scope-panel.js: 단원 설정 체크박스 새로 그림
- 8. renderReportTables()               checklist-table.js: 표 새로 그림 (SOLUTION "-", 메모 칸 비어 있음)
- 9. 저장본이 있으면 applyStateObj(저장본)  storage.js: 평가 · 메모 · SOLUTION · 의견 · 단원 체크 채우기
+ 8. renderReportTables()               checklist-table.js: 표 새로 그림 (모든 대단원 "간단히", SOLUTION "-", 메모 칸 비어 있음)
+ 9. 저장본이 있으면 applyStateObj(저장본)  storage.js: 대단원마다 간단히/자세히 · 평가 · 메모 · SOLUTION · 의견 · 단원 체크 채우기
     없으면 restoreScopeSelections({})    모든 단원 꺼짐 → 표 숨김 → 안내 문구
 10. markAsSaved() (또는 예전 저장본이면 바로 저장)
 ```
@@ -511,7 +516,7 @@ window.onload
 #### (5) 입력 → 자동 저장 — `js/storage.js`
 
 ```
-A/B/C 클릭 · 메모 입력 · SOLUTION 입력 · 의견 입력 · 단원 체크
+A/B/C 클릭 · 메모 입력 · SOLUTION 입력 · 의견 입력 · 단원 체크 · "진단평가 자세히" 스위치
  → saveCurrentState() → scheduleSave()              "저장 중…" 표시, 1.2초(SAVE_DELAY_MS) 기다림
     (그 사이 또 입력하면 다시 1.2초 기다림 = 연속 입력은 마지막에 한 번만 저장)
  → persistCurrentReport() → saveNow()
@@ -529,8 +534,14 @@ A/B/C 클릭 · 메모 입력 · SOLUTION 입력 · 의견 입력 · 단원 체�
 대단원 체크 → toggleBigBlock()   그 대단원 표 블록 + 안의 중단원 줄 전부 보이기/숨기기
 중단원 체크 → toggleSubRow()     그 줄만 보이기/숨기기 (대단원 체크도 자동 계산)
 전체 켜기/끄기 → setAllScopes(true/false)
-→ 모두 saveCurrentState() + updateStatus() (진행 현황 숫자)
+→ 모두 layoutAllUnitEval() (checklist-table.js: 대단원 평가 칸을 첫 번째 보이는 줄로 다시 옮김)
+  + saveCurrentState() + updateStatus() (진행 현황 숫자)
 ※ 숨긴 줄은 style.display = "none". 인쇄 · 이미지 · 출력 전 검사도 이 값으로 "보이는 줄"을 판단합니다.
+
+진단평가 방식 (checklist-table.js — 자세한 구조는 4-11장)
+대단원 제목 옆 "진단평가 자세히" 스위치 → setUnitDetail(대단원id, 켬/끔)
+[모두 자세히] · [모두 간단히] 버튼         → setAllDetail(true/false)
+→ 대단원 블록에 is-detail 클래스 붙이기/떼기 → layoutUnitEval() → saveCurrentState() + updateStatus()
 ```
 
 #### (7) 인쇄 · 이미지 — `js/export.js`
@@ -542,12 +553,13 @@ A/B/C 클릭 · 메모 입력 · SOLUTION 입력 · 의견 입력 · 단원 체�
 
 ensureReadyForOutput() 검사 순서
  0) 학생을 골랐는지(또는 빈 체크리스트) · 불러오는 중이 아닌지
- 1) 보이는 모든 줄에 A/B/C 를 골랐는지
- 2) 보이는 모든 줄에 SOLUTION 이 있는지 ("-" 도 인정)
+ 1) 보이는 모든 평가 항목에 A/B/C 를 골랐는지
+ 2) 보이는 모든 평가 항목에 SOLUTION 이 있는지 ("-" 도 인정)
  3) 머리말에 학생 이름 · 학교명이 있는지
+ ※ 평가 항목 = getEvalItems() (checklist-table.js): 간단히 대단원은 대단원마다 1개, 자세히 대단원은 보이는 중단원 줄마다 1개
 
 captureReportCanvas()
- · 버튼 · "수정 가능" 태그 · 빈 메모 칸 숨기기, 평가 배지 보이기, 입력칸을 글자로 바꾸기
+ · 버튼 · "수정 가능" 태그 · 빈 메모 칸 · "진단평가 자세히" 스위치(no-print) 숨기기, 평가 배지 보이기, 입력칸을 글자로 바꾸기
  · html2canvas 로 #capture-target-paper 를 2배 해상도로 찍기
  · 끝나면 모두 원래대로
 ```
@@ -643,18 +655,23 @@ js/db/db.js ─────────────── 입력값 검사 (clea
 
   opinion: "<b>꾸준히</b> 잘하고 있어요",          // 종합 의견 (HTML)
   customEdits: {                                    // 표에서 고친 칸 (HTML)
-    "m2-1-1_content": "<ul class=\"content-list\"><li>…</li></ul>",  // 주요 내용
-    "m2-1-1_sol": "🚨 재학습 + 보강 필참",           // SOLUTION ("-" = 공란)
+    "m2-1-1_content": "<ul class=\"content-list\"><li>…</li></ul>",  // 주요 내용 (중단원마다)
+    "m2-1_sol": "🚨 재학습 + 보강 필참",             // SOLUTION — 대단원 하나에 1개 (간단히) ("-" = 공란)
+    "m2-2-1_sol": "💡 심화 문제 풀이 유지",          // SOLUTION — 중단원 줄마다 (자세히)
   },
-  activeGrades: { "m2-1-1": "A", "m2-1-2": "C" },  // 평가한 줄만
+  activeGrades: { "m2-1": "B", "m2-2-1": "A", "m2-2-2": "C" },  // 평가한 항목만 (대단원 id = 간단히, 중단원 id = 자세히)
   scopeSelections: { "m2-1-1": true, "m2-1-2": false }, // 단원 설정 체크 상태 (모든 중단원)
-  gradeNotes: { "m2-1-1": "18/20" },               // 진단평가 메모를 적은 줄만
+  gradeNotes: { "m2-1": "18/20" },                 // 진단평가 메모를 적은 항목만
+  detailUnits: { "m2-1": false, "m2-2": true },    // 대단원마다 "진단평가 자세히"를 켰는지 (false = 간단히)
   updatedAt: 1789123456789,
 }
 ```
 
 기억할 점
 
+- **평가 항목의 열쇠**는 두 종류입니다. 간단히(대단원별 1개)는 **대단원 id**(`m2-1`), 자세히(중단원별)는 **중단원 id**(`m2-1-1`).
+  두 방식에 적은 내용이 **모두 함께 저장**되고, 화면 · 인쇄 · 개수에는 `detailUnits` 에 맞는 쪽만 쓰입니다. ([4-11장](#4-11-진단평가-간단히--자세히-대단원별-평가))
+- `detailUnits` 가 **없는** 문서는 이 기능이 생기기 전에 저장된 체크리스트입니다. 불러올 때 중단원 평가 · 메모 · SOLUTION 을 적어 둔 대단원만 자세히로 열어 줍니다.
 - **시험마다 따로** 저장됩니다. (문서 id 에 시험이 들어감)
 - **학년이 바뀌면 새 체크리스트**로 시작합니다. (문서 id 에 학년이 들어감 → 예전 학년 기록은 남아 있음)
 - **담당 선생님을 바꿔도** 문서 id 는 그대로라서 기존 체크리스트가 새 선생님 화면에 보입니다.
@@ -674,18 +691,90 @@ js/db/db.js ─────────────── 입력값 검사 (clea
 ### 4-10. 표 안 요소의 id 규칙
 
 표는 `js/checklist-table.js` 의 `renderReportTables()` 가 `js/data/curriculum.js` 를 읽어서 만듭니다.
-중단원 `id` 가 `m2-1-1` 일 때 만들어지는 요소:
+중단원 `id` 가 `m2-1-1` 일 때 만들어지는 요소 (자세히):
 
 | 만들어지는 id | 요소 | 쓰는 곳 |
 | --- | --- | --- |
-| `m2-1-1-row` | 표의 한 줄 `<tr class="check-row">` | 단원 설정(보이기/숨기기), 저장, 출력 검사 |
+| `m2-1-1-row` | 표의 한 줄 `<tr class="check-row">` | 단원 설정(보이기/숨기기), 줄 배경색, 출력 검사 |
 | `m2-1-1-content` | 주요 내용 칸 | 저장 (`customEdits["m2-1-1_content"]`) |
+| `m2-1-1-grade` | 진단평가 칸 `<td class="grade-td sub-eval">` (A/B/C 버튼 · 배지 · 메모 칸이 들어 있음) | `applyGradeState` · `getActiveGrade` |
 | `m2-1-1-badge` | 인쇄·이미지용 A/B/C 배지 | `applyGradeState` |
 | `m2-1-1-note` | 진단평가 메모 칸 | 저장 (`gradeNotes["m2-1-1"]`) |
 | `m2-1-1-solution` | SOLUTION 칸 | 저장 (`customEdits["m2-1-1_sol"]`) |
-| `mid2-unit-idx-0` | 대단원 블록 (학년 + 대단원 순서, 0부터) | 단원 설정의 대단원 체크 |
+
+대단원 `id` 가 `m2-1` 일 때 만들어지는 요소 (간단히 — 대단원 하나에 1개. `-row` · `-content` 는 없음):
+
+| 만들어지는 id · 속성 | 요소 | 쓰는 곳 |
+| --- | --- | --- |
+| `mid2-unit-idx-0` · `data-unit="m2-1"` | 대단원 블록 `<div class="unit-block">` (학년 + 대단원 순서, 0부터). 자세히면 `is-detail` 클래스, 간단히 평가를 고르면 `data-unit-grade="A"` 등 | 단원 설정의 대단원 체크, 방식 바꾸기, 줄 배경색 |
+| `m2-1-grade` | 대단원 진단평가 칸 `<td class="grade-td unit-eval">` | `applyGradeState` · `getActiveGrade` |
+| `m2-1-badge` · `m2-1-note` | 대단원 평가의 배지 · 메모 칸 | 저장 (`gradeNotes["m2-1"]`) |
+| `m2-1-solution` | 대단원 SOLUTION 칸 `<td class="solution-td unit-eval">` | 저장 (`customEdits["m2-1_sol"]`) |
 
 단원 설정 체크박스는 `data-target="m2-1-1"`(중단원) · `data-idx="0"`(대단원) 속성으로 표와 연결됩니다.
+
+### 4-11. 진단평가 간단히 · 자세히 (대단원별 평가)
+
+**무엇인가요?** 진단평가(A/B/C · 메모)와 SOLUTION 을 **대단원 하나에 1개**(간단히, 기본)로 쓸지, **중단원 줄마다**(자세히) 쓸지 대단원마다 고르는 기능입니다.
+
+```
+[간단히 — 기본]                                        [자세히 — 스위치를 켠 대단원]
+┌───────────┬───────────┬─────────┬──────────┐           ┌───────────┬───────────┬─────────┬──────────┐
+│ 물질의 특성  │ 주요 내용   │         │          │           │ 물질의 특성  │ 주요 내용   │ [A][B][C] │    -     │
+├───────────┼───────────┤ [A][B][C] │    -     │           ├───────────┼───────────┼─────────┼──────────┤
+│ 혼합물 분리1 │ 주요 내용   │ [코멘트] │          │           │ 혼합물 분리1 │ 주요 내용   │ [A][B][C] │    -     │
+├───────────┼───────────┤         │          │           ├───────────┼───────────┼─────────┼──────────┤
+│ 혼합물 분리2 │ 주요 내용   │         │          │           │ 혼합물 분리2 │ 주요 내용   │ [A][B][C] │    -     │
+└───────────┴───────────┴─────────┴──────────┘           └───────────┴───────────┴─────────┴──────────┘
+  오른쪽 두 칸을 세로로 합친 1개                               줄마다 따로
+```
+
+**바꾸는 곳** — 대단원 제목 오른쪽 **"진단평가 자세히" 스위치**(그 대단원만), 단원 설정 패널의 **[모두 자세히] [모두 간단히]**(전체).
+스위치는 화면에서만 보이고 인쇄 · 이미지에는 나오지 않습니다(`no-print`). 새 체크리스트의 기본값은 `DETAIL_DEFAULT` ([D-6](#d-6-새-체크리스트의-진단평가-방식-기본값-바꾸기)).
+
+**HTML 구조** — 한 대단원의 표에는 두 방식의 칸이 **모두 들어 있고**, CSS 가 지금 방식이 아닌 칸을 숨깁니다.
+
+```
+<div class="unit-block [is-detail]" data-unit="m2-1" data-unit-grade="B">
+  <div class="unit-title-row"> 제목 탭 + <label class="detail-toggle no-print"> 스위치 </div>
+  <table>
+    <tr class="check-row" id="m2-1-1-row">  중단원 이름 · 주요 내용 · [자세히용 평가 칸 .sub-eval] · [자세히용 SOLUTION .sub-eval]
+                                             · [간단히용 대단원 평가 칸 .unit-eval ← 여기로 옮겨져 rowSpan 으로 아래 줄까지 합쳐짐]
+    <tr class="check-row" id="m2-1-2-row">  …
+    <tr class="unit-eval-row">              간단히용 칸의 "대기 자리" (모바일 간단히에서는 여기서 카드 한 장으로 보임)
+```
+
+| CSS 규칙 (`css/checklist-table.css`) | 뜻 |
+| --- | --- |
+| `.unit-block:not(.is-detail) .sub-eval` · `.unit-block.is-detail .unit-eval` → `display: none !important` | 지금 방식이 아닌 칸 숨기기 (인쇄 · 모바일에서도) |
+| `.unit-eval { position: relative; }` | 합친 칸이 이미지 저장(html2canvas)에서 아래 줄 배경에 가려지지 않게 |
+| `.unit-block.is-detail .check-row.grade-a` · `.unit-block:not(.is-detail)[data-unit-grade="A"] .check-row` | 배경색: 자세히는 그 줄만, 간단히는 대단원의 줄 전체 |
+
+**대단원 평가 칸의 자리 (`layoutUnitEval`)** — 단원 설정으로 줄을 숨기거나, 방식을 바꾸거나, 화면 폭이 바뀔 때마다 다시 맞춥니다.
+
+| 상황 | 대단원 평가 칸이 있는 곳 |
+| --- | --- |
+| 간단히 + PC 화면 · 인쇄 | **첫 번째 보이는 중단원 줄** 끝, `rowSpan` = 그 줄부터 마지막 줄까지 (중간의 숨긴 줄은 브라우저가 건너뜀) |
+| 간단히 + 모바일(폭 860px 이하 화면) | 표 맨 아래 `.unit-eval-row` → 중단원 카드들 **아래에 카드 한 장** |
+| 자세히 | `.unit-eval-row` 안에 넣고 그 줄을 숨김 |
+
+인쇄는 `beforeprint` · `afterprint` 때 표 모양 자리로 옮겼다가 되돌립니다 (`isPrintingReport`). 첫 번째 줄을 단원 설정에서 끄면 칸이 다음 보이는 줄로 옮겨 갑니다.
+
+**저장 · 불러오기 (`js/storage.js`)**
+
+- `buildStateObj()` — 대단원마다 `detailUnits[대단원id]` 와 대단원 평가(`activeGrades` · `gradeNotes` · `customEdits[대단원id_sol]`), 중단원마다 중단원 평가를 **모두** 담습니다.
+- `applyStateObj(state)` — `resolveDetailUnits(state, 학년)` 로 대단원마다 방식을 정한 뒤 `setUnitDetail(…, { save: false })`, 두 방식의 칸을 모두 채웁니다.
+- `resolveDetailUnits` — 저장본에 `detailUnits` 가 있으면 그 값. **없으면(예전 저장본)** 중단원 평가 · 메모 · SOLUTION(`-` 제외)을 적어 둔 대단원만 자세히, 나머지는 `DETAIL_DEFAULT`.
+
+**세는 기준** — 오른쪽 위 "평가 N/M개 완료"(`updateStatus`) · 출력 전 검사(`js/export.js`) · 왼쪽 목록 A/B/C 개수(`countGrades`, `js/student-list.js`)가 모두 같은 기준입니다.
+
+| 대단원 방식 | 평가 항목 수 |
+| --- | --- |
+| 간단히 | 켠 중단원이 하나라도 있으면 **1개** (이름표 = 대단원 제목, 예: "1. 물질의 특성") |
+| 자세히 | 켠 중단원 **줄 수만큼** (이름표 = 중단원 이름) |
+
+> ⚠️ `detailUnits` 는 이 기능과 함께 새로 생긴 저장 칸이라 **`firestore.rules` 의 `hasOnly([…])` 에 `'detailUnits'` 가 있어야** 저장됩니다.
+> 규칙 파일을 콘솔에 다시 게시하지 않으면 모든 저장이 "저장소 규칙이 요청을 막았습니다" 로 실패합니다. ([5-23](#5-23-firestorerules--firestore-보안-규칙))
 
 ---
 
@@ -714,7 +803,7 @@ js/db/db.js ─────────────── 입력값 검사 (clea
     ① <aside class="sidebar">
          .teacher-panel             선생님 이름 · 로그아웃 · 시험 선택 · (빈 체크리스트용) 학년 선택
          .student-panel             담당 학생 N명 · #student-list
-         .scope-selector-panel      단원 설정 (넓은 PC 에서는 오른쪽에 보임)
+         .scope-selector-panel      단원 설정 + 진단평가 [모두 자세히] [모두 간단히] (넓은 PC 에서는 오른쪽에 보임)
     ② <main class="report-workspace">
          #capture-target-paper      A4 용지 = 인쇄 · 이미지로 나가는 영역
            .header-section          로고 문구 · 제목 · 이름/학교명/시험 칸
@@ -724,6 +813,7 @@ js/db/db.js ─────────────── 입력값 검사 (clea
   ③ .action-dock                    인쇄 · 이미지 저장 · 이미지 복사 버튼 + 진행 현황 + 저장 상태
   ④ #app-toast                      토스트 알림
   ⑤ #solution-macro-popover         SOLUTION 문구 버튼 목록
+  ⑥ #exam-spotlight · #exam-spotlight-tip   시험 선택 안내 (시험이 공란이면 나머지 화면을 어둡게 + 말풍선)
   JS 18개 <script>                  순서 중요 (4-3장)
 ```
 
@@ -738,6 +828,7 @@ js/db/db.js ─────────────── 입력값 검사 (clea
 | `student-count` · `student-list` | 담당 학생 수 · 목록 | `js/student-list.js` |
 | `scope-status` | "표시 단원 3/7" | `js/checklist-table.js` (`updateStatus`) |
 | `scope-widget-root` | 단원 체크박스 목록 자리 | `js/scope-panel.js`, `js/student-list.js` |
+| `detail-all-on` · `detail-all-off` | 진단평가 [모두 자세히] · [모두 간단히] 버튼 (지금 상태와 같으면 강조) | `js/checklist-table.js` (`updateDetailControls`) |
 | `capture-target-paper` | A4 용지 (이미지로 찍는 영역) | `js/export.js` |
 | `student-name` · `school-name` · `exam-type` | 머리말 칸 | `js/report-header.js`, `js/export.js`, `js/student-list.js` |
 | `report-table-root` | 표 자리 | `js/checklist-table.js`, `js/student-list.js` |
@@ -747,13 +838,15 @@ js/db/db.js ─────────────── 입력값 검사 (clea
 | `save-state` | "● 14:05 저장됨" | `js/notify.js` |
 | `app-toast` | 토스트 | `js/notify.js` |
 | `solution-macro-popover` | 문구 팝오버 | `js/checklist-table.js` |
+| `exam-spotlight` · `exam-spotlight-tip` | 시험 선택 안내 (어두운 막 · 말풍선) | `js/student-list.js` |
 
 **③ 자주 고치는 곳**
 
 | 고칠 것 | 🔎 찾을 글자 | 레시피 |
 | --- | --- | --- |
 | 탭 제목 | `<title>` | [A-1](#a-1-브라우저-탭-제목-바꾸기) |
-| 로그인 안내 문구 | `login-help` | [A-3](#a-3-로그인-화면-안내-문구버튼-글자-바꾸기) |
+| 로그인 화면 문구 · 버튼 | `id="login-submit"` | [A-3](#a-3-로그인-화면-안내-문구버튼-글자-바꾸기) |
+| 진단평가 모두 자세히/간단히 버튼 글자 | `모두 자세히` | [D-7](#d-7-진단평가-자세히-스위치--버튼-글자-바꾸기) |
 | 시험 종류 | `id="exam-select"` | [B-1](#b-1-시험-종류-추가하기) |
 | 머리말 로고 · 제목 | `logo-area` · `main-title` | [A-2](#a-2-리포트로그인-화면의-로고제목-글자-바꾸기) |
 | 종합 의견 기본 문장 | `id="opinion-textarea"` | [G-1](#g-1-새-체크리스트의-종합-의견-기본-문장-넣기) |
@@ -815,6 +908,7 @@ js/db/db.js ─────────────── 입력값 검사 (clea
 const CURRICULUM_DATA = {
   mid1: [                                   // 학년 코드 (키)
     {
+      id: "m1-1",                           // 대단원 고유 id (간단히 = 대단원별 진단평가의 열쇠!)
       title: "1. 과학과 인류의 지속가능한 삶",  // 대단원 이름 (표 제목 탭 · 단원 설정)
       sub: [
         {
@@ -839,7 +933,9 @@ const CURRICULUM_DATA = {
 **④ 주의**
 
 - `id` 는 **같은 학년 안에서** 겹치면 안 됩니다. (다른 학년끼리는 같아도 됨 — 저장이 학년별로 따로이기 때문. 실제로 `mid3` 와 `mid3_22` 는 같은 id 를 씁니다)
-- 이미 쓰던 `id` 를 바꾸거나 지우면, 그 줄의 저장된 평가 · 메모 · SOLUTION 이 화면에 나오지 않습니다.
+  **대단원 id**(`m1-1`)와 **중단원 id**(`m1-1-1`)도 서로 겹치면 안 됩니다. 지금 규칙: 대단원 = 첫 중단원 id 에서 마지막 `-숫자` 를 뗀 값.
+- 이미 쓰던 `id` 를 바꾸거나 지우면, 그 줄(대단원 id 면 그 대단원의 간단히 평가)의 저장된 평가 · 메모 · SOLUTION 이 화면에 나오지 않습니다.
+- 대단원 `id` 를 빠뜨려도 동작은 하지만 `학년-u순서`(예: `mid1-u3`)로 대신 저장되어, **대단원 순서를 바꾸면 간단히 평가가 다른 대단원으로 옮겨 갑니다.** 꼭 붙여 주세요.
 - `list` 는 **새 체크리스트의 기본값**입니다. 한 번 저장된 체크리스트는 저장 당시의 주요 내용을 그대로 씁니다.
 - 대단원 색은 배열 순서대로 `js/config.js` 의 `UNIT_COLORS` 를 씁니다.
 - 학년을 추가하면 `js/config.js` 의 `GRADE_LABELS` 에 이름표도 추가합니다. ([C-7](#c-7-새-학년-추가하기-예-고1))
@@ -944,7 +1040,8 @@ const CURRICULUM_DATA = {
 | `DB` | 상수(객체) | 화면 코드가 쓰는 저장소 ([4-7장](#4-7-저장소-계층--화면은-db-만-부른다) 함수 목록) |
 | `showTestModeBanner()` | 함수 | 테스트 모드 안내 띠 |
 
-**④ 주의** — ⚠️ **`cleanReportData` 는 알려진 칸만 통과시킵니다.** 체크리스트에 새 칸을 추가하면 여기에도 추가해야 저장됩니다. ([P-4](#p-4-체크리스트에-새-저장-칸-추가하기-예-숙제-메모))
+**④ 주의** — ⚠️ **`cleanReportData` 는 알려진 칸만 통과시킵니다.** (`opinion` · `customEdits` · `activeGrades` · `scopeSelections` · `gradeNotes` · `detailUnits`)
+체크리스트에 새 칸을 추가하면 여기에도 추가해야 저장됩니다. ([P-4](#p-4-체크리스트에-새-저장-칸-추가하기-예-숙제-메모))
 
 ---
 
@@ -1003,8 +1100,9 @@ const CURRICULUM_DATA = {
 | `lastSavedJson` · `lastSavedAt` | 변수 | 마지막으로 저장된 내용 · 시각 |
 | `isLoadingReport` | 변수 | 불러오는 중이면 `true` (그동안 저장 안 함) |
 | `RETRY_DELAY_MS` | 상수 (5000) | 저장 실패 후 다시 시도까지 기다리는 시간 |
-| `buildStateObj()` | 함수 | **화면 → 저장용 객체** (의견 · 주요 내용 · SOLUTION · 평가 · 단원 체크 · 메모) |
-| `applyStateObj(state)` | 함수 | **저장용 객체 → 화면** (HTML 은 `sanitizeHtml` 로 정리해서 넣음) |
+| `buildStateObj()` | 함수 | **화면 → 저장용 객체** (의견 · 주요 내용 · SOLUTION · 평가 · 단원 체크 · 메모 · 대단원별 간단히/자세히). 간단히 · 자세히 두 방식의 칸을 모두 담음 |
+| `applyStateObj(state)` | 함수 | **저장용 객체 → 화면** (대단원마다 방식을 먼저 정하고 두 방식의 칸을 모두 채움. HTML 은 `sanitizeHtml` 로 정리해서 넣음) |
+| `resolveDetailUnits(state, grade)` | 함수 | 대단원마다 "자세히"를 켤지 → `{ "m2-1": false, … }`. 저장본에 `detailUnits` 가 없으면(예전 저장본) 중단원 평가를 적어 둔 대단원만 자세히 ([4-11장](#4-11-진단평가-간단히--자세히-대단원별-평가)) |
 | `fetchReport(student, exam)` | 함수 | `DB.getReport` 부르기 |
 | `markAsSaved(updatedAt)` · `markAsUnsaved()` | 함수 | "지금 화면 = 저장된 상태" 기억 / 잊기 |
 | `saveCurrentState()` | 함수 | 입력칸 · 버튼이 부르는 저장 함수 (실제로는 예약) |
@@ -1042,6 +1140,7 @@ const CURRICULUM_DATA = {
 | `restoreScopeSelections(scopeSelections)` | `storage.js`, `student-list.js` | 저장된 체크 상태를 체크박스 · 표에 반영 |
 
 **④ 주의** — 새 체크리스트는 모든 단원이 **꺼진** 상태로 시작합니다(표가 숨겨짐). "처음부터 모두 켜기"로 바꾸려면 [C-10](#c-10-새-체크리스트를-모든-단원-켜진-상태로-시작하기) 참고.
+줄을 보이거나 숨기는 코드를 새로 만들면, 끝에 `layoutAllUnitEval()` 을 불러 대단원 평가 칸(간단히)을 첫 번째 보이는 줄로 옮겨 주세요. (안 부르면 첫 줄을 숨겼을 때 대단원 평가 칸도 같이 사라져 보입니다)
 
 ---
 
@@ -1055,44 +1154,73 @@ const CURRICULUM_DATA = {
 
 ---
 
-### 5-16. `js/checklist-table.js` — 체크리스트 표 · A/B/C · 메모 · SOLUTION
+### 5-16. `js/checklist-table.js` — 체크리스트 표 · 간단히/자세히 · A/B/C · 메모 · SOLUTION
+
+평가 칸을 가리키는 **key** 는 중단원 id(자세히, 예: `m2-1-1`) 또는 대단원 id(간단히, 예: `m2-1`) 입니다.
 
 | 이름 | 부르는 곳 | 하는 일 |
 | --- | --- | --- |
 | `BLANK_SOLUTION` | 상수 `"-"` | SOLUTION 기본값(공란) |
 | `GRADE_NOTE_MAX` | 상수 `30` | 진단평가 메모 최대 글자 수 (화면 기준) |
+| `DETAIL_DEFAULT` | 상수 `false` | 새 체크리스트의 진단평가 방식 (`false` = 대단원별 1개 간단히, `true` = 중단원별 자세히) |
 | `renderReportTables()` | `student-list.js` | 표 전체를 새로 그림 (**표 HTML 모양이 여기 있음**) |
-| `applyGradeState(row, grade)` | `selectGradeBtn`, `storage.js` | 한 줄을 A/B/C 로 표시 (줄 배경 · 버튼 색 · 인쇄 배지) |
-| `selectGradeBtn(btn, grade, subUnitId)` | A/B/C 버튼 `onclick` | 평가 선택 → 저장 예약 → 진행 현황 |
-| `getActiveGrade(row)` | (조회용) | 줄의 평가 읽기 `"A"`·`"B"`·`"C"`·`"-"` |
+| `gradeCellHtml(key, kind, label)` · `solutionCellHtml(key, kind, label)` | `renderReportTables` | 진단평가 칸(A/B/C 버튼 · 배지 · 메모) · SOLUTION 칸 HTML. 간단히 · 자세히 칸이 **같은 함수**로 만들어짐 |
+| `unitKeyOf(unit, idx, grade)` | 여러 곳 | 대단원 id (`curriculum.js` 의 `id`, 없으면 `학년-u순서`) |
+| `CARD_LAYOUT_QUERY` · `isPrintingReport` | 상수 · 변수 | 모바일 카드 모양 화면인지 · 인쇄 준비 중인지 |
+| `setUnitDetail(unitKey, on, {save})` | "진단평가 자세히" 스위치 `onchange`, `storage.js` | 대단원 하나를 자세히/간단히로 바꾸기 |
+| `setAllDetail(on)` | [모두 자세히] · [모두 간단히] 버튼 | 모든 대단원을 한꺼번에 |
+| `layoutUnitEval(block)` · `layoutAllUnitEval()` | 방식 바꿀 때 · `scope-panel.js` · 화면 폭 변경 · 인쇄 전후 | 대단원 평가 칸을 첫 번째 보이는 줄로 옮겨 세로로 합치기 (모바일은 카드 한 장) |
+| `updateDetailControls()` | `updateStatus` | [모두 자세히] · [모두 간단히] 중 지금 상태와 같은 버튼 강조 |
+| `applyGradeState(key, grade)` | `selectGradeBtn`, `storage.js` | 평가 항목 하나를 A/B/C 로 표시 (버튼 색 · 인쇄 배지 · 배경색: 중단원은 그 줄, 대단원은 `data-unit-grade`) |
+| `selectGradeBtn(btn, grade, key)` | A/B/C 버튼 `onclick` | 평가 선택 → 저장 예약 → 진행 현황 |
+| `getActiveGrade(key)` | `storage.js`, `export.js`, `updateStatus` | 평가 항목의 평가 읽기 `"A"`·`"B"`·`"C"`·`"-"` |
+| `getEvalItems()` | `updateStatus`, `export.js` | 지금 평가해야 하는 항목 목록 `[{ key, label, element }]` (간단히 = 대단원마다 1개, 자세히 = 보이는 줄마다) |
 | `onGradeNoteKeydown` · `onGradeNoteBeforeInput` · `onGradeNotePaste` · `onGradeNoteInput` | 메모 칸 이벤트 | Enter 막기 · 줄바꿈 막기 · 서식 없이 붙여넣기 · 글자 수 제한 + 저장 |
 | `readGradeNote(el)` | `storage.js` | 메모 칸 글자 읽기 (공백 정리) |
 | `placeCaretAtEnd(el)` | `onGradeNoteInput` | 커서를 맨 끝으로 |
-| `updateStatus()` | 여러 곳 | "평가 N/M개 완료 · A/B/C 개수" · "표시 단원 N/M" · 단원 안내 문구 |
+| `updateStatus()` | 여러 곳 | "평가 N/M개 완료 · A/B/C 개수"(평가 항목 기준) · "표시 단원 N/M" · 단원 안내 문구 · 모두 자세히/간단히 버튼 강조 |
 | `targetSolutionCell` | 변수 | 문구를 넣을 SOLUTION 칸 |
 | `onSolutionFocus` · `selectBlankSolution` · `onSolutionBlur` | SOLUTION 칸 이벤트 | 팝오버 띄우기 · "-" 전체 선택 · 비우면 "-" 로 |
 | `showMacroPopover` · `hideMacroPopover` | | 문구 팝오버 보이기 · 숨기기 |
 | `setBlankSolution()` | "➖ 공란" 버튼 | SOLUTION 을 "-" 로 |
 | `injectMacro(text, isDangerColor)` | 문구 버튼 | 문구 넣기 (비었거나 "-" 면 바꾸고, 내용이 있으면 " + 문구" 로 이어 붙임) |
 
-표 한 줄의 HTML (`renderReportTables` 안, 간단히 줄인 모양)
+대단원 하나의 HTML (`renderReportTables` 안, 간단히 줄인 모양)
 
 ```html
-<tr class="check-row" id="m2-1-1-row">
-  <td class="text-center" data-label="중단원">물질의 특성</td>
-  <td class="content-td" data-label="주요 내용" contenteditable="true" id="m2-1-1-content">
-    <ul class="content-list"><li>…</li></ul>
-  </td>
-  <td class="grade-td" data-label="진단평가">
-    <div class="btn-group"> [A] [B] [C] 버튼 </div>
-    <span class="print-only-badge" id="m2-1-1-badge">-</span>
-    <div class="grade-note" id="m2-1-1-note" contenteditable="true" data-placeholder="점수 등"></div>
-  </td>
-  <td class="solution-td" data-label="SOLUTION" contenteditable="true" id="m2-1-1-solution">-</td>
-</tr>
+<div class="unit-block mid2-block-0" id="mid2-unit-idx-0" data-unit="m2-1">   <!-- 자세히면 class 에 is-detail -->
+  <div class="unit-title-row">
+    <div class="table-title">1. 물질의 특성</div>
+    <label class="detail-toggle no-print"> <input type="checkbox" class="detail-toggle-input" onchange="setUnitDetail('m2-1', this.checked)"> … 진단평가 자세히 </label>
+  </div>
+  <table class="checklist-table">
+    <thead> 중단원 · 주요 내용 · 진단평가 · SOLUTION </thead>
+    <tr class="check-row" id="m2-1-1-row">
+      <td class="text-center" data-label="중단원">물질의 특성</td>
+      <td class="content-td" data-label="주요 내용" contenteditable="true" id="m2-1-1-content">
+        <ul class="content-list"><li>…</li></ul>
+      </td>
+      <!-- gradeCellHtml("m2-1-1", "sub-eval", "진단평가") — 자세히일 때 보임 -->
+      <td class="grade-td sub-eval" data-label="진단평가" id="m2-1-1-grade">
+        <div class="btn-group"> [A] [B] [C] 버튼 </div>
+        <span class="print-only-badge" id="m2-1-1-badge">-</span>
+        <div class="grade-note" id="m2-1-1-note" contenteditable="true" data-placeholder="코멘트"></div>
+      </td>
+      <!-- solutionCellHtml("m2-1-1", "sub-eval", "SOLUTION") -->
+      <td class="solution-td sub-eval" data-label="SOLUTION" contenteditable="true" id="m2-1-1-solution">-</td>
+      <!-- 간단히일 때: layoutUnitEval 이 아래 두 칸을 이 줄 끝으로 옮기고 rowspan 으로 합침 -->
+      <td class="grade-td unit-eval" data-label="대단원 진단평가" id="m2-1-grade" rowspan="3"> … </td>
+      <td class="solution-td unit-eval" data-label="대단원 SOLUTION" id="m2-1-solution" rowspan="3">-</td>
+    </tr>
+    <tr class="check-row" id="m2-1-2-row"> … </tr>
+    <tr class="check-row" id="m2-1-3-row"> … </tr>
+    <tr class="unit-eval-row" style="display: none;"></tr>   <!-- 대단원 평가 칸의 대기 자리 (모바일 간단히 · 자세히) -->
+  </table>
+</div>
 ```
 
 > `data-label` 은 모바일 카드 모양에서 칸 앞에 붙는 작은 이름표입니다 (`css/responsive.css`).
+> 구조 · 저장 · 세는 기준은 [4-11장](#4-11-진단평가-간단히--자세히-대단원별-평가) 에 자세히 있습니다.
 
 ---
 
@@ -1105,13 +1233,17 @@ const CURRICULUM_DATA = {
 | `openRequestNo` | 변수 | 학생을 빠르게 여러 번 누를 때 마지막 것만 열리게 하는 번호 |
 | `blankInitialTable` | 변수 | 빈 체크리스트 처음 내용 (작성 여부 비교용) |
 | `fetchTeacherStudents(teacher)` | 함수 | 학생 목록 + 시험별 A/B/C 개수 가져오기 |
-| `summarize(report)` | 함수 | 체크리스트 → `{ A, B, C, updatedAt }` |
+| `summarize(report, grade)` | 함수 | 체크리스트 → `{ A, B, C, updatedAt }` |
+| `countGrades(state, grade)` | 함수 | A/B/C 개수 세기 — 가운데 진행 현황과 같은 기준 (켠 단원만 · 간단히 대단원은 1개 · 자세히 대단원은 켠 줄마다) |
 | `setTeacherStudents(list)` · `renderStudentList()` | 함수 | 목록 바꾸기 · 그리기 |
 | `groupByClass(students)` | 함수 | 반 이름별로 묶기 |
 | `studentItem(student)` | 함수 | 목록의 학생 한 줄(버튼) HTML |
 | `progressHtml(summary)` | 함수 | "A3 B1 C0" / "평가 전" |
-| `updateStudentSummary(…)` | 함수 | 저장 후 목록 개수 갱신 |
+| `updateStudentSummary(studentId, exam, data, updatedAt)` | 함수 | 저장 후 목록 개수 갱신 (`data` = 방금 저장한 내용) |
 | `initExamSelect()` · `updateExamHint()` · `onExamSelectChange()` | 함수 | 시험 선택 준비 · 공란 강조 · 바꿨을 때 |
+| `updateExamSpotlight()` | 함수 | 시험 선택 안내 보이기/숨기기 — 로그인했고 · 시험이 공란이고 · 빈 체크리스트가 아니고 · 로그인 화면이 닫혀 있으면 보임 |
+| `examPickerElement()` · `followExamSpotlight()` | 함수 | 밝게 남길 "시험 [선택 칸]" 줄 · 그 위치를 화면마다 따라가며 밝은 네모와 말풍선 옮기기 |
+| `spotlightFrame` · `spotlightLastKey` | 변수 | 위치 따라가기 중인지 · 마지막으로 맞춘 위치 |
 | `confirmLeave()` | 함수 | 이동 전 저장 (실패 · 빈 체크리스트면 물어봄) |
 | `openInitialStudent()` | 함수 | 마지막(또는 첫 번째) 학생 열기 |
 | `openChecklist(studentId, {skipLeaveCheck})` | 함수 | 학생 체크리스트 열기 ([4-6장 (4)](#4-6-동작-흐름-무엇이-무엇을-부르는지)) |
@@ -1131,13 +1263,15 @@ const CURRICULUM_DATA = {
 | `logout()` | 저장 후 로그인 화면으로 (기억한 이름 · 마지막 학생 지움) |
 | `showLoginScreen` · `hideLoginScreen` · `setLoginMessage` · `setLoginBusy` | 로그인 화면 표시 도우미 |
 
+> `loginAs` 끝과 `showLoginScreen` 에서 `updateExamSpotlight()`(js/student-list.js)를 불러, 로그인 직후 시험이 공란이면 시험 선택 안내를 띄우고 로그인 화면이 뜨면 숨깁니다.
+
 ---
 
 ### 5-19. `js/export.js` — 출력 전 검사 · 인쇄 · 이미지
 
 | 이름 | 하는 일 |
 | --- | --- |
-| `getVisibleRows()` · `getUngradedRows()` · `getEmptySolutionRows()` · `rowLabel(row)` | 검사용: 보이는 줄 · 평가 안 한 줄 · SOLUTION 빈 줄 · 줄 이름 |
+| `getUngradedItems()` · `getEmptySolutionItems()` · `itemLabel(item)` | 검사용: 평가 안 한 항목 · SOLUTION 빈 항목 · 항목 이름 (항목 목록은 `checklist-table.js` 의 `getEvalItems`) |
 | `ensureReadyForOutput(actionLabel)` | 출력 전 검사 (0~3단계) — 통과하면 `true` |
 | `printReport()` | 🖨️ 검사 → 확인창 → `window.print()` |
 | `setPrintDate()` | 인쇄 푸터 발급일 채우기 |
@@ -1183,13 +1317,13 @@ const CURRICULUM_DATA = {
 | 파일 | 담당 | 대표 선택자 |
 | --- | --- | --- |
 | `css/base.css` | 색상 변수 `:root`, 기본 글꼴 · 버튼, 2단 레이아웃, 테스트 모드 띠 | `:root`, `body`, `.app-shell`, `.sidebar`, `.report-workspace`, `.test-mode-banner` |
-| `css/login.css` | 로그인 화면 | `.login-screen`, `.login-card`, `.login-submit`, `.login-help` |
-| `css/sidebar.css` | 선생님 패널 · 시험 선택 · 학생 목록 · 단원 설정 | `.teacher-panel`, `.exam-select`, `.student-item`, `.si-grade-mid1`, `.p-a`, `.scope-selector-panel`, `.sub-scope-label` |
+| `css/login.css` | 로그인 화면 | `.login-screen`, `.login-card`, `.login-submit`, `.login-help` (안내 문단 모양 — 지금 HTML 에서는 안 씀, [A-3](#a-3-로그인-화면-안내-문구버튼-글자-바꾸기)) |
+| `css/sidebar.css` | 선생님 패널 · 시험 선택 · 시험 선택 안내 · 학생 목록 · 단원 설정 · 진단평가 모두 자세히/간단히 | `.teacher-panel`, `.exam-select`, `.exam-spotlight`, `.exam-spotlight-tip`, `.student-item`, `.si-grade-mid1`, `.p-a`, `.scope-selector-panel`, `.sub-scope-label`, `.detail-control-row`, `.btn-detail` |
 | `css/report-header.css` | A4 용지 · 머리말 | `.report-paper`, `.header-section`, `.logo-area`, `.main-title`, `.student-meta-grid`, `.meta-input` |
-| `css/checklist-table.css` | 표 · A/B/C 버튼 · 메모 칸 · SOLUTION · 팝오버 · 안내 문구 | `.table-title`, `.checklist-table`, `.check-row.grade-a`, `.btn-grade.active-a`, `.grade-note`, `.solution-td`, `.macro-btn` |
+| `css/checklist-table.css` | 표 · "진단평가 자세히" 스위치 · 간단히/자세히 칸 고르기 · A/B/C 버튼 · 메모 칸 · SOLUTION · 팝오버 · 안내 문구 | `.unit-title-row`, `.table-title`, `.detail-toggle`, `.sub-eval`, `.unit-eval`, `.checklist-table`, `.unit-block.is-detail .check-row.grade-a`, `.btn-grade.active-a`, `.grade-note`, `.solution-td`, `.macro-btn` |
 | `css/opinion.css` | 종합 의견 | `.opinion-section`, `.opinion-box` |
 | `css/action-dock.css` | 버튼 모음 · 저장 상태 · 토스트 | `.action-dock`, `.btn-action-print`, `.action-dock-save.is-saved`, `.app-toast` |
-| `css/responsive.css` | 넓은 PC(1280px↑) · 모바일(860px↓) 배치 | `@media (min-width: 1280px)`, `@media (max-width: 860px)` |
+| `css/responsive.css` | 넓은 PC(1280px↑) · 모바일(860px↓) 배치 (모바일 간단히: 대단원 평가 카드 `.unit-eval-row`) | `@media (min-width: 1280px)`, `@media (max-width: 860px)`, `.unit-eval-row` |
 | `css/print.css` | 인쇄 전용 | `@media print`, `@page`, `.print-only-badge`, `.print-footer` |
 | `admin/admin.css` | 관리자 화면 | `.admin-header`, `.add-form`, `.bulk`, `.roster-table`, `.grade-badge.g-mid1`, `.admin-toast` |
 
@@ -1231,6 +1365,8 @@ const CURRICULUM_DATA = {
 - 파일을 고쳐도 자동 반영되지 않습니다. **콘솔 → Firestore Database → 규칙** 에서 같은 부분을 바꾸고 **게시**하세요.
 - 같은 프로젝트에 다른 앱 규칙이 있으면 **전체를 덮어쓰지 말고** `▼ 체크리스트 시작` ~ `▲ 체크리스트 끝` 부분만 바꿉니다.
 - `hasOnly([…])` 목록에 없는 칸을 저장하면 **"저장소 규칙이 요청을 막았습니다"** 오류가 납니다. 새 칸을 만들면 여기에 추가하세요.
+- ⚠️ 진단평가 간단히/자세히 기능으로 체크리스트에 `detailUnits` 칸이 생겼습니다 (`hasOnly` 목록 + `(!('detailUnits' in d) || checklistMapOk(d.detailUnits))` 줄).
+  **이 버전을 배포하기 전에 규칙을 콘솔에 다시 게시**해야 저장이 됩니다. (게시 전에는 모든 저장이 거절됨)
 
 ---
 
@@ -1316,19 +1452,23 @@ const CURRICULUM_DATA = {
 
 난이도 ⭐
 
-📁 `index.html` · 🔎 `<p class="login-help">`
+로그인 카드는 위에서부터 **작은 로고 글자 → 큰 제목 → "선생님 이름" 라벨 → 입력칸 → "시작하기" 버튼 → 오류 문구 자리** 순서입니다.
+(로고 · 제목 글자는 [A-2](#a-2-리포트로그인-화면의-로고제목-글자-바꾸기))
+
+**안내 문단을 다시 넣고 싶을 때** — 지금은 입력칸 아래에 설명 문단이 없습니다. 버튼 바로 위에 문단 하나를 넣으면 됩니다.
+작은 회색 글자 모양은 📁 `css/login.css` · 🔎 `.login-help {` 에 남아 있어서 `class="login-help"` 만 붙이면 됩니다.
+
+📁 `index.html` · 🔎 `<button type="submit" class="login-submit" id="login-submit">`
 
 ```html
 <!-- ✏️ 바꾸기 전 -->
-<p class="login-help">
-  명단에 등록된 이름과 똑같이 입력하면 담당 학생 목록이 나와요.
-  명단에 없는 이름이면 빈 체크리스트로 시작합니다.
-</p>
-<!-- ✏️ 바꾼 후 -->
+<button type="submit" class="login-submit" id="login-submit">
+<!-- ✏️ 바꾼 후 (버튼 바로 위에 안내 문단 추가) -->
 <p class="login-help">
   관리자 페이지에 등록된 선생님 이름을 띄어쓰기까지 똑같이 입력하세요.<br />
   등록되지 않은 이름이면 저장되지 않는 빈 체크리스트가 열립니다.
 </p>
+<button type="submit" class="login-submit" id="login-submit">
 ```
 
 **"시작하기" 버튼 글자**는 HTML 과 JS **두 곳**에 있습니다. (확인 중에는 JS 가 "확인 중…" 으로 바꿨다가 되돌림)
@@ -1443,7 +1583,21 @@ const CURRICULUM_DATA = {
 <tr><th>중단원</th><th>주요 내용 <span class="editable-tag">수정 가능</span></th><th>평가</th><th>처방 <span class="editable-tag">수정 가능</span></th></tr>
 ```
 
-같은 파일에서 모바일 이름표도: 🔎 `data-label="진단평가"` → `data-label="평가"`, 🔎 `data-label="SOLUTION"` → `data-label="처방"`
+같은 파일에서 **모바일 카드의 이름표**도 바꿉니다. 진단평가 · SOLUTION 칸은 `gradeCellHtml` · `solutionCellHtml` 함수에 이름표 글자를 넘겨서 만듭니다 (마지막 `"…"` 가 이름표).
+
+| 칸 | 🔎 찾을 글자 | 바꾼 후 예 |
+| --- | --- | --- |
+| 중단원 줄의 진단평가 (자세히) | `${gradeCellHtml(subUnit.id, "sub-eval", "진단평가")}` | `"평가"` |
+| 중단원 줄의 SOLUTION (자세히) | `${solutionCellHtml(subUnit.id, "sub-eval", "SOLUTION")}` | `"처방"` |
+| 대단원 평가 카드 (간단히) | `${gradeCellHtml(unitKey, "unit-eval", "대단원 진단평가")}` | `"대단원 평가"` |
+| 대단원 SOLUTION 카드 (간단히) | `${solutionCellHtml(unitKey, "unit-eval", "대단원 SOLUTION")}` | `"대단원 처방"` |
+
+```js
+// ✏️ 바꾸기 전
+                      ${gradeCellHtml(subUnit.id, "sub-eval", "진단평가")}
+// ✏️ 바꾼 후 — 두 번째 "sub-eval" 은 그대로 두고 마지막 글자만
+                      ${gradeCellHtml(subUnit.id, "sub-eval", "평가")}
+```
 
 ✅ PC 에서 표 머리글, 휴대폰 크기(F12 → Ctrl+Shift+M)에서 카드의 작은 이름표 확인.
 
@@ -1503,6 +1657,32 @@ const CURRICULUM_DATA = {
 | 명단 표 아래 도움말 | `학년을 바꾸면(진급) 그 학생은 새 학년 체크리스트로 새로 시작합니다.` |
 
 알림 문구는 📁 `admin/admin.js` 에서 `notify(` 로 검색하면 모두 나옵니다. (예: 🔎 `학생을 ${student.teacher} 선생님 명단에 추가했어요`)
+
+#### A-11. 시험 선택 안내 말풍선 문구 바꾸기
+
+난이도 ⭐
+
+로그인했는데 시험이 공란이면 화면이 어두워지면서 왼쪽 위 시험 선택 칸 옆(좁은 화면은 아래)에 뜨는 말풍선입니다.
+
+📁 `index.html` · 🔎 `<b>먼저 시험을 선택해 주세요</b>`
+
+```html
+<!-- ✏️ 바꾸기 전 -->
+<div class="exam-spotlight-tip no-print" id="exam-spotlight-tip" hidden>
+  <b>먼저 시험을 선택해 주세요</b>
+  <span>시험을 고르면 학생의 체크리스트가 열려요.</span>
+</div>
+<!-- ✏️ 바꾼 후 -->
+<div class="exam-spotlight-tip no-print" id="exam-spotlight-tip" hidden>
+  <b>① 여기서 이번 시험을 고르세요</b>
+  <span>고르면 담당 학생들의 체크리스트를 쓸 수 있어요.</span>
+</div>
+```
+
+✅ 새 탭에서 접속(시험 공란) → 로그인하면 새 문구가 보임.
+
+💡 둘째 줄이 필요 없으면 `<span>…</span>` 줄을 지웁니다. 말풍선 최대 폭은 📁 `css/sidebar.css` · 🔎 `max-width: min(260px, calc(100vw - 24px));`
+어둡기 · 반짝임 · 안내 끄기는 [J-7](#j-7-시험-선택-안내의-어둡기--반짝임-바꾸기--끄기).
 
 ---
 
@@ -1696,6 +1876,7 @@ const CURRICULUM_DATA = {
 
 // ✏️ 대단원 추가 (학년 배열 안, 원하는 위치에)
     {
+      id: "m2-9",                       // 대단원 id — 같은 학년에서 쓰지 않은 값
       title: "9. 과학 탐구 프로젝트",
       sub: [
         {
@@ -1708,6 +1889,7 @@ const CURRICULUM_DATA = {
 ```
 
 ⚠️ 대단원 색은 **순서대로** 정해져서(`UNIT_COLORS`), 중간에 대단원을 넣으면 뒤 대단원들의 색이 한 칸씩 밀립니다.
+⚠️ 대단원 `id` 는 **대단원 하나로 적는 진단평가(간단히)** 의 저장 열쇠입니다. 중단원 id 와 겹치지 않게, 한 번 정하면 바꾸지 마세요. ([5-3](#5-3-jsdatacurriculumjs--단원-데이터))
 
 #### C-7. 새 학년 추가하기 (예: 고1)
 
@@ -1723,6 +1905,7 @@ const CURRICULUM_DATA = {
   ],
   high1: [
     {
+      id: "h1-1",
       title: "1. 물질과 규칙성",
       sub: [
         {
@@ -1848,7 +2031,7 @@ A/B/C 색은 **네 곳**에 나뉘어 있습니다. 한 등급 색을 바꿀 때
 | 어디 색 | 📁 파일 | 🔎 찾을 글자 |
 | --- | --- | --- |
 | 선택된 버튼 | `css/checklist-table.css` | `.btn-grade.active-a {` |
-| 줄 배경 | `css/checklist-table.css` | `.check-row.grade-a {` |
+| 줄 배경 (자세히 = 그 줄, 간단히 = 대단원의 줄 전체 — 세 줄짜리 규칙 묶음) | `css/checklist-table.css` | `.unit-block.is-detail .check-row.grade-a,` |
 | 인쇄 · 이미지 배지 | `js/config.js` | `"background-color: #e3f0fc; color: #1565c0; border:1px solid #1565c0; display:inline-block;",` |
 | 왼쪽 목록 개수 글자 | `css/sidebar.css` | `.p-a {` |
 
@@ -1861,10 +2044,14 @@ A/B/C 색은 **네 곳**에 나뉘어 있습니다. 한 등급 색을 바꿀 때
   color: #e65100 !important;
   border-color: #e65100 !important;
 }
-.check-row.grade-c {
+.unit-block.is-detail .check-row.grade-c,
+.unit-block:not(.is-detail)[data-unit-grade="C"] .check-row,
+.unit-block:not(.is-detail)[data-unit-grade="C"] .unit-eval-row {
   background: #fff8f0;
 }
 ```
+
+💡 줄 배경 규칙의 선택자 세 줄은 그대로 두고 `background` 값만 바꾸면 됩니다 (첫 줄 = 자세히, 둘째 · 셋째 줄 = 간단히 · 모바일 대단원 카드).
 
 ```js
 // 📁 js/config.js — GRADE_META 의 C — ✏️ 바꾼 후
@@ -1891,17 +2078,18 @@ A/B/C 색은 **네 곳**에 나뉘어 있습니다. 한 등급 색을 바꿀 때
 
 **저장 값은 A/B/C 그대로 두고 보이는 글자만** 바꾸는 방법입니다 (기존 기록과 호환).
 
-**① 버튼 글자** 📁 `js/checklist-table.js` · 🔎 `onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">A</button>`
+**① 버튼 글자** 📁 `js/checklist-table.js` · 🔎 `onclick="selectGradeBtn(this, 'A', '${key}')">A</button>`
+(`gradeCellHtml` 함수 안 — 간단히 · 자세히 칸이 이 버튼 3개를 함께 씁니다)
 
 ```js
 // ✏️ 바꾸기 전 (버튼 3개)
-<button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">A</button>
-<button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${subUnit.id}')">B</button>
-<button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>
+<button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${key}')">A</button>
+<button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${key}')">B</button>
+<button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${key}')">C</button>
 // ✏️ 바꾼 후 — 맨 끝 >A< >B< >C< 만 바꿈 (data-grade · 'A' 는 그대로!)
-<button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${subUnit.id}')">상</button>
-<button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${subUnit.id}')">중</button>
-<button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">하</button>
+<button type="button" class="btn-grade" data-grade="A" onclick="selectGradeBtn(this, 'A', '${key}')">상</button>
+<button type="button" class="btn-grade" data-grade="B" onclick="selectGradeBtn(this, 'B', '${key}')">중</button>
+<button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${key}')">하</button>
 ```
 
 **② 인쇄 배지 글자** — `GRADE_META` 에 `label` 을 추가하고 배지에 그 글자를 넣습니다.
@@ -1934,11 +2122,11 @@ const GRADE_META = {
   printBadge.innerHTML = meta.label || grade;
 ```
 
-**③ 오른쪽 위 진행 현황** 📁 `js/checklist-table.js` · 🔎 `` · A ${countA} / B ${countB} / C ${countC}` ``
+**③ 오른쪽 위 진행 현황** 📁 `js/checklist-table.js` · 🔎 `` · A ${count("A")} / B ${count("B")} / C ${count("C")}` ``
 
 ```js
 // ✏️ 바꾼 후
-    reportStatus.textContent = `평가 ${gradedRows.length}/${visibleRows.length}개 완료 · 상 ${countA} / 중 ${countB} / 하 ${countC}`;
+    reportStatus.textContent = `평가 ${graded}/${items.length}개 완료 · 상 ${count("A")} / 중 ${count("B")} / 하 ${count("C")}`;
 ```
 
 **④ 왼쪽 목록 개수** 📁 `js/student-list.js` · 🔎 `` `<span class="p-a">A${summary.A}</span>` + ``
@@ -1958,27 +2146,28 @@ const GRADE_META = {
 
 난이도 ⭐⭐⭐
 
-등급 목록이 여러 파일에 흩어져 있어서 **11곳**을 고칩니다. 하나라도 빠지면 D 가 저장 · 표시되지 않습니다.
+등급 목록이 여러 파일에 흩어져 있어서 **9곳**을 고칩니다. 하나라도 빠지면 D 가 저장 · 표시되지 않습니다.
+(간단히 · 자세히 칸은 같은 함수로 만들어져서 한 번만 고치면 두 방식에 모두 적용됩니다)
 
 | # | 📁 파일 | 🔎 찾을 글자 | 할 일 |
 | --- | --- | --- | --- |
-| 1 | `js/checklist-table.js` | `onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>` | 바로 아래에 D 버튼 추가 |
+| 1 | `js/checklist-table.js` | `onclick="selectGradeBtn(this, 'C', '${key}')">C</button>` | 바로 아래에 D 버튼 추가 |
 | 2 | `js/config.js` | `const GRADE_META = {` | `D: { … }` 추가 |
-| 3 | `js/checklist-table.js` | `row.classList.remove("grade-a", "grade-b", "grade-c");` | `"grade-d"` 추가 |
-| 4 | `js/checklist-table.js` | `s.classList.remove("active-a", "active-b", "active-c"),` | `"active-d"` 추가 |
-| 5 | `js/checklist-table.js` | `if (row.querySelector(".active-c")) return "C";` | D 줄 추가 |
-| 6 | `js/checklist-table.js` | `row.querySelector(".active-a, .active-b, .active-c"),` | `.active-d` 추가 + D 개수 |
-| 7 | `js/storage.js` | `stateObj.activeGrades[s.id] = "C";` | D 저장 추가 |
-| 8 | `js/export.js` | `(row) => !row.querySelector(".active-a, .active-b, .active-c"),` | `.active-d` 추가 |
-| 9 | `js/db/db.js` | `if (["A", "B", "C"].includes(value))` | `"D"` 추가 |
-| 10 | `js/student-list.js` | `return { A: count("A"), B: count("B"), C: count("C"), updatedAt: report.updatedAt \|\| null };` | D 개수 + 표시 |
-| 11 | CSS 3곳 | `.btn-grade.active-c {` · `.check-row.grade-c {` · `.p-c {` | D 색 추가 + 열 너비 |
+| 3 | `js/checklist-table.js` | `s.classList.remove("active-a", "active-b", "active-c");` | `"active-d"` 추가 |
+| 4 | `js/checklist-table.js` | `row.classList.remove("grade-a", "grade-b", "grade-c");` | `"grade-d"` 추가 |
+| 5 | `js/checklist-table.js` | `if (cell.querySelector(".active-c")) return "C";` | D 줄 추가 |
+| 6 | `js/checklist-table.js` | `` / C ${count("C")}` `` | 진행 현황에 D 개수 |
+| 7 | `js/db/db.js` | `if (["A", "B", "C"].includes(value))` | `"D"` 추가 |
+| 8 | `js/student-list.js` | `const counts = { A: 0, B: 0, C: 0 };` | D 개수 세기 + 목록 표시 |
+| 9 | CSS 3곳 | `.btn-grade.active-c {` · `.unit-block.is-detail .check-row.grade-c,` · `.p-c {` | D 색 추가 + 열 너비 |
+
+💡 저장(`storage.js` 의 `buildStateObj`)과 출력 전 검사(`export.js`)는 `getActiveGrade` 로 평가를 읽으므로 고칠 필요 없습니다.
 
 **1** 📁 `js/checklist-table.js`
 
 ```js
-<button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${subUnit.id}')">C</button>
-<button type="button" class="btn-grade" data-grade="D" onclick="selectGradeBtn(this, 'D', '${subUnit.id}')">D</button>
+<button type="button" class="btn-grade" data-grade="C" onclick="selectGradeBtn(this, 'C', '${key}')">C</button>
+<button type="button" class="btn-grade" data-grade="D" onclick="selectGradeBtn(this, 'D', '${key}')">D</button>
 ```
 
 **2** 📁 `js/config.js` — `C: { … },` 뒤에
@@ -1995,56 +2184,35 @@ const GRADE_META = {
 **3 · 4** 📁 `js/checklist-table.js` (`applyGradeState` 안)
 
 ```js
-  row.classList.remove("grade-a", "grade-b", "grade-c", "grade-d");
+    s.classList.remove("active-a", "active-b", "active-c", "active-d");
   …
-      s.classList.remove("active-a", "active-b", "active-c", "active-d"),
+    row.classList.remove("grade-a", "grade-b", "grade-c", "grade-d");
 ```
 
 **5** 📁 `js/checklist-table.js` (`getActiveGrade` 안) — C 줄 아래에
 
 ```js
-  if (row.querySelector(".active-d")) return "D";
+  if (cell.querySelector(".active-d")) return "D";
 ```
 
 **6** 📁 `js/checklist-table.js` (`updateStatus` 안)
 
 ```js
-  const gradedRows = visibleRows.filter((row) =>
-    row.querySelector(".active-a, .active-b, .active-c, .active-d"),
-  );
-  … countC 아래에 추가 …
-  const countD = visibleRows.filter((row) =>
-    row.querySelector(".active-d"),
-  ).length;
-  …
-    reportStatus.textContent = `평가 ${gradedRows.length}/${visibleRows.length}개 완료 · A ${countA} / B ${countB} / C ${countC} / D ${countD}`;
+    reportStatus.textContent = `평가 ${graded}/${items.length}개 완료 · A ${count("A")} / B ${count("B")} / C ${count("C")} / D ${count("D")}`;
 ```
 
-**7** 📁 `js/storage.js` (`buildStateObj` 안)
-
-```js
-        else if (row.querySelector(".active-c"))
-          stateObj.activeGrades[s.id] = "C";
-        else if (row.querySelector(".active-d"))
-          stateObj.activeGrades[s.id] = "D";
-```
-
-**8** 📁 `js/export.js` (`getUngradedRows` 안)
-
-```js
-    (row) => !row.querySelector(".active-a, .active-b, .active-c, .active-d"),
-```
-
-**9** 📁 `js/db/db.js` (`cleanReportData` 안)
+**7** 📁 `js/db/db.js` (`cleanReportData` 안)
 
 ```js
     if (["A", "B", "C", "D"].includes(value)) out.activeGrades[safeKey(key)] = value;
 ```
 
-**10** 📁 `js/student-list.js` (`summarize` · `progressHtml`)
+**8** 📁 `js/student-list.js` (`countGrades` · `progressHtml`)
 
 ```js
-  return { A: count("A"), B: count("B"), C: count("C"), D: count("D"), updatedAt: report.updatedAt || null };
+  const counts = { A: 0, B: 0, C: 0, D: 0 };
+…
+      if (g === "A" || g === "B" || g === "C" || g === "D") counts[g]++;
 …
   if (!summary || summary.A + summary.B + summary.C + (summary.D || 0) === 0) {
 …
@@ -2052,9 +2220,9 @@ const GRADE_META = {
     `<span class="p-d">D${summary.D || 0}</span>`
 ```
 
-(같은 파일 🔎 `function updateStudentSummary` 안의 `student.summary = { A: count("A"), B: count("B"), C: count("C"), updatedAt };` 에도 `D: count("D"),` 추가)
+(`summarize` · `updateStudentSummary` 는 `countGrades` 를 부르므로 고칠 필요 없습니다)
 
-**11** CSS
+**9** CSS
 
 ```css
 /* 📁 css/checklist-table.css — .btn-grade.active-c 아래 */
@@ -2063,8 +2231,10 @@ const GRADE_META = {
   color: #455a64 !important;
   border-color: #455a64 !important;
 }
-/* .check-row.grade-c 아래 */
-.check-row.grade-d {
+/* 줄 배경: C 규칙 묶음(.unit-block.is-detail .check-row.grade-c, …) 아래 */
+.unit-block.is-detail .check-row.grade-d,
+.unit-block:not(.is-detail)[data-unit-grade="D"] .check-row,
+.unit-block:not(.is-detail)[data-unit-grade="D"] .unit-eval-row {
   background: #f5f7f8;
 }
 /* 버튼이 4개라 진단평가 열을 넓힘: .checklist-table th:nth-child(3) 의 112px → 150px,
@@ -2088,21 +2258,21 @@ const GRADE_META = {
 ```js
 // ✏️ 바꾸기 전
   // 1) 진단평가(A/B/C) 미선택 항목
-  const ungraded = getUngradedRows();
+  const ungraded = getUngradedItems();
   if (ungraded.length) {
     … (경고창 · 스크롤 · return false) …
   }
 // ✏️ 바꾼 후 — 블록 전체를 /* */ 로 감싸서 끄기
   // 1) 진단평가(A/B/C) 미선택 항목 — 검사 안 함
   /*
-  const ungraded = getUngradedRows();
+  const ungraded = getUngradedItems();
   if (ungraded.length) {
     …
   }
   */
 ```
 
-⚠️ `{` 와 `}` 짝이 맞게 **`if` 블록 전체**를 감싸야 합니다. 평가하지 않은 줄은 인쇄물에서 배지 칸이 비어 있습니다.
+⚠️ `{` 와 `}` 짝이 맞게 **`if` 블록 전체**를 감싸야 합니다. 평가하지 않은 항목은 인쇄물에서 배지 칸이 비어 있습니다.
 
 #### D-5. 인쇄 배지 모양(크기 · 모서리) 바꾸기
 
@@ -2123,21 +2293,120 @@ const GRADE_META = {
 
 ⚠️ 첫 줄 `display: none;` 은 그대로 둡니다 (화면에서는 JS 와 print.css 가 필요할 때만 보이게 함).
 
+#### D-6. 새 체크리스트의 진단평가 방식 기본값 바꾸기
+
+난이도 ⭐
+
+지금은 새 체크리스트가 **간단히 = 대단원마다 진단평가 · SOLUTION 1개** 로 시작하고, 필요한 대단원만 "진단평가 자세히" 스위치를 켭니다.
+처음부터 **자세히 = 중단원 줄마다** 로 시작하게 하려면: (구조 설명은 [4-11장](#4-11-진단평가-간단히--자세히-대단원별-평가))
+
+📁 `js/checklist-table.js` · 🔎 `const DETAIL_DEFAULT = false;`
+
+```js
+// ✏️ 바꾸기 전
+const DETAIL_DEFAULT = false; // 새 체크리스트의 진단평가 방식: false = 대단원별 1개(간단히), true = 중단원별(자세히)
+// ✏️ 바꾼 후
+const DETAIL_DEFAULT = true; // 새 체크리스트의 진단평가 방식: false = 대단원별 1개(간단히), true = 중단원별(자세히)
+```
+
+✅ **저장된 적 없는** 학생 · 시험(또는 빈 체크리스트)을 열면 모든 대단원의 스위치가 켜져 있고, 줄마다 A/B/C 버튼이 보임.
+
+⚠️ 이미 저장된 체크리스트는 저장 당시의 방식(`detailUnits`)대로 열립니다. 모두 바꾸려면 단원 설정 패널의 **[모두 자세히]** 를 누르세요.
+
+#### D-7. "진단평가 자세히" 스위치 · 버튼 글자 바꾸기
+
+난이도 ⭐
+
+| 무엇 | 📁 파일 | 🔎 찾을 글자 |
+| --- | --- | --- |
+| 표 제목 오른쪽 스위치 글자 | `js/checklist-table.js` | `<span class="detail-toggle-text">진단평가 자세히</span>` |
+| 스위치에 마우스를 올리면 뜨는 설명 | `js/checklist-table.js` | `title="켜면 중단원마다 진단평가 · SOLUTION 을 따로 적어요"` |
+| 단원 설정 패널의 작은 제목 | `index.html` | `<span class="detail-control-label">진단평가</span>` |
+| 전체 버튼 두 개 | `index.html` | `모두 자세히` · `모두 간단히` |
+| 모바일 대단원 카드의 칸 이름 | `js/checklist-table.js` | `"대단원 진단평가"` · `"대단원 SOLUTION"` ([A-7](#a-7-표-머리글-이름-바꾸기)) |
+
+```js
+// 📁 js/checklist-table.js — ✏️ 바꾸기 전
+                      <span class="detail-toggle-text">진단평가 자세히</span>
+// ✏️ 바꾼 후
+                      <span class="detail-toggle-text">중단원별로 평가</span>
+```
+
+```html
+<!-- 📁 index.html — ✏️ 바꾼 후 (버튼 안의 글자만 바꿈) -->
+              <button
+                type="button"
+                class="btn-detail"
+                id="detail-all-on"
+                onclick="setAllDetail(true)"
+              >
+                모두 중단원별
+              </button>
+              <button
+                type="button"
+                class="btn-detail"
+                id="detail-all-off"
+                onclick="setAllDetail(false)"
+              >
+                모두 대단원별
+              </button>
+```
+
+✅ 표 제목 옆 스위치 · 단원 설정 패널 버튼 글자 확인. (인쇄 · 이미지에는 스위치가 나오지 않는 것이 정상)
+
+💡 모양은 📁 `css/checklist-table.css` · 🔎 `.detail-toggle {` (스위치 테두리 · 글자), 🔎 `.detail-toggle-input:checked + .detail-toggle-switch {` (켰을 때 색),
+📁 `css/sidebar.css` · 🔎 `.btn-detail {` (버튼) · 🔎 `.btn-detail.is-active {` (지금 상태와 같아서 강조된 버튼).
+⚠️ `id="detail-all-on"` · `id="detail-all-off"` 와 `onclick` 은 바꾸지 마세요 (강조 표시 · 동작이 이 값을 씀). 스위치 글자가 길면 좁은 화면에서 제목 탭 아래 줄로 내려갑니다.
+
+#### D-8. 스위치를 없애고 한 가지 방식으로만 쓰기
+
+난이도 ⭐⭐
+
+예) **항상 간단히(대단원별 1개)** 로만 쓰기 — 스위치와 전체 버튼을 숨기고, 예전에 자세히로 저장한 체크리스트도 간단히로 엽니다.
+
+**①** 📁 `css/checklist-table.css` 맨 아래에 추가 — 표 제목 옆 스위치 숨기기
+
+```css
+/* 진단평가 방식 스위치를 쓰지 않음 */
+.detail-toggle {
+  display: none;
+}
+```
+
+**②** 📁 `index.html` · 🔎 `<div class="detail-control-row">` — 이 `<div>` 부터 짝이 맞는 `</div>` 까지 묶음 전체(작은 제목 + 버튼 두 개)를 지웁니다.
+
+**③** 📁 `js/storage.js` · 🔎 `setUnitDetail(unitKey, detailUnits[unitKey], { save: false });`
+
+```js
+// ✏️ 바꾸기 전
+    setUnitDetail(unitKey, detailUnits[unitKey], { save: false });
+// ✏️ 바꾼 후 — 저장본의 방식과 상관없이 항상 기본값(DETAIL_DEFAULT)으로 열기
+    setUnitDetail(unitKey, DETAIL_DEFAULT, { save: false });
+```
+
+**④ (항상 자세히로 쓰려면)** [D-6](#d-6-새-체크리스트의-진단평가-방식-기본값-바꾸기) 처럼 `DETAIL_DEFAULT` 를 `true` 로 바꿉니다.
+
+✅ 스위치 · 전체 버튼이 사라지고, 어떤 체크리스트를 열어도 같은 방식으로 보임.
+
+⚠️ 다른 방식으로 적어 두었던 평가 · SOLUTION 은 지워지지 않고 숨겨지기만 합니다 (③ 을 되돌리면 다시 보임).
+💡 왼쪽 목록의 A/B/C 개수는 **저장된** `detailUnits` 기준으로 셉니다(그 체크리스트를 한 번 열어 저장하면 맞춰짐). 처음부터 맞추려면
+📁 `js/student-list.js` · 🔎 `const keys = detailUnits[unitKey] ? shownSubs.map((s) => s.id) : [unitKey];` 의 `detailUnits[unitKey]` 를 `DETAIL_DEFAULT` 로 바꿉니다.
+
 ---
 
 ### E. 진단평가 메모 칸
 
-A/B/C 버튼 아래 "점수 등" 칸입니다. 저장 이름은 `gradeNotes` 입니다.
+A/B/C 버튼 아래 메모 칸입니다 (비어 있으면 흐린 안내 글자 "코멘트"). 저장 이름은 `gradeNotes` 입니다.
 
-#### E-1. 흐린 안내 글자("점수 등") 바꾸기
+#### E-1. 흐린 안내 글자("코멘트") 바꾸기
 
 난이도 ⭐
 
-📁 `js/checklist-table.js` · 🔎 `data-placeholder="점수 등"`
+📁 `js/checklist-table.js` · 🔎 `data-placeholder="코멘트"`
 
 ```js
 // ✏️ 바꾸기 전
-data-placeholder="점수 등"
+data-placeholder="코멘트"
 // ✏️ 바꾼 후
 data-placeholder="예) 18/20"
 ```
@@ -2191,7 +2460,7 @@ const GRADE_NOTE_MAX = 60;
 
 📁 `js/checklist-table.js` · 🔎 `<div class="grade-note"`
 
-`<div class="grade-note" … ></div>` **한 줄 전체**를 지웁니다. 나머지 코드는 칸이 없으면 알아서 건너뜁니다.
+`<div class="grade-note" … ></div>` **한 줄 전체**를 지웁니다 (`gradeCellHtml` 함수 안 — 간단히 · 자세히 칸 모두에서 사라짐). 나머지 코드는 칸이 없으면 알아서 건너뜁니다.
 (이미 저장된 메모는 Firebase 에 남고, 줄을 되살리면 다시 보입니다)
 
 #### E-5. 메모를 꼭 적어야 인쇄되게 하기
@@ -2201,20 +2470,21 @@ const GRADE_NOTE_MAX = 60;
 📁 `js/export.js` · 🔎 `// 2) SOLUTION 미입력 항목` — **바로 위에** 추가
 
 ```js
-  // 1-2) 진단평가 메모 미입력 항목
-  const noNote = getVisibleRows().filter(
-    (row) => !readGradeNote(row.querySelector(".grade-note")),
+  // 1-2) 진단평가 메모 미입력 항목 (간단히 대단원은 대단원 메모, 자세히 대단원은 줄마다)
+  const noNote = getEvalItems().filter(
+    (item) => !readGradeNote(document.getElementById(`${item.key}-note`)),
   );
   if (noNote.length) {
     alert(
-      `진단평가 메모(점수 등)가 비어 있는 항목이 ${noNote.length}개 있습니다.\n${noNote.slice(0, 5).map(rowLabel).join(", ")}\n\n메모를 입력해야 ${actionLabel}할 수 있습니다.`,
+      `진단평가 코멘트가 비어 있는 항목이 ${noNote.length}개 있습니다.\n${noNote.slice(0, 5).map(itemLabel).join(", ")}\n\n메모를 입력해야 ${actionLabel}할 수 있습니다.`,
     );
-    noNote[0].scrollIntoView({ behavior: "smooth", block: "center" });
+    noNote[0].element.scrollIntoView({ behavior: "smooth", block: "center" });
     return false;
   }
 ```
 
-✅ 메모가 빈 줄이 있으면 인쇄 · 이미지 버튼이 경고창을 띄움.
+✅ 메모가 빈 항목이 있으면 인쇄 · 이미지 버튼이 경고창을 띄움.
+⚠️ [E-4](#e-4-메모-칸-없애기) 로 메모 칸을 없앴다면 이 검사는 넣지 마세요 (칸이 없어서 항상 걸림).
 
 #### E-6. 메모를 여러 줄로 쓰게 하기
 
@@ -2225,15 +2495,17 @@ const GRADE_NOTE_MAX = 60;
 **①** 📁 `js/checklist-table.js` · 🔎 `onkeydown="onGradeNoteKeydown(event)" onbeforeinput="onGradeNoteBeforeInput(event)"` — 이 두 속성을 지웁니다.
 
 ```js
-// ✏️ 바꾼 후
-<div class="grade-note" id="${subUnit.id}-note" contenteditable="true" data-placeholder="점수 등" onpaste="onGradeNotePaste(event)" oninput="onGradeNoteInput(this, event)"></div>
+// ✏️ 바꾼 후 (gradeCellHtml 함수 안)
+<div class="grade-note" id="${key}-note" contenteditable="true" data-placeholder="코멘트" onpaste="onGradeNotePaste(event)" oninput="onGradeNoteInput(this, event)"></div>
 ```
 
 **②** 같은 파일 🔎 `function onGradeNotePaste(event)` — 붙여넣기에서 줄바꿈을 지키기
 
 ```js
 // ✏️ 바꾸기 전
-  const text = (event.clipboardData ? event.clipboardData.getData("text/plain") : "").replace(/\s+/g, " ");
+  const text = (
+    event.clipboardData ? event.clipboardData.getData("text/plain") : ""
+  ).replace(/\s+/g, " ");
 // ✏️ 바꾼 후
   const text = event.clipboardData ? event.clipboardData.getData("text/plain") : "";
 ```
@@ -2263,11 +2535,11 @@ function onGradeNoteInput(el, event) {
 }
 ```
 
-**⑤** 📁 `js/storage.js` · 🔎 `if (noteEl) noteEl.textContent = typeof notes[s.id] === "string" ? notes[s.id] : "";`
+**⑤** 📁 `js/storage.js` · 🔎 `if (noteEl) noteEl.textContent = typeof notes[key] === "string" ? notes[key] : "";`
 
 ```js
 // ✏️ 바꾼 후 (innerText 로 넣어야 줄바꿈이 살아남)
-      if (noteEl) noteEl.innerText = typeof notes[s.id] === "string" ? notes[s.id] : "";
+    if (noteEl) noteEl.innerText = typeof notes[key] === "string" ? notes[key] : "";
 ```
 
 ✅ 메모 칸에서 Enter 로 줄바꿈 → 저장 → 새로고침해도 줄바꿈 유지, 인쇄물에도 여러 줄.
@@ -2938,6 +3210,50 @@ body {
 ```
 
 ⚠️ 왼쪽 아래는 학생 목록과 겹칠 수 있습니다. 모바일은 `responsive.css` 의 `.action-dock` 규칙이 따로 맨 아래 막대로 만들어 줍니다.
+
+#### J-7. 시험 선택 안내의 어둡기 · 반짝임 바꾸기 · 끄기
+
+난이도 ⭐⭐
+
+로그인했는데 시험이 공란이면 왼쪽 위 시험 선택 칸만 밝게 두고 나머지 화면을 어둡게 하는 안내입니다.
+(`js/student-list.js` 의 `updateExamSpotlight` · `followExamSpotlight`, 모양은 `css/sidebar.css` 의 `.exam-spotlight`)
+
+| 바꿀 것 | 📁 파일 | 🔎 찾을 글자 |
+| --- | --- | --- |
+| 어두운 정도 (마지막 숫자, 0 = 투명 ~ 1 = 완전히 까맣게) | `css/sidebar.css` | `box-shadow: 0 0 0 200vmax rgba(10, 18, 34, 0.6);` |
+| 반짝이는 금색 테두리의 색 · 굵기 | `css/sidebar.css` | `border: 3px solid #f4d98a;` |
+| 반짝이는 빠르기 (초) | `css/sidebar.css` | `animation: exam-spotlight-pulse 1.4s ease-in-out infinite;` |
+| 시험 칸 둘레 밝은 여백 · 말풍선까지 간격 | `js/student-list.js` | `const pad = 8;` · `const gap = 18;` |
+
+```css
+/* 📁 css/sidebar.css — ✏️ 바꾼 후: 더 어둡게, 반짝임 없이 */
+.exam-spotlight {
+  …
+  box-shadow: 0 0 0 200vmax rgba(10, 18, 34, 0.75);
+  …
+}
+.exam-spotlight::after {
+  …
+  animation: none;
+}
+```
+
+**안내 자체를 끄기** 📁 `js/student-list.js` · 🔎 `function updateExamSpotlight()`
+
+```js
+// ✏️ 바꾸기 전
+  const show =
+    Boolean(currentTeacher) &&
+    !currentExam &&
+    !isBlankChecklist &&
+    !document.getElementById("login-screen").classList.contains("open");
+// ✏️ 바꾼 후
+  const show = false; // 시험 선택 안내 끄기
+```
+
+✅ 새 탭에서 로그인(시험 공란) → 화면이 어두워지지 않음. 시험 칸의 금색 빛(`.exam-select.is-empty`)과 표 자리의 "왼쪽 위에서 시험을 먼저 선택하면…" 문구는 그대로 남습니다.
+
+⚠️ 어두운 막은 **클릭을 막지 않습니다** (`.exam-spotlight` 의 `pointer-events: none;`). 이 줄을 지우면 투명한 네모가 시험 선택 칸을 덮어서 **시험을 고를 수 없게** 되니 지우지 마세요.
 
 ---
 
@@ -3630,7 +3946,7 @@ const REPORTS_COLLECTION = "nature-reports";
 
 ```
 // hasOnly 목록 끝에 'homework' 추가
-        && d.keys().hasOnly(['studentId', 'teacher', 'studentName', 'schoolName', 'grade', 'examType', 'opinion', 'customEdits', 'activeGrades', 'scopeSelections', 'gradeNotes', 'updatedAt', 'homework'])
+        && d.keys().hasOnly(['studentId', 'teacher', 'studentName', 'schoolName', 'grade', 'examType', 'opinion', 'customEdits', 'activeGrades', 'scopeSelections', 'gradeNotes', 'detailUnits', 'updatedAt', 'homework'])
 // 검사 한 줄 추가 (d.updatedAt is number; 의 앞 줄에)
         && (!('homework' in d) || checklistTextOk(d.homework, 0, 60000))
 ```
@@ -3738,6 +4054,7 @@ const DEFAULT_COLUMNS = { teacher: 0, name: 1, school: 2, grade: 3, className: 4
 2. `Missing or insufficient permissions` → 규칙 문제. 자주 있는 원인:
    - 코드에서 새 칸을 저장하는데 `firestore.rules` 의 `hasOnly([…])` 에 없음 (P-4 ⑥, P-5 ④)
    - 규칙 파일만 고치고 **콘솔에 게시하지 않음**
+     (예: 진단평가 간단히/자세히 기능이 들어간 버전을 배포했는데, `'detailUnits'` 가 들어간 규칙을 아직 게시하지 않음 → **모든** 체크리스트 저장이 거절됨)
    - 명단에서 학생이 지워졌거나 학년이 바뀜 → 새로고침
 3. Firebase 콘솔 → Firestore → 규칙 → **규칙 플레이그라운드**로 문서 경로 · 데이터를 넣고 시험해 볼 수 있습니다.
 
@@ -3855,6 +4172,9 @@ git push
 | 로그인 화면이 계속 뜸 / 버튼이 안 눌림 | 콘솔 오류 | 8-1 표 참고 |
 | 로그인했는데 학생이 없음 (빈 체크리스트) | 관리자 명단의 **선생님 이름**과 띄어쓰기까지 같은지 | 관리자 페이지에서 선생님 이름 수정 |
 | 표가 안 보임 | ① 시험 선택이 공란 ② 단원 설정이 모두 꺼짐 ③ "단원 데이터가 없습니다" 안내 | 시험 선택 / 단원 켜기 / `curriculum.js` 의 학년 코드와 명단 학년 일치 확인 |
+| 진단평가 · SOLUTION 이 대단원마다 1개만 보임 | 정상 (기본 = 간단히) | 줄마다 쓰려면 표 제목 오른쪽 **"진단평가 자세히"** 스위치, 전체는 단원 설정의 [모두 자세히]. 기본값은 [D-6](#d-6-새-체크리스트의-진단평가-방식-기본값-바꾸기) |
+| 예전에 줄마다 적은 A/B/C · SOLUTION 이 안 보임 | 그 대단원이 간단히로 되어 있음 | 스위치를 켜면 그대로 보입니다 (방식을 바꿔도 내용은 지워지지 않음) |
+| 업데이트한 뒤 모든 저장이 "저장소 규칙이 요청을 막았습니다" | `firestore.rules` 의 `hasOnly` 에 `'detailUnits'` 가 있는 규칙을 콘솔에 게시했는지 | 규칙을 다시 붙여넣고 게시 → 새로고침 ([5-23](#5-23-firestorerules--firestore-보안-규칙)) |
 | 단원 설정이 오른쪽에 안 보임 | 창 폭 (Console 에 `innerWidth`) | 1280 미만이면 왼쪽이 정상. 기준은 [J-1](#j-1-단원-설정이-오른쪽에-보이는-기준-폭-바꾸기) |
 | 다른 학생을 열었는데 앞 학생 내용이 남아 있음 | 새로 추가한 칸의 **초기화** | [P-4 ④](#p-4-체크리스트에-새-저장-칸-추가하기-예-숙제-메모) |
 | "저장됨" 이 뜨는데 새로고침하면 새 칸 내용이 사라짐 | `db.js` 의 `cleanReportData` · `storage.js` 의 `applyStateObj` | [P-4 ③ ⑤](#p-4-체크리스트에-새-저장-칸-추가하기-예-숙제-메모) |
@@ -3923,16 +4243,20 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 ### 9-3. 선생님 화면 (`/`)
 
 - [ ] 선생님 이름으로 로그인 → 왼쪽에 반별 학생 목록
+- [ ] (새 탭 · 시험 공란이면) 왼쪽 위 시험 선택 칸만 밝고 나머지 화면은 어두움 + 말풍선 → 시험을 고르면 사라짐
 - [ ] 시험 선택 → 첫 학생(또는 마지막 학생) 체크리스트가 열림
 - [ ] 단원 설정 켜기/끄기 → 표 보이기/숨기기, "표시 단원" 숫자
 - [ ] A/B/C 클릭 → 줄 색 · 진행 현황 숫자
+- [ ] 새 체크리스트는 대단원마다 진단평가 · SOLUTION 이 1개(오른쪽 두 칸이 세로로 합쳐짐) → "진단평가 자세히" 스위치를 켜면 줄마다, 끄면 다시 1개 (적은 내용 유지)
+- [ ] 단원 설정에서 대단원의 **첫 번째 중단원**을 꺼도 합쳐진 평가 칸이 다음 줄로 옮겨 가 계속 보임
+- [ ] [모두 자세히] · [모두 간단히] → 모든 대단원이 바뀌고 누른 버튼이 강조됨
 - [ ] 메모 칸 입력 · SOLUTION 문구 버튼 · 종합 의견 입력
 - [ ] "저장 중…" → "14:05 저장됨"
 - [ ] **새로고침** → 같은 내용 유지, 왼쪽 목록 A/B/C 개수 유지
 - [ ] 다른 학생 열기 → 그 학생 내용 (앞 학생 내용이 남지 않음)
 - [ ] 시험 바꾸기 → 시험별로 따로 저장됨
-- [ ] 🖨️ 인쇄 미리보기: 머리말 · 배지 · 메모 · SOLUTION · 의견 · 푸터 발급일
-- [ ] 📸 이미지 저장 · 📋 이미지 복사: 버튼 · 안내 글자("점수 등") 없이 깔끔하게
+- [ ] 🖨️ 인쇄 미리보기: 머리말 · 배지 · 메모 · SOLUTION · 의견 · 푸터 발급일 (스위치는 안 보이고, 간단히 대단원은 합쳐진 칸 1개)
+- [ ] 📸 이미지 저장 · 📋 이미지 복사: 버튼 · 스위치 · 안내 글자("코멘트") 없이 깔끔하게, 합쳐진 칸의 메모 · SOLUTION 글자가 가려지지 않음
 - [ ] 명단에 없는 이름으로 로그인 → 빈 체크리스트 (저장 안 됨 표시)
 - [ ] 로그아웃 → 로그인 화면
 
@@ -3940,7 +4264,7 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 
 - [ ] 넓은 PC (1280px 이상): 단원 설정이 오른쪽, 리포트와 겹치지 않음
 - [ ] 보통 (861~1279px): 단원 설정이 왼쪽 학생 목록 아래
-- [ ] 모바일 (F12 → Ctrl+Shift+M, 폭 375): 한 줄 배치, 버튼 모음이 맨 아래, 표가 카드 모양
+- [ ] 모바일 (F12 → Ctrl+Shift+M, 폭 375): 한 줄 배치, 버튼 모음이 맨 아래, 표가 카드 모양 (간단히 대단원은 중단원 카드들 아래에 "대단원 진단평가 · SOLUTION" 카드 한 장)
 
 ### 9-5. 데이터 모양을 바꿨다면
 
@@ -4027,6 +4351,7 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 | --- | --- |
 | `buildStateObj()` | 지금 화면의 체크리스트 내용을 저장용 객체로 만든다 |
 | `applyStateObj(state)` | 저장된 내용을 지금 그려진 표에 채워 넣는다 |
+| `resolveDetailUnits(state, grade)` | 저장본(state)에서 대단원마다 "진단평가 자세히"를 켤지 정한다 → { "m2-1": false, "m2-2": true, … } |
 | `fetchReport(student, exam)` | 학생 한 명 · 시험 하나의 체크리스트를 받아 온다 → 내용 (한 번도 저장된 적 없으면 null) |
 | `markAsSaved(updatedAt)` | 방금 불러온 화면 내용을 "저장소와 같은 상태"로 기억한다 (이후 바뀐 내용만 저장하려고). |
 | `markAsUnsaved()` | 지금 화면 내용이 저장소에 아직 없다고 표시한다 (예전 브라우저 저장본을 가져왔을 때 바로 저장하려고). |
@@ -4066,15 +4391,24 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 | 함수 | 하는 일 |
 | --- | --- |
 | `renderReportTables()` | 현재 학년의 표 전체를 새로 그림 (curriculum.js 사용) |
-| `applyGradeState(row, grade, options = {})` | 한 줄을 A/B/C 로 표시 (줄 배경 · 버튼 색 · 인쇄 배지) |
-| `selectGradeBtn(btn, grade, subUnitId)` | A/B/C 버튼 클릭 → 표시 · 저장 예약 · 진행 현황 |
-| `getActiveGrade(row)` | 한 줄(row)에서 선택된 평가를 읽는다: "A" \| "B" \| "C" \| 아직 안 골랐으면 "-" |
+| `gradeCellHtml(key, kind, label)` | 진단평가 칸 <td> 하나: [A/B/C 버튼] [인쇄·이미지용 배지] [메모 칸] |
+| `solutionCellHtml(key, kind, label)` | SOLUTION 칸 <td> 하나 (기본값 "-"). key · kind · label 은 gradeCellHtml 과 같음 |
+| `unitKeyOf(unit, idx, grade = currentGrade)` | 대단원의 id (저장할 때 쓰는 열쇠).  예) unitKeyOf({ id: "m2-1", … }, 0) → "m2-1" |
+| `setUnitDetail(unitKey, on, { save = true } = {})` | 대단원 하나(unitKey)를 자세히(on = true) / 간단히(false)로 바꾼다. |
+| `setAllDetail(on)` | [모두 자세히](true) / [모두 간단히](false) 버튼 |
+| `layoutUnitEval(block)` | 대단원 평가 칸(간단히용 두 칸)을 알맞은 자리로 옮긴다. |
+| `layoutAllUnitEval()` | 표 전체의 대단원 평가 칸 자리를 다시 맞춘다. |
+| `updateDetailControls()` | 단원 설정 패널의 [모두 자세히] [모두 간단히] 버튼 중 지금 상태에 맞는 버튼을 강조한다 (updateStatus 에서 호출) |
+| `applyGradeState(key, grade)` | 한 줄을 A/B/C 로 표시 (줄 배경 · 버튼 색 · 인쇄 배지) |
+| `selectGradeBtn(btn, grade, key)` | A/B/C 버튼 클릭 → 표시 · 저장 예약 · 진행 현황 |
+| `getActiveGrade(key)` | 평가 항목(key)에서 선택된 평가를 읽는다: "A" \| "B" \| "C" \| 아직 안 골랐으면 "-" |
 | `onGradeNoteKeydown(event)` | Enter 를 누르면 줄을 바꾸지 않고 입력을 마친다 (한글 조합 중에 누른 Enter 는 조합부터 끝내게 둠) |
 | `onGradeNoteBeforeInput(event)` | 어떤 방법으로든 줄바꿈이 들어가려 하면 막는다 (한글 조합 중 Enter 등 keydown 으로 못 막는 경우) |
 | `onGradeNotePaste(event)` | 붙여넣기는 서식 없이 글자만 (줄바꿈은 띄어쓰기로) |
 | `onGradeNoteInput(el, event)` | 입력할 때마다: 너무 길면 자르고, 다 지웠으면 칸을 완전히 비운 뒤(안내 글자가 다시 보이게) 자동 저장 |
 | `readGradeNote(el)` | 메모 칸의 글자 (저장용: 공백 정리) |
 | `placeCaretAtEnd(el)` | 입력 칸(el)의 커서를 글자 맨 끝으로 옮긴다 |
+| `getEvalItems()` | 지금 화면에서 평가해야 하는 항목들 (단원 설정에서 숨긴 단원·줄은 빠짐) |
 | `updateStatus()` | 진행 현황(평가 N/M · A/B/C 개수) · 표시 단원 수 · 단원 안내 문구 |
 | `onSolutionFocus(cell, event)` | SOLUTION 칸에 들어갔을 때: 팝오버를 띄우고, 공란("-")이면 글자를 전체 선택 |
 | `selectBlankSolution(cell)` | 칸이 공란("-")이면 글자 전체를 선택한다 (브라우저가 커서를 놓은 "뒤에" 하도록 한 박자 늦춤) |
@@ -4089,15 +4423,19 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 | 함수 | 하는 일 |
 | --- | --- |
 | `async fetchTeacherStudents(teacher)` | 저장소에서 선생님의 담당 학생 목록(+ 선택한 시험의 A/B/C 개수)을 받아 온다. |
-| `summarize(report)` | 체크리스트에서 A/B/C 개수만 뽑는다 → { A: 3, B: 1, C: 0, updatedAt } (체크리스트가 없으면 null) |
+| `summarize(report, grade)` | 체크리스트에서 A/B/C 개수만 뽑는다 → { A: 3, B: 1, C: 0, updatedAt } (체크리스트가 없으면 null) |
+| `countGrades(state, grade)` | 저장된 체크리스트(state)의 A/B/C 개수 → { A, B, C } |
 | `setTeacherStudents(list)` | 목록을 바꾸고 다시 그린다. |
 | `renderStudentList()` | 왼쪽 학생 목록을 반별로 그림 (열린 학생 강조) |
 | `groupByClass(students)` | 반(className)별로 묶는다. 명단 순서를 지키고, 반은 처음 나온 순서대로 놓는다. |
 | `studentItem(student)` | 목록의 학생 한 줄 (버튼) |
 | `progressHtml(summary)` | 목록 오른쪽의 평가 개수 표시.  예) "A3 B1 C0" / 아직 평가 안 했으면 "평가 전" |
-| `updateStudentSummary(studentId, exam, activeGrades, updatedAt)` | 저장에 성공하면 목록의 A/B/C 개수도 바로 바꾼다 (storage.js 의 saveNow 에서 호출) |
+| `updateStudentSummary(studentId, exam, data, updatedAt)` | 저장에 성공하면 목록의 A/B/C 개수도 바로 바꾼다 (storage.js 의 saveNow 에서 호출) |
 | `initExamSelect()` | 시험 선택 준비 + 머리말 시험 칸에 같은 목록 복사 + 빈 체크리스트 학년 목록 |
 | `updateExamHint()` | 시험을 아직 고르지 않았으면(공란) 왼쪽 시험 칸을 눈에 띄게 표시한다. |
+| `updateExamSpotlight()` | 지금 상태를 보고 안내를 보이거나 숨긴다. |
+| `examPickerElement()` | 밝게 남길 영역 = 왼쪽 위 "시험 [선택 칸]" 한 줄 |
+| `followExamSpotlight()` | 안내가 떠 있는 동안 화면이 바뀔 때마다 시험 선택 칸의 위치를 따라가 밝은 네모와 말풍선을 옮긴다. |
 | `async onExamSelectChange()` | 시험 선택을 바꿨을 때 |
 | `async confirmLeave()` | 학생·시험을 바꾸거나 로그아웃하기 전에 지금 체크리스트를 저장한다. |
 | `async openInitialStudent()` | 로그인 직후 · 시험을 고른 직후: 마지막으로 열었던(또는 눌렀던) 학생, 없으면 첫 번째 학생의 체크리스트를 연다. |
@@ -4128,10 +4466,9 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 
 | 함수 | 하는 일 |
 | --- | --- |
-| `getVisibleRows()` | 화면에 보이는(단원 설정에서 숨기지 않은) 표의 줄들 |
-| `getUngradedRows()` | 보이는 줄 중 A/B/C 를 아직 고르지 않은 줄들 |
-| `getEmptySolutionRows()` | 보이는 줄 중 SOLUTION 이 비어 있는 줄들 |
-| `rowLabel(row)` | 줄의 이름표(첫 번째 칸 = 중단원 이름). 경고창에 목록으로 보여 줄 때 사용 |
+| `getUngradedItems()` | 보이는 평가 항목 중 A/B/C 를 아직 고르지 않은 항목들 |
+| `getEmptySolutionItems()` | 보이는 평가 항목 중 SOLUTION 이 비어 있는 항목들 |
+| `itemLabel(item)` | 항목의 이름표 (중단원 이름, 간단히 대단원은 대단원 제목). 경고창에 목록으로 보여 줄 때 사용 |
 | `ensureReadyForOutput(actionLabel)` | 인쇄 · 이미지 전 필수 입력 검사 (통과하면 true) |
 | `printReport()` | 검사 → 이름·학교 확인창 → 브라우저 인쇄 창 열기 |
 | `setPrintDate()` | 인쇄물 맨 아래 푸터의 "발급일 2026. 06. 27" 을 오늘 날짜로 채운다 (페이지를 열 때 main.js 에서 호출) |
@@ -4205,6 +4542,8 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 | `LEGACY_STORE` | `js/legacy-import.js` | `"reports"` | 예전 IndexedDB 안의 저장소 이름 |
 | `BLANK_SOLUTION` | `js/checklist-table.js` | `"-"` | SOLUTION 칸 기본값 (공란) |
 | `GRADE_NOTE_MAX` | `js/checklist-table.js` | `30` | 진단평가 메모 칸 최대 글자 수 (화면 기준) |
+| `DETAIL_DEFAULT` | `js/checklist-table.js` | `false` | 새 체크리스트의 진단평가 방식: false = 대단원별 1개(간단히), true = 중단원별(자세히) |
+| `CARD_LAYOUT_QUERY` | `js/checklist-table.js` | `(계산된 값)` | 폭 860px 이하 화면(모바일 카드 모양)인지. 인쇄는 "print" 라서 여기에 해당하지 않음 (항상 표 모양) |
 | `EXAM_KEY` | `js/student-list.js` | `"nature_exam"` | 이 탭에서만 기억하는 "고른 시험" (새로고침하면 유지, 새로 접속하면 공란) |
 | `LAST_STUDENT_KEY` | `js/student-list.js` | `"nature_last_student"` | 이 브라우저에 기억하는 "마지막으로 연 학생 id" |
 | `BLANK_GRADE_KEY` | `js/student-list.js` | `"nature_blank_grade"` | 이 브라우저에 기억하는 "빈 체크리스트에서 마지막으로 고른 학년" |
@@ -4219,7 +4558,7 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 
 | id | 태그 | 쓰는 파일 |
 | --- | --- | --- |
-| `login-screen` | `<div>` | `js/login.js`, `css/login.css` |
+| `login-screen` | `<div>` | `js/student-list.js`, `js/login.js`, `css/login.css` |
 | `login-name` | `<input>` | `js/login.js` |
 | `login-submit` | `<button>` | `js/login.js` |
 | `login-message` | `<p>` | `js/login.js` |
@@ -4230,6 +4569,8 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 | `student-count` | `<span>` | `js/student-list.js` |
 | `student-list` | `<div>` | `js/student-list.js` |
 | `scope-status` | `<span>` | `js/checklist-table.js` |
+| `detail-all-on` | `<button>` | `js/checklist-table.js` |
+| `detail-all-off` | `<button>` | `js/checklist-table.js` |
 | `scope-widget-root` | `<div>` | `js/scope-panel.js`, `js/student-list.js` |
 | `capture-target-paper` | `<div>` | `js/export.js` |
 | `student-name` | `<input>` | `js/report-header.js`, `js/student-list.js`, `js/export.js` |
@@ -4241,6 +4582,8 @@ F12 → Console 에 입력하고 Enter. **값을 보기만 하는 명령**입니
 | `report-status` | `<div>` | `js/checklist-table.js`, `js/export.js` |
 | `save-state` | `<div>` | `js/notify.js` |
 | `app-toast` | `<div>` | `js/notify.js` |
+| `exam-spotlight` | `<div>` | `js/student-list.js` |
+| `exam-spotlight-tip` | `<div>` | `js/student-list.js` |
 | `solution-macro-popover` | `<div>` | `js/checklist-table.js`, `css/checklist-table.css` |
 
 **관리자 화면** (`admin/index.html`)

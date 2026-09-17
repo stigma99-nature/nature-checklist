@@ -6,6 +6,7 @@
    · 학생을 누르면 → 그 학생 · 선택한 시험의 체크리스트를 저장소에서 불러와 가운데에 엽니다.
                      (한 번도 저장된 적이 없으면 새 체크리스트로 시작)
    · 시험을 바꾸면 → 목록의 A/B/C 개수와 열린 체크리스트가 그 시험 것으로 바뀝니다.
+   · 시험이 공란이면 → 왼쪽 위 시험 선택 칸만 밝게, 나머지 화면은 어둡게 안내 (updateExamSpotlight)
    · 로그인하면 마지막으로 열었던 학생(없으면 첫 번째 학생)의 체크리스트가 자동으로 열립니다.
    · 명단에 없는 이름으로 로그인하면 → "빈 체크리스트" (이름·학교 직접 입력, 저장 안 함)
 
@@ -27,15 +28,42 @@ let blankInitialTable = null; // 빈 체크리스트를 처음 열었을 때의 
 async function fetchTeacherStudents(teacher) {
   const students = await DB.listStudentsByTeacher(teacher);
   const reports = currentExam && students.length ? await DB.getReports(students, currentExam) : {};
-  return students.map((student) => ({ ...student, summary: summarize(reports[student.id]) }));
+  return students.map((student) => ({
+    ...student,
+    summary: summarize(reports[student.id], student.grade),
+  }));
 }
 
 // 체크리스트에서 A/B/C 개수만 뽑는다 → { A: 3, B: 1, C: 0, updatedAt } (체크리스트가 없으면 null)
-function summarize(report) {
+// grade: 학생의 학년 코드 (예: "mid2")
+function summarize(report, grade) {
   if (!report) return null;
-  const grades = Object.values(report.activeGrades || {});
-  const count = (g) => grades.filter((x) => x === g).length;
-  return { A: count("A"), B: count("B"), C: count("C"), updatedAt: report.updatedAt || null };
+  return { ...countGrades(report, grade), updatedAt: report.updatedAt || null };
+}
+
+// 저장된 체크리스트(state)의 A/B/C 개수 → { A, B, C }
+// 가운데 진행 현황("평가 3/20개 완료 · A 1 / B 1 / C 1")과 같은 기준으로 셉니다.
+//   · 단원 설정에서 켠 중단원이 있는 대단원만
+//   · 간단히 대단원은 대단원 평가 1개, 자세히 대단원은 켠 중단원들의 평가
+function countGrades(state, grade) {
+  const counts = { A: 0, B: 0, C: 0 };
+  const grades = state.activeGrades || {};
+  const scope = state.scopeSelections || {};
+  const detailUnits = resolveDetailUnits(state, grade);
+  const units = hasGradeData(grade) ? CURRICULUM_DATA[grade] : [];
+  const gradeOf = (key) =>
+    Object.prototype.hasOwnProperty.call(grades, key) ? grades[key] : "";
+  units.forEach((unit, idx) => {
+    const unitKey = unitKeyOf(unit, idx, grade);
+    const shownSubs = unit.sub.filter((s) => scope[s.id] === true);
+    if (!shownSubs.length) return;
+    const keys = detailUnits[unitKey] ? shownSubs.map((s) => s.id) : [unitKey];
+    keys.forEach((key) => {
+      const g = gradeOf(key);
+      if (g === "A" || g === "B" || g === "C") counts[g]++;
+    });
+  });
+  return counts;
 }
 
 // 목록을 바꾸고 다시 그린다.
@@ -117,13 +145,12 @@ function progressHtml(summary) {
 }
 
 // 저장에 성공하면 목록의 A/B/C 개수도 바로 바꾼다 (storage.js 의 saveNow 에서 호출)
-function updateStudentSummary(studentId, exam, activeGrades, updatedAt) {
+// data: 방금 저장한 체크리스트 내용 (buildStateObj 가 만든 것)
+function updateStudentSummary(studentId, exam, data, updatedAt) {
   if (exam !== currentExam) return;
   const student = teacherStudents.find((s) => s.id === studentId);
   if (!student) return;
-  const grades = Object.values(activeGrades || {});
-  const count = (g) => grades.filter((x) => x === g).length;
-  student.summary = { A: count("A"), B: count("B"), C: count("C"), updatedAt };
+  student.summary = { ...countGrades(data, student.grade), updatedAt };
   renderStudentList();
 }
 
@@ -154,6 +181,75 @@ function initExamSelect() {
 // 시험을 아직 고르지 않았으면(공란) 왼쪽 시험 칸을 눈에 띄게 표시한다.
 function updateExamHint() {
   document.getElementById("exam-select").classList.toggle("is-empty", !currentExam);
+  updateExamSpotlight();
+}
+
+/* ── ⑥ 시험 선택 안내 (스포트라이트) ────────────────────────────
+   로그인했는데 시험이 공란이면 왼쪽 위 시험 선택 칸만 밝게 두고 나머지 화면을 어둡게 해서,
+   접속한 선생님이 어디부터 눌러야 하는지 바로 보이게 합니다. 시험을 고르면 사라집니다.
+   · 로그인 화면이 떠 있을 때, 빈 체크리스트(명단에 없는 이름 — 시험 없이도 씀)에서는 띄우지 않습니다.
+   · 어둡게 칠한 부분도 클릭은 됩니다 (학생을 누르면 "먼저 왼쪽 위에서 시험을 선택해 주세요" 알림).
+   · 부르는 곳: updateExamHint · setBlankMode (이 파일), loginAs · showLoginScreen (js/login.js)
+   모양: css/sidebar.css 의 .exam-spotlight · .exam-spotlight-tip
+   ─────────────────────────────────────────────────────────── */
+let spotlightFrame = null; // 시험 선택 칸 위치를 따라가는 중이면 애니메이션 프레임 번호, 아니면 null
+let spotlightLastKey = ""; // 마지막으로 맞춘 위치 (같으면 다시 옮기지 않음)
+
+// 지금 상태를 보고 안내를 보이거나 숨긴다.
+function updateExamSpotlight() {
+  const spotlight = document.getElementById("exam-spotlight");
+  const tip = document.getElementById("exam-spotlight-tip");
+  const show =
+    Boolean(currentTeacher) &&
+    !currentExam &&
+    !isBlankChecklist &&
+    !document.getElementById("login-screen").classList.contains("open");
+  spotlight.hidden = !show;
+  tip.hidden = !show;
+  if (show && !spotlightFrame) {
+    // 시험 칸이 화면 밖이면(모바일에서 아래로 스크롤해 둔 경우 등) 맨 위로 올려서 보이게
+    document.querySelector(".sidebar").scrollTop = 0;
+    const r = examPickerElement().getBoundingClientRect();
+    if (r.top < 0 || r.bottom > window.innerHeight) window.scrollTo({ top: 0 });
+    spotlightLastKey = "";
+    followExamSpotlight();
+  }
+}
+
+// 밝게 남길 영역 = 왼쪽 위 "시험 [선택 칸]" 한 줄
+function examPickerElement() {
+  return document.getElementById("exam-select").closest(".exam-picker");
+}
+
+// 안내가 떠 있는 동안 화면이 바뀔 때마다 시험 선택 칸의 위치를 따라가 밝은 네모와 말풍선을 옮긴다.
+// (창 크기 변경 · 스크롤 · 목록이 그려지며 위치가 바뀌어도 어긋나지 않게)
+function followExamSpotlight() {
+  const spotlight = document.getElementById("exam-spotlight");
+  const tip = document.getElementById("exam-spotlight-tip");
+  if (spotlight.hidden) {
+    spotlightFrame = null;
+    return;
+  }
+  const pad = 8; // 시험 선택 칸 둘레에 남길 밝은 여백
+  const gap = 18; // 밝은 네모와 말풍선 사이 간격
+  const r = examPickerElement().getBoundingClientRect();
+  const pageWidth = document.documentElement.clientWidth;
+  const key = [r.left, r.top, r.width, r.height, pageWidth, tip.offsetWidth, tip.offsetHeight].join(",");
+  if (key !== spotlightLastKey) {
+    spotlightLastKey = key;
+    spotlight.style.left = `${r.left - pad}px`;
+    spotlight.style.top = `${r.top - pad}px`;
+    spotlight.style.width = `${r.width + pad * 2}px`;
+    spotlight.style.height = `${r.height + pad * 2}px`;
+    // 말풍선: 오른쪽에 자리가 있으면 오른쪽(꼬리가 왼쪽을 가리킴), 좁은 화면이면 아래(꼬리가 위를 가리킴)
+    const fitsRight = r.right + pad + gap + tip.offsetWidth <= pageWidth - 12;
+    tip.classList.toggle("is-below", !fitsRight);
+    tip.style.left = fitsRight ? `${r.right + pad + gap}px` : `${Math.max(12, r.left - pad)}px`;
+    tip.style.top = fitsRight
+      ? `${r.top + r.height / 2 - tip.offsetHeight / 2}px`
+      : `${r.bottom + pad + gap}px`;
+  }
+  spotlightFrame = requestAnimationFrame(followExamSpotlight);
 }
 
 // 시험 선택을 바꿨을 때 (index.html 의 onchange)
@@ -374,6 +470,7 @@ function setBlankMode(on) {
   isBlankChecklist = on;
   document.getElementById("blank-grade-picker").hidden = !on;
   if (!on) blankInitialTable = null;
+  updateExamSpotlight(); // 빈 체크리스트는 시험 없이도 쓰므로 시험 선택 안내를 숨김
 }
 
 // 빈 체크리스트에 뭔가 작성했는지. includeHeader 면 머리말의 이름·학교 입력도 포함

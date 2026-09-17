@@ -32,7 +32,7 @@
       같은 대상에 같은 우선순위의 스타일이 겹치면 "아래에 있는 파일"이 이깁니다.
         base.css             색상 변수 · 기본 스타일 · 전체 2단 레이아웃
         login.css            ⓪ 로그인 화면
-        sidebar.css          ① 왼쪽: 선생님 · 시험 선택 · 담당 학생 목록 · 단원 설정
+        sidebar.css          ① 왼쪽: 선생님 · 시험 선택 · 담당 학생 목록 · 단원 설정 · ⑥ 시험 선택 안내
         report-header.css    ② 가운데: A4 용지 · 머리말 (이름/학교/시험)
         checklist-table.css  ② 가운데: 체크리스트 표 · ⑤ SOLUTION 문구 팝오버
         opinion.css          ② 가운데 아래: 종합 의견
@@ -64,6 +64,7 @@
         ③ 오른쪽 위 버튼 모음 ··· 인쇄 / 이미지 저장 / 이미지 복사
         ④ 토스트 알림
         ⑤ SOLUTION 문구 팝오버
+        ⑥ 시험 선택 안내 ········ 시험이 공란이면 시험 선택 칸만 밝게, 나머지는 어둡게
       class="no-print" 가 붙은 요소는 인쇄물과 이미지에 나오지 않습니다.
     -->
 
@@ -86,10 +87,6 @@
           시작하기
         </button>
         <p class="login-message" id="login-message" role="alert"></p>
-        <p class="login-help">
-          명단에 등록된 이름과 똑같이 입력하면 담당 학생 목록이 나와요.
-          명단에 없는 이름이면 빈 체크리스트로 시작합니다.
-        </p>
       </form>
     </div>
 
@@ -165,6 +162,31 @@
               ✕ 전체 단원 끄기
             </button>
           </div>
+          <!-- 진단평가 방식 한꺼번에 바꾸기 → setAllDetail() : js/checklist-table.js
+               간단히 = 대단원마다 진단평가 · SOLUTION 1개 (기본) / 자세히 = 중단원 줄마다
+               대단원 하나만 바꾸려면 표 제목 오른쪽의 "진단평가 자세히" 스위치를 누르면 됩니다.
+               지금 상태와 같은 버튼은 updateDetailControls() 가 강조(.is-active)합니다. -->
+          <div class="detail-control-row">
+            <span class="detail-control-label">진단평가</span>
+            <div class="detail-control-buttons">
+              <button
+                type="button"
+                class="btn-detail"
+                id="detail-all-on"
+                onclick="setAllDetail(true)"
+              >
+                모두 자세히
+              </button>
+              <button
+                type="button"
+                class="btn-detail"
+                id="detail-all-off"
+                onclick="setAllDetail(false)"
+              >
+                모두 간단히
+              </button>
+            </div>
+          </div>
           <!-- 대단원 · 중단원 체크박스 목록: renderScopeWidget() 가 채움 -->
           <div class="scope-group-container" id="scope-widget-root"></div>
         </div>
@@ -226,6 +248,8 @@
           </div>
 
           <!-- 단원별 체크리스트 표: renderReportTables() (js/checklist-table.js) 가 채움
+               대단원마다 제목 오른쪽 "진단평가 자세히" 스위치(화면에서만 보임)로
+               진단평가를 대단원별 1개(기본) ↔ 중단원별로 바꿈
                학생을 고르기 전이나 불러오는 중에는 안내 문구가 대신 보임 -->
           <div id="report-table-root"></div>
 
@@ -295,6 +319,20 @@
       role="status"
       aria-live="polite"
     ></div>
+
+    <!-- ⑥ 시험 선택 안내 ─ css/sidebar.css · js/student-list.js 의 updateExamSpotlight
+         로그인했는데 시험이 공란이면 왼쪽 위 시험 선택 칸만 밝게 두고 나머지 화면을 어둡게 함.
+         시험을 고르면 사라짐. 말풍선 문구는 아래 <b> · <span> 에서 고치세요. -->
+    <div
+      class="exam-spotlight no-print"
+      id="exam-spotlight"
+      aria-hidden="true"
+      hidden
+    ></div>
+    <div class="exam-spotlight-tip no-print" id="exam-spotlight-tip" hidden>
+      <b>먼저 시험을 선택해 주세요</b>
+      <span>시험을 고르면 학생의 체크리스트가 열려요.</span>
+    </div>
 
     <!-- ⑤ SOLUTION 문구 팝오버 ─ css/checklist-table.css · js/checklist-table.js
          SOLUTION 칸(기본값 "-" 공란)을 클릭하면 그 칸 바로 아래에 뜸.
@@ -404,7 +442,7 @@
       [화면 기능]
         scope-panel.js          ① 단원 설정 체크박스
         report-header.js        ② 머리말 (명단 정보 / 빈 체크리스트는 직접 입력) · 저장 파일 이름
-        checklist-table.js      ② 체크리스트 표 · A/B/C 평가 · 진단평가 메모 · ⑤ SOLUTION 문구 팝오버
+        checklist-table.js      ② 체크리스트 표 · 진단평가 간단히/자세히 · A/B/C 평가 · 진단평가 메모 · ⑤ SOLUTION 문구 팝오버
         student-list.js         ① 시험 선택 · 반별 담당 학생 목록 · 체크리스트 열기 · 빈 체크리스트
         login.js                ⓪ 선생님 로그인 / 로그아웃 (명단에 없는 이름 → 빈 체크리스트)
         export.js               ③ 출력 전 검사 · 인쇄/PDF · 이미지 저장/복사

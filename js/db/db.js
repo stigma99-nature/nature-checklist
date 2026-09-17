@@ -28,7 +28,7 @@
          className: "중2A반_수 7:30", order, createdAt, updatedAt }   ← order: 등록(CSV 줄) 순서
      checklist-report/{학생id__학년__시험}    체크리스트 하나   예) "a1B2…__mid2__1학기 기말고사"
        { studentId, teacher, studentName, schoolName, grade, examType,
-         opinion, customEdits, activeGrades, scopeSelections, gradeNotes, updatedAt }
+         opinion, customEdits, activeGrades, scopeSelections, gradeNotes, detailUnits, updatedAt }
 
    ⚠️ 이 파일은 firebase-db.js · test-db.js 보다 "뒤에" 불러와야 합니다 (index.html 순서).
    ⚠️ 검사 규칙(글자 수 · 학년 모양 등)을 바꾸면 firestore.rules 도 함께 맞춰 주세요.
@@ -133,10 +133,11 @@ function cleanReportData(data) {
   if (!data || typeof data !== "object") throw inputError("저장할 내용이 없습니다.");
   const out = {
     opinion: limitText(data.opinion), // 종합 의견 HTML
-    customEdits: {}, // { "m1-3-1_content": "<ul>…</ul>", "m1-3-1_sol": "-" }
-    activeGrades: {}, // { "m1-3-1": "A" }
+    customEdits: {}, // { "m1-3-1_content": "<ul>…</ul>", "m1-3-1_sol": "-", "m1-3_sol": "-" }
+    activeGrades: {}, // { "m1-3": "B", "m1-3-1": "A" }  (대단원 id = 간단히, 중단원 id = 자세히)
     scopeSelections: {}, // { "m1-3-1": true }
-    gradeNotes: {}, // { "m1-3-1": "18/20" }  진단평가 메모 (적은 줄만)
+    gradeNotes: {}, // { "m1-3": "18/20" }  진단평가 메모 (적은 항목만)
+    detailUnits: {}, // { "m1-3": true }  대단원마다 "진단평가 자세히"를 켰는지
   };
   for (const [key, value] of entriesOf(data.customEdits)) {
     out.customEdits[safeKey(key)] = limitText(value);
@@ -151,6 +152,9 @@ function cleanReportData(data) {
     const note = String(value ?? "").trim();
     if (note.length > GRADE_NOTE_TEXT_MAX) throw inputError("진단평가 메모가 너무 깁니다.");
     if (note) out.gradeNotes[safeKey(key)] = note;
+  }
+  for (const [key, value] of entriesOf(data.detailUnits)) {
+    out.detailUnits[safeKey(key)] = value === true;
   }
   return out;
 }

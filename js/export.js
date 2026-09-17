@@ -8,10 +8,12 @@
 
    출력 전 공통 검사 (ensureReadyForOutput) — 하나라도 걸리면 출력하지 않음
      0) 학생을 골랐거나 빈 체크리스트이고, 체크리스트를 다 불러왔는가
-     1) 보이는 모든 줄에 A/B/C 평가를 했는가
-     2) 보이는 모든 줄에 SOLUTION 이 있는가 (기본값 "-" 공란도 입력으로 인정 → 칸을 비워 둔 경우만 걸림)
+     1) 보이는 모든 평가 항목에 A/B/C 평가를 했는가
+     2) 보이는 모든 평가 항목에 SOLUTION 이 있는가 (기본값 "-" 공란도 입력으로 인정 → 칸을 비워 둔 경우만 걸림)
      3) 머리말에 학생 이름 · 학교명이 있는가 (빈 체크리스트는 직접 입력)
      (진단평가 메모 칸은 적지 않아도 됨 — 비어 있으면 인쇄·이미지에 나오지 않음)
+     평가 항목 = 간단히 대단원은 대단원 하나에 1개, 자세히 대단원은 보이는 중단원 줄마다 1개
+                 (js/checklist-table.js 의 getEvalItems)
 
    · 인쇄 모양은 css/print.css 가 정합니다.
    · 이미지는 html2canvas(-pro) 라이브러리로 리포트 용지를 그림으로 찍어서 만듭니다.
@@ -19,32 +21,23 @@
 
 /* ── 출력 전 검사 ─────────────────────────────────────────────── */
 
-// 화면에 보이는(단원 설정에서 숨기지 않은) 표의 줄들
-function getVisibleRows() {
-  return Array.from(document.querySelectorAll(".check-row")).filter(
-    (row) => row.style.display !== "none",
-  );
+// 보이는 평가 항목 중 A/B/C 를 아직 고르지 않은 항목들
+function getUngradedItems() {
+  return getEvalItems().filter((item) => getActiveGrade(item.key) === "-");
 }
 
-// 보이는 줄 중 A/B/C 를 아직 고르지 않은 줄들
-function getUngradedRows() {
-  return getVisibleRows().filter(
-    (row) => !row.querySelector(".active-a, .active-b, .active-c"),
-  );
-}
-
-// 보이는 줄 중 SOLUTION 이 비어 있는 줄들
+// 보이는 평가 항목 중 SOLUTION 이 비어 있는 항목들
 // ("-" 는 '해당 없음'을 일부러 고른 값이므로 입력된 것으로 본다)
-function getEmptySolutionRows() {
-  return getVisibleRows().filter((row) => {
-    const sol = getTextFromElement(row.querySelector(".solution-td"));
+function getEmptySolutionItems() {
+  return getEvalItems().filter((item) => {
+    const sol = getTextFromElement(document.getElementById(`${item.key}-solution`));
     return sol === "";
   });
 }
 
-// 줄의 이름표(첫 번째 칸 = 중단원 이름). 경고창에 목록으로 보여 줄 때 사용
-function rowLabel(row) {
-  return getTextFromElement(row.querySelector("td"));
+// 항목의 이름표 (중단원 이름, 간단히 대단원은 대단원 제목). 경고창에 목록으로 보여 줄 때 사용
+function itemLabel(item) {
+  return item.label;
 }
 
 // 인쇄/이미지 저장 전 필수 입력 검사. 통과하면 true.
@@ -65,26 +58,26 @@ function ensureReadyForOutput(actionLabel) {
     return false;
   }
   // 1) 진단평가(A/B/C) 미선택 항목
-  const ungraded = getUngradedRows();
+  const ungraded = getUngradedItems();
   if (ungraded.length) {
-    const preview = ungraded.slice(0, 5).map(rowLabel).join(", ");
+    const preview = ungraded.slice(0, 5).map(itemLabel).join(", ");
     const suffix =
       ungraded.length > 5 ? ` 외 ${ungraded.length - 5}개` : "";
     alert(
       `진단평가(A/B/C)를 선택하지 않은 항목이 ${ungraded.length}개 있습니다.\n${preview}${suffix}\n\n모든 항목을 평가해야 ${actionLabel}할 수 있습니다.`,
     );
-    ungraded[0].scrollIntoView({ behavior: "smooth", block: "center" });
+    ungraded[0].element.scrollIntoView({ behavior: "smooth", block: "center" });
     return false;
   }
   // 2) SOLUTION 미입력 항목
-  const noSol = getEmptySolutionRows();
+  const noSol = getEmptySolutionItems();
   if (noSol.length) {
-    const preview = noSol.slice(0, 5).map(rowLabel).join(", ");
+    const preview = noSol.slice(0, 5).map(itemLabel).join(", ");
     const suffix = noSol.length > 5 ? ` 외 ${noSol.length - 5}개` : "";
     alert(
       `SOLUTION이 비어 있는 항목이 ${noSol.length}개 있습니다.\n${preview}${suffix}\n\n모든 항목의 SOLUTION을 입력해야 ${actionLabel}할 수 있습니다.`,
     );
-    noSol[0].scrollIntoView({ behavior: "smooth", block: "center" });
+    noSol[0].element.scrollIntoView({ behavior: "smooth", block: "center" });
     return false;
   }
   // 3) 학생 이름·학교명
@@ -192,7 +185,7 @@ function swapMetaFieldsForCapture() {
 // 리포트 용지를 이미지(canvas)로 찍는다. (이미지 저장·복사 공용)
 //   1) 찍기 전: A/B/C 버튼·"수정 가능" 태그·용지 안의 .no-print 요소를 숨기고,
 //      평가한 줄은 A/B/C 배지를 보이게 함 (인쇄물과 같은 모습)
-//      진단평가 메모 칸: 비어 있으면 숨기고(안내 글자 "점수 등"이 찍히지 않게),
+//      진단평가 메모 칸: 비어 있으면 숨기고(안내 글자 "코멘트"가 찍히지 않게),
 //      용지에 .is-capturing 을 붙여 적은 칸은 테두리 없이 글자만
 //   2) html2canvas 로 2배 해상도로 캡처
 //   3) 성공·실패와 관계없이 화면을 원래대로 되돌림
@@ -327,12 +320,12 @@ function copyImageToClipboard() {
    필요 없다면 지워도 동작에 영향이 없습니다.
    ─────────────────────────────────────────────────────────── */
 function ensureAllRowsGraded(actionLabel) {
-  const ungradedRows = getUngradedRows();
+  const ungradedRows = getUngradedItems();
   if (!ungradedRows.length) return true;
 
   const preview = ungradedRows
     .slice(0, 5)
-    .map((row) => getTextFromElement(row.querySelector("td")))
+    .map(itemLabel)
     .join(", ");
   const suffix =
     ungradedRows.length > 5 ? ` 외 ${ungradedRows.length - 5}개` : "";

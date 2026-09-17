@@ -3,8 +3,10 @@
    --------------------------------------------------------------------------
    index.html 의 <aside class="sidebar"> 영역입니다. 위에서부터
    · 선생님 패널   : 로그인한 이름 · 로그아웃 · 시험 선택   (js/login.js, js/student-list.js)
+     └ ⑥ 시험 선택 안내: 시험이 공란이면 시험 선택 칸만 밝게, 나머지 화면은 어둡게
    · 담당 학생 목록 : 학생을 누르면 체크리스트가 열림       (js/student-list.js)
    · 단원 설정 패널 : 전체 켜기/끄기, 대단원·중단원 체크박스 (js/scope-panel.js)
+                     진단평가 모두 자세히/간단히 (js/checklist-table.js)
      ※ 넓은 PC 화면(폭 1280px 이상)에서는 화면 오른쪽에 고정돼 보입니다 → css/responsive.css
 
    ※ var(--unit-color) 는 JS 가 대단원마다 넣어 주는 색입니다 (js/config.js 의 UNIT_COLORS).
@@ -87,6 +89,98 @@
 .exam-select.is-empty {
   color: var(--ink-soft);
   box-shadow: 0 0 0 3px rgba(244, 217, 138, 0.55);
+}
+
+/* ── ⑥ 시험 선택 안내 (스포트라이트) ──────────────────────────────
+   로그인했는데 시험이 공란이면, 시험 선택 칸만 밝게 남기고 나머지 화면을 어둡게 합니다.
+   · .exam-spotlight     : 시험 선택 칸 위에 겹쳐 놓는 투명한 네모.
+                           아주 큰 그림자(box-shadow)가 네모 바깥 화면 전체를 어둡게 칠함
+   · .exam-spotlight-tip : "먼저 시험을 선택해 주세요" 말풍선 (오른쪽 · 좁은 화면에서는 아래 .is-below)
+   위치는 JS(js/student-list.js 의 followExamSpotlight)가 시험 선택 칸을 따라가며 정합니다.
+   어둡게 칠한 부분도 클릭은 그대로 됩니다 (pointer-events: none).
+   ─────────────────────────────────────────────────────────── */
+.exam-spotlight {
+  position: fixed;
+  z-index: 10000; /* 버튼 모음(9999) 위 · 토스트(10050) · 로그인 화면(10100) 아래 */
+  border-radius: 10px;
+  box-shadow: 0 0 0 200vmax rgba(10, 18, 34, 0.6); /* ← 마지막 숫자가 어두운 정도 (0 ~ 1) */
+  pointer-events: none;
+  animation: exam-spotlight-in 0.25s ease-out;
+}
+/* 시험 선택 칸 둘레에서 반짝이는 금색 테두리 */
+.exam-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 3px solid #f4d98a;
+  border-radius: 13px;
+  animation: exam-spotlight-pulse 1.4s ease-in-out infinite;
+}
+.exam-spotlight-tip {
+  position: fixed;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 24px));
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  animation: exam-spotlight-in 0.25s ease-out;
+}
+.exam-spotlight-tip b {
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 900;
+}
+.exam-spotlight-tip span {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+/* 말풍선 꼬리: 기본은 왼쪽(시험 선택 칸 쪽)을 가리키고, 아래에 뜰 때는 위를 가리킴 */
+.exam-spotlight-tip::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -6px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  transform: translateY(-50%) rotate(45deg);
+}
+.exam-spotlight-tip.is-below::before {
+  top: -6px;
+  left: 24px;
+  transform: rotate(45deg);
+}
+@keyframes exam-spotlight-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes exam-spotlight-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* 움직임 줄이기를 켠 사용자에게는 반짝임 없이 */
+@media (prefers-reduced-motion: reduce) {
+  .exam-spotlight,
+  .exam-spotlight::after,
+  .exam-spotlight-tip {
+    animation: none;
+  }
 }
 
 /* ── 담당 학생 목록 ─────────────────────────────────────────────
@@ -319,6 +413,49 @@
   background-color: #ffffff;
   color: var(--brand);
   border: 1px solid #b8c5d6;
+}
+
+/* 진단평가 [모두 자세히] [모두 간단히] 버튼 줄 (js/checklist-table.js 의 setAllDetail)
+   지금 모든 대단원이 그 상태면 버튼이 진하게 강조됨(.is-active — updateDetailControls) */
+.detail-control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.detail-control-label {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+.detail-control-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.btn-detail {
+  padding: 7px 6px;
+  border: 1px solid #b8c5d6;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.btn-detail:hover {
+  transform: translateY(-1px);
+}
+.btn-detail.is-active {
+  background: var(--brand-2);
+  border-color: var(--brand-2);
+  color: #ffffff;
 }
 
 /* ── 대단원 카드 & 중단원 체크박스 ──────────────────────────────

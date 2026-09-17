@@ -4,16 +4,22 @@
    표는 index.html 에 없고, JS(js/checklist-table.js 의 renderReportTables)가
    학년을 고를 때마다 만들어 넣습니다. 대단원 하나의 구조:
 
-     <div class="unit-block">          ← 대단원 1개 (예: "3. 열")
-       <div class="table-title">       ← 단원 색 제목 탭
+     <div class="unit-block">               ← 대단원 1개 (예: "3. 열"). 자세히로 보면 .is-detail
+       <div class="unit-title-row">
+         <div class="table-title">          ← 단원 색 제목 탭
+         <label class="detail-toggle">       ← "진단평가 자세히" 스위치 (화면에서만)
        <table class="checklist-table">
-         <tr class="check-row">        ← 중단원 1줄
-           <td>                        ← 중단원 이름
-           <td class="content-td">     ← 주요 내용 (클릭해서 직접 수정 가능)
-           <td class="grade-td">       ← A / B / C 버튼 (+ 인쇄용 배지) + 메모 칸(.grade-note)
-           <td class="solution-td">    ← SOLUTION (기본값 "-", 클릭해서 직접 수정 가능)
+         <tr class="check-row">             ← 중단원 1줄
+           <td>                             ← 중단원 이름
+           <td class="content-td">          ← 주요 내용 (클릭해서 직접 수정 가능)
+           <td class="grade-td sub-eval">   ← (자세히) A / B / C 버튼 (+ 인쇄용 배지) + 메모 칸(.grade-note)
+           <td class="solution-td sub-eval">← (자세히) SOLUTION (기본값 "-", 클릭해서 직접 수정 가능)
+           <td class="grade-td unit-eval">  ← (간단히) 대단원 진단평가 — 첫 번째 보이는 줄에만, 아래 줄까지 세로로 합침
+           <td class="solution-td unit-eval">← (간단히) 대단원 SOLUTION — 〃
+         <tr class="unit-eval-row">         ← 대단원 평가 칸의 대기 자리 (모바일 간단히에서만 카드로 보임)
 
    · 평가에 따라 줄 배경색이 바뀝니다: A = 파랑, B = 노랑, C = 빨강 계열
+     (자세히는 그 줄만, 간단히는 그 대단원의 줄 전체)
    · var(--unit-color) 는 JS 가 대단원마다 넣어 주는 색입니다 (js/config.js).
    ========================================================================== */
 
@@ -22,6 +28,14 @@
   margin-bottom: 28px;
   page-break-inside: avoid;
   display: block;
+}
+/* 제목 탭(왼쪽) + "진단평가 자세히" 스위치(오른쪽) 한 줄 */
+.unit-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
 }
 .table-title {
   font-size: 13.5px;
@@ -33,6 +47,92 @@
   background-color: var(--unit-color, var(--brand));
   box-shadow: 0 4px 10px
     color-mix(in srgb, var(--unit-color, var(--brand)) 28%, transparent);
+}
+
+/* ── "진단평가 자세히" 스위치 (대단원 제목 오른쪽) ─────────────────
+   끄면(기본) 대단원마다 진단평가 · SOLUTION 1개, 켜면 중단원 줄마다.
+   JS: js/checklist-table.js 의 setUnitDetail · 인쇄 · 이미지에는 나오지 않음(.no-print)
+   ─────────────────────────────────────────────────────────── */
+.detail-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+  padding: 4px 10px 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.detail-toggle:hover {
+  border-color: color-mix(in srgb, var(--unit-color, var(--brand-2)) 55%, #ffffff);
+}
+/* 진짜 체크박스는 보이지 않게 두고(키보드로는 그대로 조작 가능), 옆의 스위치 모양으로 보여 줌 */
+.detail-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+.detail-toggle-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 0.15s ease;
+}
+.detail-toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s ease;
+}
+.detail-toggle-input:checked + .detail-toggle-switch {
+  background: var(--unit-color, var(--brand-2));
+}
+.detail-toggle-input:checked + .detail-toggle-switch::after {
+  transform: translateX(14px);
+}
+.detail-toggle-input:focus-visible + .detail-toggle-switch {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.detail-toggle:has(.detail-toggle-input:checked) {
+  border-color: color-mix(in srgb, var(--unit-color, var(--brand-2)) 55%, #ffffff);
+  color: var(--unit-color, var(--brand-2));
+}
+
+/* ── 간단히 ↔ 자세히: 보이는 칸 고르기 ─────────────────────────────
+   · 간단히(.is-detail 없음): 중단원 줄의 진단평가 · SOLUTION 칸(.sub-eval) 숨김
+   · 자세히(.is-detail)     : 대단원 평가 칸(.unit-eval) 숨김
+   !important: 인쇄(print.css)와 모바일(responsive.css)이 표 칸의 display 를 바꿔도 숨긴 칸이 다시 나오지 않게
+   ─────────────────────────────────────────────────────────── */
+.unit-block:not(.is-detail) .sub-eval,
+.unit-block.is-detail .unit-eval {
+  display: none !important;
+}
+/* 대단원 평가 칸(간단히 — 세로로 합친 칸)을 한 층 위에 그림.
+   이미지 저장·복사(html2canvas)가 아래 줄의 배경을 합친 칸 위에 덧칠해서
+   메모 · SOLUTION 글자와 테두리가 가려지는 문제를 막음 (화면 · 인쇄 모양은 그대로) */
+.unit-eval {
+  position: relative;
 }
 
 /* ── 표 기본 모양 ──────────────────────────────────────────────── */
@@ -77,17 +177,27 @@
   width: 170px;
 }
 
-/* ── 평가에 따른 줄 배경색 (JS 가 tr 에 grade-a / grade-b / grade-c 클래스를 붙임) ── */
+/* ── 평가에 따른 줄 배경색 ──────────────────────────────────────
+   · 자세히: JS 가 평가한 줄(tr)에 grade-a / grade-b / grade-c 클래스를 붙임 → 그 줄만
+   · 간단히: JS 가 대단원 블록에 data-unit-grade="A" / "B" / "C" 를 붙임 → 그 대단원의 줄 전체
+     (.unit-eval-row = 모바일에서 따로 보이는 대단원 평가 카드)
+   ─────────────────────────────────────────────────────────── */
 .check-row {
   transition: background 0.16s ease;
 }
-.check-row.grade-a {
+.unit-block.is-detail .check-row.grade-a,
+.unit-block:not(.is-detail)[data-unit-grade="A"] .check-row,
+.unit-block:not(.is-detail)[data-unit-grade="A"] .unit-eval-row {
   background: #eef6fe;
 }
-.check-row.grade-b {
+.unit-block.is-detail .check-row.grade-b,
+.unit-block:not(.is-detail)[data-unit-grade="B"] .check-row,
+.unit-block:not(.is-detail)[data-unit-grade="B"] .unit-eval-row {
   background: #fffdf0;
 }
-.check-row.grade-c {
+.unit-block.is-detail .check-row.grade-c,
+.unit-block:not(.is-detail)[data-unit-grade="C"] .check-row,
+.unit-block:not(.is-detail)[data-unit-grade="C"] .unit-eval-row {
   background: #fff5f5;
 }
 
@@ -187,7 +297,7 @@
 }
 
 /* 진단평가 메모 칸 (A/B/C 버튼 아래 · 시험 점수 등 한 줄)
-   · 비어 있으면 흐린 안내 글자(data-placeholder="점수 등")가 보임
+   · 비어 있으면 흐린 안내 글자(data-placeholder="코멘트")가 보임
    · 인쇄(print.css) · 이미지(.is-capturing)에서는 테두리 없이 글자만, 비어 있으면 숨김
      (이미지에서 빈 칸 숨기기는 js/export.js 의 captureReportCanvas 가 직접 함)
    관련 JS: js/checklist-table.js 의 onGradeNoteInput 등 */
@@ -221,7 +331,7 @@
   background: #fffbe6;
 }
 /* 이미지 저장·복사로 찍는 동안 (js/export.js 가 용지에 .is-capturing 을 붙임)
-   안내 글자("점수 등")는 어떤 경우에도 이미지에 찍히지 않게 없앰 */
+   안내 글자("코멘트")는 어떤 경우에도 이미지에 찍히지 않게 없앰 */
 .is-capturing .grade-note {
   border-color: transparent;
   background: transparent;

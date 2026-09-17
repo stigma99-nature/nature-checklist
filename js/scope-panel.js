@@ -9,6 +9,8 @@
      중단원 체크박스  data-target="m1-3-1"  ↔  표의 한 줄   id="m1-3-1-row"
    숨길 때는 style.display = "none", 다시 보일 때는 "" 또는 "block" 으로 되돌립니다.
    (출력 전 검사·진행 현황도 이 display 값으로 "보이는 줄"을 판단합니다)
+   줄을 켜고 끈 뒤에는 layoutAllUnitEval() (js/checklist-table.js)로
+   대단원 평가 칸(간단히)을 첫 번째 보이는 줄로 다시 옮깁니다.
 
    스타일: css/sidebar.css
    ========================================================================== */
@@ -54,6 +56,7 @@ function toggleBigBlock(key, checkbox) {
     );
     if (r) r.style.display = checkbox.checked ? "" : "none";
   });
+  layoutAllUnitEval();
   saveCurrentState();
   updateStatus();
 }
@@ -82,6 +85,7 @@ function toggleSubRow(checkbox) {
       if (block) block.style.display = "block";
     }
   }
+  layoutAllUnitEval();
   saveCurrentState();
   updateStatus();
 }
@@ -103,6 +107,7 @@ function setAllScopes(status) {
     );
     if (r) r.style.display = status ? "" : "none";
   });
+  layoutAllUnitEval();
   saveCurrentState();
   updateStatus();
 }
@@ -134,4 +139,5 @@ function restoreScopeSelections(scopeSelections) {
     );
     if (block) block.style.display = hasAny ? "block" : "none";
   });
+  layoutAllUnitEval();
 }

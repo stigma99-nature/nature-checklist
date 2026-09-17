@@ -111,12 +111,18 @@
   .checklist-table thead {
     display: none;
   }
-  .check-row {
+  .check-row,
+  .unit-eval-row {
     border: 1px solid #c9d1dc;
     border-radius: 8px;
     margin-bottom: 10px;
     overflow: hidden;
     background: #ffffff;
+  }
+  /* 간단히(대단원 평가 1개): 중단원 카드들 아래의 "대단원 진단평가 · SOLUTION" 카드는 단원 색 테두리로 구분 */
+  .unit-eval-row {
+    border: 2px solid
+      color-mix(in srgb, var(--unit-color, var(--brand-2)) 55%, #ffffff);
   }
   .checklist-table td {
     border: none;
@@ -125,6 +131,14 @@
   }
   .checklist-table td:last-child {
     border-bottom: none;
+  }
+  /* 간단히에서는 중단원 카드의 "주요 내용"이 마지막 칸 (뒤의 평가 칸이 숨겨져 있음) */
+  .unit-block:not(.is-detail) .check-row .content-td {
+    border-bottom: none;
+  }
+  /* 제목 탭 아래로 스위치가 내려가도 왼쪽 정렬 */
+  .unit-title-row {
+    justify-content: flex-start;
   }
   .checklist-table td::before {
     content: attr(data-label);

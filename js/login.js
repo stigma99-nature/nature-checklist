@@ -53,6 +53,7 @@ async function loginAs(name) {
       openBlankChecklist(); // 마지막으로 고른 학년 (처음이면 중1)
       showToast("명단에 없는 이름이라 빈 체크리스트로 시작해요 (저장되지 않아요)");
     }
+    updateExamSpotlight(); // 시험이 공란이면 왼쪽 위 시험 선택만 밝게 (js/student-list.js)
   } catch (error) {
     setLoginMessage(`로그인하지 못했습니다.\n${error.message}`);
   } finally {
@@ -78,6 +79,7 @@ async function logout() {
 
 function showLoginScreen() {
   document.getElementById("login-screen").classList.add("open");
+  updateExamSpotlight(); // 로그인 화면이 뜨면 시험 선택 안내는 숨김
   setTimeout(() => document.getElementById("login-name").focus(), 0);
 }
 

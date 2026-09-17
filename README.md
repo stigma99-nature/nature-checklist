@@ -31,7 +31,7 @@ nature-checklist/
 │   ├── checklist-table.css     가운데: 체크리스트 표 · 진단평가 메모 칸 · SOLUTION 문구 팝오버 · 안내 문구
 │   ├── opinion.css             가운데 아래: 종합 의견
 │   ├── action-dock.css         오른쪽 위 버튼 모음 · 저장 상태 · 토스트 알림
-│   ├── responsive.css          모바일(폭 860px 이하)용 덮어쓰기
+│   ├── responsive.css          화면 폭별 배치 (넓은 PC: 단원 설정을 오른쪽에 · 모바일: 한 줄 배치)
 │   └── print.css               인쇄용 덮어쓰기
 │
 ├── js/                         ⚙️ 동작
@@ -73,6 +73,7 @@ nature-checklist/
           → 왼쪽 위에서 시험 선택 (처음엔 공란)
           → 학생을 누르면 그 학생 · 그 시험의 체크리스트가 열림 (머리말에 이름·학교 자동 입력)
           → 단원 설정에서 시험 범위 체크 → A/B/C · 점수 메모 · SOLUTION · 종합 의견 입력 (자동 저장)
+            (진단평가는 기본이 대단원마다 1개, "진단평가 자세히" 스위치를 켜면 중단원 줄마다)
           → 🖨️ 인쇄 / 📸 이미지 저장 / 📋 이미지 복사
 
 [명단에 없는 이름으로 로그인]
@@ -81,10 +82,16 @@ nature-checklist/
 ```
 
 - **시험 선택**(왼쪽 위)은 처음에 **공란**입니다. 시험을 골라야 학생 체크리스트가 열립니다 (공란일 때 학생을 누르면, 시험을 고르는 순간 그 학생이 열려요). 같은 탭에서 새로고침하면 고른 시험이 유지되고, 새로 접속하면 다시 공란입니다.
+  시험을 고르기 전에는 **왼쪽 위 시험 선택 칸만 밝게** 보이고 나머지 화면은 어둡게 가려져서, 어디부터 누르면 되는지 바로 알 수 있습니다.
 - 시험을 바꾸면 모든 학생이 그 시험 기준으로 바뀝니다. 체크리스트는 **학생 · 시험마다 따로** 저장됩니다.
 - **단원 설정**에서 켠 단원만 표에 보이고 인쇄됩니다. 새 체크리스트는 모두 꺼진 상태로 시작합니다.
   넓은 PC 화면(창 폭 1280px 이상)에서는 단원 설정이 **화면 오른쪽**에, 그보다 좁으면 왼쪽 학생 목록 아래에 보입니다.
-- **진단평가 메모 칸** — 각 줄의 A/B/C 버튼 아래에 시험 점수 같은 짧은 글(최대 30자, 한 줄)을 적을 수 있습니다.
+- **진단평가 간단히 · 자세히** — 기본은 **대단원마다 진단평가(A/B/C · 메모) · SOLUTION 1개**입니다
+  (표의 오른쪽 두 칸이 대단원 전체 높이로 합쳐짐). 대단원 제목 오른쪽 **"진단평가 자세히"** 스위치를 켜면
+  지금처럼 **중단원 줄마다** 평가하고, 단원 설정의 **[모두 자세히] [모두 간단히]** 로 한꺼번에 바꿀 수 있습니다.
+  방식은 학생 · 시험마다 저장되고, 바꿔도 다른 방식에 적어 둔 내용은 지워지지 않습니다. 스위치는 인쇄 · 이미지에 나오지 않습니다.
+  (이 기능 전에 줄마다 평가해 둔 체크리스트는 그 대단원이 자세히로 열립니다)
+- **진단평가 메모 칸** — A/B/C 버튼 아래에 시험 점수 같은 짧은 글(최대 30자, 한 줄)을 적을 수 있습니다.
   적은 칸만 인쇄 · 이미지에 A/B/C 배지 아래 글자로 나오고, 비워 둔 칸은 나오지 않습니다.
 - **SOLUTION 칸의 기본값은 `-`(공란)** 입니다. 그대로 두면 인쇄물에도 `-` 로 나옵니다.
   칸을 누르면 `-` 가 전체 선택되어 바로 타이핑하면 바뀌고, 다 지우고 나가면 다시 `-` 로 채워집니다.
@@ -114,6 +121,7 @@ nature-checklist/
 | --- | --- | --- |
 | 로그인 화면 | `login.css` | `login.js` |
 | 선생님 · 시험 선택 · 반별 담당 학생 목록 | `sidebar.css` | `student-list.js` |
+| 시험 선택 안내 (시험이 공란이면 나머지 화면을 어둡게) | `sidebar.css` | `student-list.js` 의 `updateExamSpotlight` |
 | 빈 체크리스트 (명단에 없는 이름) | `sidebar.css`, `report-header.css` | `student-list.js`, `login.js` |
 | 단원 설정 | `sidebar.css` | `scope-panel.js` |
 | 머리말 (이름 / 학교 / 시험) | `report-header.css` | `report-header.js` |
@@ -131,12 +139,13 @@ nature-checklist/
 | --- | --- |
 | 선생님 · 학생 명단 | 관리자 페이지 `/admin` (CSV 파일 올리기 · 엑셀 붙여넣기 · 한 명씩 추가) |
 | CSV 제목 이름 추가로 인식하기 | `admin/admin.js` 의 `HEADER_NAMES` |
-| 단원 이름 · 주요 내용 수정/추가 | `js/data/curriculum.js` (⚠️ 이미 쓰던 `id` 는 바꾸지 않기) |
+| 단원 이름 · 주요 내용 수정/추가 | `js/data/curriculum.js` (⚠️ 이미 쓰던 `id` 는 바꾸지 않기 — 대단원 `id` 도 마찬가지) |
+| 새 체크리스트의 진단평가 방식 (대단원별 1개 ↔ 중단원별) | `js/checklist-table.js` 의 `DETAIL_DEFAULT` (`false` = 대단원별 1개) |
 | 학년 추가 (예: `mid3_22`) | `js/data/curriculum.js` 에 데이터 + `js/config.js` 의 `GRADE_LABELS` 에 이름표 |
 | 시험 종류 목록 | `index.html` 의 `<select id="exam-select">` (첫 번째 빈 항목은 기본 공란용 · ⚠️ 이미 쓰던 `value` 는 바꾸지 않기) |
 | SOLUTION 자주 쓰는 문구 | `index.html` ⑤ — `injectMacro('문구', false)` 와 버튼 글자 |
 | SOLUTION 기본값 (`-`) | `js/checklist-table.js` 의 `BLANK_SOLUTION` |
-| 진단평가 메모 안내 글자 · 최대 글자 수 | `js/checklist-table.js` 의 `data-placeholder="점수 등"` · `GRADE_NOTE_MAX` |
+| 진단평가 메모 안내 글자 · 최대 글자 수 | `js/checklist-table.js` 의 `data-placeholder="코멘트"` · `GRADE_NOTE_MAX` |
 | 사이트 기본 색 | `css/base.css` 의 `:root` 변수 |
 | 대단원별 색 | `js/config.js` 의 `UNIT_COLORS` |
 | 자동 저장 간격 | `js/config.js` 의 `SAVE_DELAY_MS` |
@@ -156,12 +165,16 @@ checklist-students/{자동 id}                학생 명단
 checklist-report/{학생id__학년__시험}        체크리스트   예) "a1B2…__mid2__1학기 기말고사"
   { studentId, teacher, studentName, schoolName, grade, examType,
     opinion,          종합 의견 (HTML)
-    customEdits,      { "m2-1-1_content": 주요 내용, "m2-1-1_sol": SOLUTION ("-" = 공란) }
-    activeGrades,     { "m2-1-1": "A" }          평가한 줄만
+    customEdits,      { "m2-1-1_content": 주요 내용, "m2-1_sol" · "m2-1-1_sol": SOLUTION ("-" = 공란) }
+    activeGrades,     { "m2-1": "B", "m2-1-1": "A" }   평가한 항목만 (대단원 id = 간단히, 중단원 id = 자세히)
     scopeSelections,  { "m2-1-1": true }         단원 설정 체크 상태
-    gradeNotes,       { "m2-1-1": "18/20" }      진단평가 메모를 적은 줄만
+    gradeNotes,       { "m2-1": "18/20" }        진단평가 메모를 적은 항목만
+    detailUnits,      { "m2-1": false }          대단원마다 "진단평가 자세히"를 켰는지
     updatedAt }
 ```
+
+> ⚠️ `detailUnits` 는 진단평가 간단히/자세히 기능과 함께 생긴 칸입니다. 이 버전을 배포하기 전에
+> `firestore.rules` 의 체크리스트 부분을 **Firebase 콘솔 규칙에 다시 붙여넣고 게시**해야 저장됩니다 (아래 ③).
 
 - 명단에서 **담당 선생님**을 바꾸면 작성된 체크리스트도 새 선생님에게 함께 보입니다.
 - 명단에서 **학년**을 바꾸면(진급) 새 학년 체크리스트로 새로 시작하고, 이전 학년 기록은 남습니다.
@@ -271,16 +284,17 @@ node dev-server.js
   프로젝트 전체를 검색(VS Code: `Ctrl + Shift + F`)하면 함수가 있는 파일이 나옵니다.
 - **표는 JS 가 그립니다** — 체크리스트 표는 `index.html` 에 없고
   `checklist-table.js` 의 `renderReportTables()` 가 `js/data/curriculum.js` 를 읽어 만듭니다.
-  표 안의 요소는 중단원 `id` 로 찾습니다.
+  표 안의 요소는 중단원 `id`(자세히) 또는 대단원 `id`(간단히)로 찾습니다.
 
   | id 예시 | 가리키는 것 |
   | --- | --- |
   | `m1-3-1-row` | 표의 한 줄 (`<tr>`) |
   | `m1-3-1-content` | 주요 내용 칸 |
-  | `m1-3-1-solution` | SOLUTION 칸 |
+  | `m1-3-1-grade` · `m1-3-grade` | 진단평가 칸 (중단원 줄마다 · 대단원 하나에 1개) |
+  | `m1-3-1-solution` · `m1-3-solution` | SOLUTION 칸 (중단원 줄마다 · 대단원 하나에 1개) |
   | `m1-3-1-badge` | 인쇄·이미지용 A/B/C 배지 |
   | `m1-3-1-note` | 진단평가 메모 칸 (A/B/C 버튼 아래) |
-  | `mid1-unit-idx-2` | 중1 의 세 번째 대단원 블록 (0부터 셈) |
+  | `mid1-unit-idx-2` | 중1 의 세 번째 대단원 블록 (0부터 셈, `data-unit="m1-3"`, 자세히면 `is-detail`) |
 
 - **저장 흐름** — 화면 코드(`storage.js` · `student-list.js` · `admin/admin.js`) → `js/db/db.js` 의 `DB`
   (입력값 검사) → `js/db/firebase-db.js` (Firestore) 또는 `js/db/test-db.js` (테스트 모드).

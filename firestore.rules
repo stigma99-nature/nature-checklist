@@ -57,7 +57,7 @@ service cloud.firestore {
     // · 명단에 있는 학생이고, 명단의 학년과 같은 학년이어야 저장됨 (get 으로 명단 확인)
     function checklistReportOk(reportId, d) {
       return d.keys().hasAll(['studentId', 'grade', 'examType', 'opinion', 'customEdits', 'activeGrades', 'scopeSelections', 'updatedAt'])
-        && d.keys().hasOnly(['studentId', 'teacher', 'studentName', 'schoolName', 'grade', 'examType', 'opinion', 'customEdits', 'activeGrades', 'scopeSelections', 'gradeNotes', 'updatedAt'])
+        && d.keys().hasOnly(['studentId', 'teacher', 'studentName', 'schoolName', 'grade', 'examType', 'opinion', 'customEdits', 'activeGrades', 'scopeSelections', 'gradeNotes', 'detailUnits', 'updatedAt'])
         && checklistTextOk(d.studentId, 1, 100)
         && checklistTextOk(d.grade, 1, 20)
         && checklistTextOk(d.examType, 1, 100)
@@ -71,6 +71,7 @@ service cloud.firestore {
         && checklistMapOk(d.activeGrades)
         && checklistMapOk(d.scopeSelections)
         && (!('gradeNotes' in d) || checklistMapOk(d.gradeNotes))
+        && (!('detailUnits' in d) || checklistMapOk(d.detailUnits))
         && d.updatedAt is number;
     }
 

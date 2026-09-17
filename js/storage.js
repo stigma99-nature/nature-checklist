@@ -27,14 +27,17 @@ const RETRY_DELAY_MS = 5000; // 저장 실패 후 다시 시도할 때까지 기
 /* ── 화면 내용 ↔ 저장용 객체 ───────────────────────────────────── */
 
 // 지금 화면의 체크리스트 내용을 저장용 객체로 만든다.
+// 평가 항목의 열쇠(key)는 중단원 id(자세히) 또는 대단원 id(간단히)입니다.
 // 반환 예)
 //   {
 //     opinion: "<종합 의견 HTML>",
-//     customEdits:     { "m1-2-1_content": "<주요 내용 HTML>", "m1-2-1_sol": "<SOLUTION HTML>" },
-//     activeGrades:    { "m1-2-1": "A", "m1-2-2": "C" },     ← 평가한 줄만 들어감
-//     scopeSelections: { "m1-2-1": true, "m1-2-2": false },  ← 단원 설정 체크 상태
-//     gradeNotes:      { "m1-2-1": "18/20" },                ← 진단평가 메모를 적은 줄만 들어감
+//     customEdits:     { "m1-2-1_content": "<주요 내용 HTML>", "m1-2-1_sol": "<SOLUTION HTML>", "m1-2_sol": "-" },
+//     activeGrades:    { "m1-2": "B", "m1-2-1": "A" },       ← 평가한 항목만 들어감
+//     scopeSelections: { "m1-2-1": true, "m1-2-2": false },  ← 단원 설정 체크 상태 (중단원)
+//     gradeNotes:      { "m1-2": "18/20" },                  ← 진단평가 메모를 적은 항목만 들어감
+//     detailUnits:     { "m1-1": false, "m1-2": true },      ← 대단원마다 "진단평가 자세히"를 켰는지
 //   }
+// 간단히 ↔ 자세히 를 바꿔도 다른 방식에 적어 둔 내용은 지우지 않고 함께 저장한다.
 // (학생 이름·학교·학년·시험은 DB.saveReport 가 명단 정보로 함께 저장합니다)
 function buildStateObj() {
   const stateObj = {
@@ -43,29 +46,33 @@ function buildStateObj() {
     activeGrades: {},
     scopeSelections: {},
     gradeNotes: {},
+    detailUnits: {},
   };
   document.querySelectorAll(".sub-scope-checkbox").forEach((cb) => {
     stateObj.scopeSelections[cb.getAttribute("data-target")] = cb.checked;
   });
-  (CURRICULUM_DATA[currentGrade] || []).forEach((unit) => {
+
+  // 평가 항목 하나(key)의 SOLUTION · 메모 · A/B/C 를 모은다
+  const collectEvalItem = (key) => {
+    const solEl = document.getElementById(`${key}-solution`);
+    const noteEl = document.getElementById(`${key}-note`);
+    if (solEl) stateObj.customEdits[key + "_sol"] = solEl.innerHTML;
+    const note = noteEl ? readGradeNote(noteEl) : "";
+    if (note) stateObj.gradeNotes[key] = note;
+    const grade = getActiveGrade(key);
+    if (grade !== "-") stateObj.activeGrades[key] = grade;
+  };
+
+  (CURRICULUM_DATA[currentGrade] || []).forEach((unit, idx) => {
+    const unitKey = unitKeyOf(unit, idx);
+    const block = document.querySelector(`.unit-block[data-unit="${unitKey}"]`);
+    if (block) stateObj.detailUnits[unitKey] = block.classList.contains("is-detail");
+    collectEvalItem(unitKey);
     unit.sub.forEach((s) => {
       const contentEl = document.getElementById(`${s.id}-content`);
-      const solEl = document.getElementById(`${s.id}-solution`);
-      const noteEl = document.getElementById(`${s.id}-note`);
       if (contentEl)
         stateObj.customEdits[s.id + "_content"] = contentEl.innerHTML;
-      if (solEl) stateObj.customEdits[s.id + "_sol"] = solEl.innerHTML;
-      const note = noteEl ? readGradeNote(noteEl) : "";
-      if (note) stateObj.gradeNotes[s.id] = note;
-      const row = document.getElementById(`${s.id}-row`);
-      if (row) {
-        if (row.querySelector(".active-a"))
-          stateObj.activeGrades[s.id] = "A";
-        else if (row.querySelector(".active-b"))
-          stateObj.activeGrades[s.id] = "B";
-        else if (row.querySelector(".active-c"))
-          stateObj.activeGrades[s.id] = "C";
-      }
+      collectEvalItem(s.id);
     });
   });
   return stateObj;
@@ -83,24 +90,68 @@ function applyStateObj(state) {
   const edits = state.customEdits || {};
   const grades = state.activeGrades || {};
   const notes = state.gradeNotes || {};
-  (CURRICULUM_DATA[currentGrade] || []).forEach((unit) => {
+  const detailUnits = resolveDetailUnits(state, currentGrade);
+
+  // 평가 항목 하나(key)의 SOLUTION · 메모 · A/B/C 를 채운다
+  const fillEvalItem = (key) => {
+    // SOLUTION: 저장된 글자가 없으면(빈 칸) 기본값 "-"(공란)를 그대로 둔다
+    const solEl = document.getElementById(`${key}-solution`);
+    if (solEl && htmlHasText(edits[key + "_sol"])) {
+      solEl.innerHTML = sanitizeHtml(edits[key + "_sol"]);
+    }
+    const noteEl = document.getElementById(`${key}-note`);
+    if (noteEl) noteEl.textContent = typeof notes[key] === "string" ? notes[key] : "";
+    if (grades[key]) applyGradeState(key, grades[key]);
+  };
+
+  (CURRICULUM_DATA[currentGrade] || []).forEach((unit, idx) => {
+    const unitKey = unitKeyOf(unit, idx);
+    setUnitDetail(unitKey, detailUnits[unitKey], { save: false });
+    fillEvalItem(unitKey);
     unit.sub.forEach((s) => {
       const contentEl = document.getElementById(`${s.id}-content`);
       if (contentEl && edits[s.id + "_content"]) {
         contentEl.innerHTML = sanitizeHtml(edits[s.id + "_content"]);
       }
-      // SOLUTION: 저장된 글자가 없으면(빈 칸) 기본값 "-"(공란)를 그대로 둔다
-      const solEl = document.getElementById(`${s.id}-solution`);
-      if (solEl && htmlHasText(edits[s.id + "_sol"])) {
-        solEl.innerHTML = sanitizeHtml(edits[s.id + "_sol"]);
-      }
-      const noteEl = document.getElementById(`${s.id}-note`);
-      if (noteEl) noteEl.textContent = typeof notes[s.id] === "string" ? notes[s.id] : "";
-      const row = document.getElementById(`${s.id}-row`);
-      if (row && grades[s.id]) applyGradeState(row, grades[s.id]);
+      fillEvalItem(s.id);
     });
   });
   updateStatus();
+}
+
+// 저장본(state)에서 대단원마다 "진단평가 자세히"를 켤지 정한다 → { "m2-1": false, "m2-2": true, … }
+//   · 저장본에 detailUnits 가 있으면 그 값 (저장본에 없는 대단원은 DETAIL_DEFAULT)
+//   · 없으면 (이 기능이 생기기 전에 저장된 체크리스트): 중단원마다 평가 · 메모 · SOLUTION 을
+//     적어 둔 대단원은 자세히로 열어서, 예전에 적은 내용이 그대로 보이게 한다.
+// grade: 학년 코드 (예: "mid2"). 학생 목록의 A/B/C 개수 계산(student-list.js)에서도 씁니다.
+function resolveDetailUnits(state, grade) {
+  const has = (obj, key) =>
+    Boolean(obj) && typeof obj === "object" && Object.prototype.hasOwnProperty.call(obj, key);
+  const saved = state && state.detailUnits;
+  const grades = (state && state.activeGrades) || {};
+  const notes = (state && state.gradeNotes) || {};
+  const edits = (state && state.customEdits) || {};
+  const units = hasGradeData(grade) ? CURRICULUM_DATA[grade] : [];
+  const result = {};
+  units.forEach((unit, idx) => {
+    const unitKey = unitKeyOf(unit, idx, grade);
+    if (saved && typeof saved === "object") {
+      result[unitKey] = has(saved, unitKey) ? saved[unitKey] === true : DETAIL_DEFAULT;
+      return;
+    }
+    const hasSubData = unit.sub.some((s) => {
+      const sol = has(edits, s.id + "_sol") ? edits[s.id + "_sol"] : "";
+      // SOLUTION 의 글자만 (태그 · 공백 빼고). 기본값 "-" 는 적은 것으로 치지 않음
+      const solText = typeof sol === "string" ? sol.replace(/<[^>]*>/g, "").replace(/&nbsp;|\s/g, "") : "";
+      return (
+        has(grades, s.id) ||
+        (has(notes, s.id) && String(notes[s.id]).trim() !== "") ||
+        (solText !== "" && solText !== BLANK_SOLUTION)
+      );
+    });
+    result[unitKey] = DETAIL_DEFAULT || hasSubData;
+  });
+  return result;
 }
 
 /* ── 저장소에서 불러오기 ───────────────────────────────────────── */
@@ -175,7 +226,7 @@ async function saveNow() {
       lastSavedAt = updatedAt;
       if (!saveTimer) setSaveState("saved", updatedAt);
     }
-    updateStudentSummary(student.id, exam, data.activeGrades, updatedAt);
+    updateStudentSummary(student.id, exam, data, updatedAt);
     return true;
   } catch (error) {
     console.warn("자동 저장 실패", error);

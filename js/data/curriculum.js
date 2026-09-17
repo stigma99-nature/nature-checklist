@@ -12,6 +12,7 @@
      };
 
      대단원 = {
+       id: "m1-3",                    // 고유 id (중1 - 3번째 대단원) — 대단원 진단평가(간단히)의 열쇠
        title: "3. 열",                // 표 제목 탭 & 단원 설정에 보이는 이름
        sub: [중단원, 중단원, ...],
      }
@@ -26,6 +27,10 @@
    · id 는 저장된 체크리스트의 평가(A/B/C)·SOLUTION·단원 선택과 연결되는 "열쇠"입니다.
      이미 쓰던 id 를 바꾸거나 지우면 기존 저장본에서 그 줄의 내용이 사라집니다.
      새 중단원을 추가할 때는 같은 학년 안에서 겹치지 않는 새 id 를 붙여 주세요.
+   · 대단원 id 도 같습니다 (대단원 하나로 적은 진단평가 · SOLUTION · 메모 · "자세히" 스위치가 연결됨).
+     대단원 id 와 중단원 id 는 같은 학년 안에서 서로 겹치면 안 됩니다. (예: 대단원 "m1-3", 중단원 "m1-3-1")
+     대단원 id 를 빠뜨리면 "학년-u순서"(예: mid1-u3)로 대신 저장되는데, 이러면 대단원 순서를 바꿀 때
+     대단원 평가가 다른 단원으로 옮겨 가니 꼭 붙여 주세요.
    · list 는 "새 체크리스트"의 기본값입니다. 이미 저장된 체크리스트는 저장 당시의
      주요 내용(직접 고친 내용 포함)을 그대로 불러옵니다.
    · 대단원 색은 title 앞 숫자가 아니라 배열 순서대로 js/config.js 의 UNIT_COLORS 를 씁니다.
@@ -37,6 +42,7 @@ const CURRICULUM_DATA = {
   /* ───────────────────────────── 중1 ───────────────────────────── */
   mid1: [
     {
+      id: "m1-1",
       title: "1. 과학과 인류의 지속가능한 삶",
       sub: [
         {
@@ -51,6 +57,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m1-2",
       title: "2. 생물의 구성과 다양성",
       sub: [
         {
@@ -83,6 +90,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m1-3",
       title: "3. 열",
       sub: [
         {
@@ -115,6 +123,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m1-4",
       title: "4. 물질의 상태 변화",
       sub: [
         {
@@ -147,6 +156,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m1-5",
       title: "5. 힘의 작용",
       sub: [
         {
@@ -188,6 +198,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m1-6",
       title: "6. 기체의 성질",
       sub: [
         {
@@ -220,6 +231,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m1-7",
       title: "7. 태양계",
       sub: [
         {
@@ -256,6 +268,7 @@ const CURRICULUM_DATA = {
   /* ───────────────────────────── 중2 ───────────────────────────── */
   mid2: [
     {
+      id: "m2-1",
       title: "1. 물질의 특성",
       sub: [
         {
@@ -288,6 +301,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m2-2",
       title: "2. 지권의 변화",
       sub: [
         {
@@ -320,6 +334,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m2-3",
       title: "3. 빛과 파동",
       sub: [
         {
@@ -352,6 +367,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m2-4",
       title: "4. 물질의 구성",
       sub: [
         {
@@ -375,6 +391,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m2-5",
       title: "5. 식물과 에너지",
       sub: [
         {
@@ -398,6 +415,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m2-6",
       title: "6. 동물과 에너지",
       sub: [
         {
@@ -439,6 +457,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m2-7",
       title: "7. 전기와 자기",
       sub: [
         {
@@ -471,6 +490,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m2-8",
       title: "8. 별과 우주",
       sub: [
         {
@@ -498,6 +518,7 @@ const CURRICULUM_DATA = {
   /* ───────────────────────────── 중3 ───────────────────────────── */
   mid3: [
     {
+      id: "m3-1",
       title: "1. 화학 반응의 규칙과 에너지 변화",
       sub: [
         {
@@ -530,6 +551,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-2",
       title: "2. 기권과 날씨",
       sub: [
         {
@@ -571,6 +593,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-3",
       title: "3. 운동과 에너지",
       sub: [
         {
@@ -594,6 +617,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-4",
       title: "4. 자극과 반응",
       sub: [
         {
@@ -617,6 +641,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-5",
       title: "5. 생식과 유전",
       sub: [
         {
@@ -658,6 +683,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-6",
       title: "6. 에너지 전환과 보존",
       sub: [
         {
@@ -681,6 +707,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-7",
       title: "7. 별과 우주",
       sub: [
         {
@@ -713,6 +740,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-8",
       title: "8. 과학기술과 인류 문명",
       sub: [
         {
@@ -729,6 +757,7 @@ const CURRICULUM_DATA = {
   ],
   mid3_22: [
     {
+      id: "m3-1",
       title: "1. 화학 반응과 규칙성",
       sub: [
         {
@@ -761,6 +790,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-2",
       title: "2. 날씨와 기후 변화",
       sub: [
         {
@@ -802,6 +832,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-3",
       title: "3. 수권과 해수의 순환",
       sub: [
         {
@@ -825,6 +856,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-4",
       title: "4. 운동과 에너지",
       sub: [
         {
@@ -848,6 +880,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-5",
       title: "5. 자극과 반응",
       sub: [
         {
@@ -889,6 +922,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-6",
       title: "6. 생식과 유전",
       sub: [
         {
@@ -912,6 +946,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-7",
       title: "7. 재해재난과 안전",
       sub: [
         {
@@ -944,6 +979,7 @@ const CURRICULUM_DATA = {
       ],
     },
     {
+      id: "m3-8",
       title: "8. 과학과 나의 미래",
       sub: [
         {
