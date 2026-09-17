@@ -9,6 +9,8 @@
    · 시험이 공란이면 → 왼쪽 위 시험 선택 칸만 밝게, 나머지 화면은 어둡게 안내 (updateExamSpotlight)
    · 로그인하면 마지막으로 열었던 학생(없으면 첫 번째 학생)의 체크리스트가 자동으로 열립니다.
    · 명단에 없는 이름으로 로그인하면 → "빈 체크리스트" (이름·학교 직접 입력, 저장 안 함)
+   · 목록 아래 "＋ 학생 추가"       → 새 학생을 이 선생님 명단에 바로 등록
+               "✏️ 이름·학교 수정" → 지금 열린 학생의 이름 · 학교명 고치기 (submitStudentForm)
 
    스타일: css/sidebar.css · 저장소: js/db/db.js 의 DB
    ========================================================================== */
@@ -77,13 +79,14 @@ function setTeacherStudents(list) {
 //   [중2] 홍길동 A               평가 전
 //         예시중
 function renderStudentList() {
+  updateStudentActions(); // 목록 아래 "이름·학교 수정" 버튼 잠금 · 수정 폼 닫기
   const root = document.getElementById("student-list");
   document.getElementById("student-count").textContent = teacherStudents.length;
   root.innerHTML = "";
   if (!teacherStudents.length) {
     root.innerHTML = isBlankChecklist
-      ? '<div class="student-empty">명단에 없는 이름이라 담당 학생이 없어요.<br>가운데 <b>빈 체크리스트</b>에 이름·학교를 직접 입력해 쓸 수 있어요.<br>(작성한 내용은 저장되지 않아요)</div>'
-      : '<div class="student-empty">담당 학생이 없습니다.</div>';
+      ? '<div class="student-empty">명단에 없는 이름이라 담당 학생이 없어요.<br>가운데 <b>빈 체크리스트</b>에 이름·학교를 직접 입력해 쓸 수 있어요.<br>(작성한 내용은 저장되지 않아요)<br>저장하려면 아래 <b>＋ 학생 추가</b>로 학생을 등록해 주세요.</div>'
+      : '<div class="student-empty">담당 학생이 없습니다.<br>아래 <b>＋ 학생 추가</b>로 등록할 수 있어요.</div>';
     return;
   }
   groupByClass(teacherStudents).forEach(({ className, students }) => {
@@ -154,12 +157,195 @@ function updateStudentSummary(studentId, exam, data, updatedAt) {
   renderStudentList();
 }
 
+/* ── 학생 추가 · 이름·학교 수정 (목록 아래 버튼 → 입력 폼) ──────────────
+   두 버튼이 폼 하나(#student-form)를 함께 씁니다. studentFormMode 로 어느 쪽인지 구분합니다.
+
+   ＋ 학생 추가
+   · 명단에 없는 학생(새로 들어온 학생 등)을 로그인한 선생님의 명단에 바로 등록합니다.
+     관리자 페이지(/admin)에서 한 명 추가하는 것과 똑같이 저장소에 저장됩니다.
+   · 반은 입력받지 않습니다 (반 없이 등록 → 목록이 반별로 묶여 있으면 맨 아래 "반 미지정" 묶음).
+   · 추가하면 그 학생의 체크리스트가 열립니다. 시험을 아직 고르지 않았으면 시험을 고를 때 열립니다.
+   · 빈 체크리스트(명단에 없는 이름으로 로그인)에서 추가하면 그때부터 저장되는 일반 화면으로 바뀝니다.
+
+   ✏️ 이름·학교 수정
+   · 지금 체크리스트가 열린 학생의 이름 · 학교명만 고칩니다 (열린 학생이 없으면 버튼이 잠김).
+   · 고치면 목록 · 머리말(인쇄물) · 탭 제목에 바로 반영되고, 작성한 체크리스트는 그대로 남습니다.
+   · 수정 폼을 연 채로 다른 학생을 열면 폼이 닫힙니다 (엉뚱한 학생을 고치지 않게).
+
+   학년 · 반 변경과 학생 삭제는 관리자 페이지에서 합니다.
+   모양: css/sidebar.css 의 .student-actions · .student-form
+   ─────────────────────────────────────────────────────────── */
+
+let studentFormMode = null; // 열린 폼: "add"(학생 추가) | "edit"(이름·학교 수정) | null(닫힘)
+let editingStudentId = null; // 이름·학교를 고치는 학생 id
+
+// "＋ 학생 추가" 버튼: 폼을 비워서 연다.
+// 학년은 지금 열린 학생(빈 체크리스트면 고른 학년)의 학년으로 미리 골라 둔다
+function openAddStudentForm() {
+  document.getElementById("student-form-grade").value = hasGradeData(currentGrade)
+    ? currentGrade
+    : Object.keys(CURRICULUM_DATA)[0];
+  openStudentForm("add", "새 학생 추가", "추가", { name: "", school: "" });
+}
+
+// "✏️ 이름·학교 수정" 버튼: 지금 열린 학생의 이름·학교를 채워서 연다.
+function openEditStudentForm() {
+  if (!currentStudent) return;
+  editingStudentId = currentStudent.id;
+  openStudentForm("edit", `${currentStudent.name} 학생 정보 수정`, "저장", {
+    name: currentStudent.name,
+    school: currentStudent.school || "",
+  });
+}
+
+// 폼을 연다 (학년 칸은 추가할 때만 보임). 폼이 열린 동안 아래 버튼 두 개는 숨긴다.
+function openStudentForm(mode, title, submitText, { name, school }) {
+  studentFormMode = mode;
+  document.getElementById("student-form-title").textContent = title;
+  document.getElementById("student-form-submit").textContent = submitText;
+  document.getElementById("student-form-name").value = name;
+  document.getElementById("student-form-school").value = school;
+  document.getElementById("student-form-grade-field").hidden = mode !== "add";
+  setStudentFormMessage("");
+  const form = document.getElementById("student-form");
+  form.hidden = false;
+  document.getElementById("student-actions").hidden = true;
+  form.scrollIntoView({ block: "nearest" });
+  document.getElementById("student-form-name").focus();
+}
+
+// 취소 버튼 · 저장을 마쳤을 때 · 로그아웃할 때 (js/login.js)
+function closeStudentForm() {
+  studentFormMode = null;
+  editingStudentId = null;
+  document.getElementById("student-form").hidden = true;
+  document.getElementById("student-actions").hidden = false;
+}
+
+// 목록을 다시 그릴 때마다 (renderStudentList): 열린 학생이 없으면 수정 버튼을 잠그고,
+// 수정 폼을 연 채로 다른 학생으로 바뀌었으면 폼을 닫는다.
+function updateStudentActions() {
+  document.getElementById("edit-student-open").disabled = !currentStudent;
+  if (studentFormMode === "edit" && (!currentStudent || currentStudent.id !== editingStudentId)) {
+    closeStudentForm();
+  }
+}
+
+// 폼 아래 오류 문구 (줄바꿈 \n 가능). 다시 입력하기 시작하면 지움 (index.html 의 oninput)
+function setStudentFormMessage(message) {
+  document.getElementById("student-form-message").textContent = message;
+}
+
+// "추가" · "저장" 버튼 (index.html 의 onsubmit)
+async function submitStudentForm(event) {
+  event.preventDefault(); // 페이지가 새로고침되지 않게
+  const name = document.getElementById("student-form-name").value.trim();
+  const school = document.getElementById("student-form-school").value.trim();
+  if (!name || !school) {
+    setStudentFormMessage("이름과 학교명을 입력해 주세요.");
+    document.getElementById(name ? "student-form-school" : "student-form-name").focus();
+    return;
+  }
+  if (studentFormMode === "add") await addStudentFromForm(name, school);
+  else if (studentFormMode === "edit") await editStudentFromForm(name, school);
+}
+
+// 같은 이름 · 학교 · 학년 학생이 이미 목록에 있으면 한 번 물어본다. 계속하면 true
+function confirmNotDuplicate({ name, school, grade }, exceptId, question) {
+  const duplicate = teacherStudents.some(
+    (s) => s.id !== exceptId && s.name === name && s.school === school && s.grade === grade,
+  );
+  return (
+    !duplicate ||
+    confirm(`${name}(${school}, ${gradeLabel(grade)}) 학생이 이미 목록에 있습니다.\n${question}`)
+  );
+}
+
+// 저장소에 보내는 동안 폼 버튼을 잠근다. 실패하면 폼 아래에 오류 문구를 보여 주고 null 을 돌려준다.
+async function runStudentFormTask(busyText, failText, task) {
+  const button = document.getElementById("student-form-submit");
+  const label = button.textContent;
+  button.disabled = true;
+  button.textContent = busyText;
+  setStudentFormMessage("");
+  try {
+    return await task();
+  } catch (error) {
+    setStudentFormMessage(`${failText}\n${error.message}`);
+    return null;
+  } finally {
+    button.disabled = false;
+    button.textContent = label;
+  }
+}
+
+// 학생 추가: 명단에 등록하고 그 학생의 체크리스트를 연다
+async function addStudentFromForm(name, school) {
+  const student = {
+    teacher: currentTeacher,
+    name,
+    school,
+    grade: document.getElementById("student-form-grade").value,
+  };
+  if (!confirmNotDuplicate(student, null, "그래도 추가할까요?")) return;
+  const result = await runStudentFormTask("추가 중…", "추가하지 못했습니다.", () =>
+    DB.addStudents([student]),
+  );
+  if (!result || currentTeacher !== student.teacher) return; // 실패 · 저장하는 사이 로그아웃
+  const [created] = result;
+
+  teacherStudents.push({ ...created, summary: null });
+  if (studentFormMode === "add") closeStudentForm();
+  renderStudentList();
+  showToast(`✅ ${created.name} 학생을 추가했어요`);
+
+  // 시험을 고르기 전이면 기억만 해 두고, 시험을 고를 때 이 학생이 열리게 한다
+  safeStorage.set(LAST_STUDENT_KEY, created.id);
+  if (currentExam) {
+    await openChecklist(created.id);
+  } else if (isBlankChecklist && (await confirmLeave())) {
+    // 빈 체크리스트였다면 이제 담당 학생이 생겼으니 시험 선택 안내 화면으로
+    await openInitialStudent();
+  }
+}
+
+// 이름·학교 수정: 명단을 고치고 목록 · 머리말에 바로 반영한다 (학년 · 반은 그대로)
+async function editStudentFromForm(name, school) {
+  const student = teacherStudents.find((s) => s.id === editingStudentId);
+  if (!student || (name === student.name && school === student.school)) {
+    closeStudentForm(); // 바뀐 것이 없으면 그냥 닫기
+    return;
+  }
+  if (!confirmNotDuplicate({ name, school, grade: student.grade }, student.id, "그래도 바꿀까요?")) {
+    return;
+  }
+  const changed = await runStudentFormTask("저장 중…", "수정하지 못했습니다.", () =>
+    DB.updateStudent(student.id, {
+      teacher: student.teacher,
+      name,
+      school,
+      grade: student.grade,
+      className: student.className,
+    }),
+  );
+  if (!changed || currentTeacher !== student.teacher) return; // 실패 · 저장하는 사이 로그아웃
+
+  Object.assign(student, changed);
+  if (currentStudent && currentStudent.id === student.id) {
+    Object.assign(currentStudent, changed);
+    fillReportHeader(); // 머리말 이름·학교 칸과 탭 제목(저장 파일 이름)도 새 정보로
+  }
+  if (studentFormMode === "edit") closeStudentForm();
+  renderStudentList();
+  showToast(`✅ ${student.name} 학생 정보를 고쳤어요`);
+}
+
 /* ── 시험 · 학년 선택 ─────────────────────────────────────────── */
 
 // 페이지를 열 때: 시험 선택을 준비하고, 머리말의 시험 칸에도 같은 목록을 복사한다.
 //   · 기본값은 공란. 같은 탭에서 새로고침한 경우에만 고른 시험을 되살린다.
 //   · 시험 종류 목록은 index.html 의 <select id="exam-select"> 한 곳에서만 고치면 됩니다.
-// 빈 체크리스트용 학년 선택 목록도 여기서 채운다 (js/data/curriculum.js 의 학년 전부).
+// 빈 체크리스트 · 학생 추가 폼의 학년 선택 목록도 여기서 채운다 (js/data/curriculum.js 의 학년 전부).
 function initExamSelect() {
   const select = document.getElementById("exam-select");
   const saved = safeSession.get(EXAM_KEY);
@@ -173,9 +359,11 @@ function initExamSelect() {
   headerExam.value = currentExam;
   updateExamHint();
 
-  document.getElementById("blank-grade-select").innerHTML = Object.keys(CURRICULUM_DATA)
+  const gradeOptions = Object.keys(CURRICULUM_DATA)
     .map((g) => `<option value="${escapeHtml(g)}">${escapeHtml(gradeLabel(g))}</option>`)
     .join("");
+  document.getElementById("blank-grade-select").innerHTML = gradeOptions;
+  document.getElementById("student-form-grade").innerHTML = gradeOptions;
 }
 
 // 시험을 아직 고르지 않았으면(공란) 왼쪽 시험 칸을 눈에 띄게 표시한다.

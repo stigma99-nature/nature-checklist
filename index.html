@@ -58,7 +58,7 @@
     <!--
       화면 구성
         ⓪ 로그인 화면 ··········· 선생님 이름 입력 (로그인 전에는 화면 전체를 덮음)
-        ① 왼쪽 사이드바 ········· 선생님 · 시험 선택 · 담당 학생 목록 · 단원 설정
+        ① 왼쪽 사이드바 ········· 선생님 · 시험 선택 · 담당 학생 목록 · 학생 추가·수정 · 단원 설정
                                   (단원 설정은 넓은 PC 화면에서 오른쪽에 보임 → css/responsive.css)
         ② 가운데 A4 리포트 ······ 머리말, 체크리스트 표 (JS 가 생성), 종합 의견, 인쇄용 푸터
         ③ 오른쪽 위 버튼 모음 ··· 인쇄 / 이미지 저장 / 이미지 복사
@@ -130,12 +130,84 @@
           </label>
         </div>
 
-        <!-- 담당 학생 목록: 로그인하면 renderStudentList() (js/student-list.js) 가 반별로 묶어 채움 -->
+        <!-- 담당 학생 목록: 로그인하면 renderStudentList() (js/student-list.js) 가 반별로 묶어 채움
+             목록 아래 버튼: "학생 추가" → 새 학생 입력 폼 / "이름·학교 수정" → 지금 열린 학생 정보 수정 폼 -->
         <div class="student-panel">
           <div class="panel-title">
             담당 학생 <span id="student-count">0</span>명
           </div>
           <div class="student-list" id="student-list"></div>
+
+          <!-- 학생 추가 · 이름·학교 수정 ─ js/student-list.js · css/sidebar.css
+               · 학생 추가 → openAddStudentForm() : 명단에 없는 학생을 로그인한 선생님 명단에 바로 등록
+               · 이름·학교 수정 → openEditStudentForm() : 지금 체크리스트가 열린 학생의 이름 · 학교명 고치기
+                 (열린 학생이 없으면 버튼이 잠김. 학년 · 반 변경과 삭제는 관리자 페이지 /admin 에서)
+               두 버튼이 아래 폼 하나를 함께 씁니다 (수정할 때는 학년 칸이 숨음).
+               저장 → submitStudentForm() / 취소 → closeStudentForm()  (학년 선택지는 initExamSelect 가 채움) -->
+          <div class="student-actions" id="student-actions">
+            <button
+              type="button"
+              class="btn-student-action"
+              onclick="openAddStudentForm()"
+            >
+              ＋ 학생 추가
+            </button>
+            <button
+              type="button"
+              class="btn-student-action"
+              id="edit-student-open"
+              onclick="openEditStudentForm()"
+              disabled
+            >
+              ✏️ 이름·학교 수정
+            </button>
+          </div>
+          <form
+            class="student-form"
+            id="student-form"
+            onsubmit="submitStudentForm(event)"
+            oninput="setStudentFormMessage('')"
+            hidden
+          >
+            <div class="sf-title" id="student-form-title">새 학생 추가</div>
+            <label class="sf-field">
+              <span>이름</span>
+              <input
+                type="text"
+                id="student-form-name"
+                maxlength="30"
+                placeholder="예) 홍길동"
+                autocomplete="off"
+              />
+            </label>
+            <label class="sf-field">
+              <span>학교명</span>
+              <input
+                type="text"
+                id="student-form-school"
+                maxlength="40"
+                placeholder="예) 예시중"
+                autocomplete="off"
+              />
+            </label>
+            <label class="sf-field" id="student-form-grade-field">
+              <span>학년</span>
+              <select id="student-form-grade"></select>
+            </label>
+            <p class="sf-message" id="student-form-message" role="alert"></p>
+            <div class="sf-actions">
+              <button
+                type="button"
+                class="sf-cancel"
+                onclick="closeStudentForm()"
+              >
+                취소
+              </button>
+              <button type="submit" class="sf-submit" id="student-form-submit">
+                추가
+              </button>
+            </div>
+          </form>
         </div>
 
         <!-- 단원 설정 패널: 체크한 단원만 리포트에 표시 ─ js/scope-panel.js
@@ -443,7 +515,7 @@
         scope-panel.js          ① 단원 설정 체크박스
         report-header.js        ② 머리말 (명단 정보 / 빈 체크리스트는 직접 입력) · 저장 파일 이름
         checklist-table.js      ② 체크리스트 표 · 진단평가 간단히/자세히 · A/B/C 평가 · 진단평가 메모 · ⑤ SOLUTION 문구 팝오버
-        student-list.js         ① 시험 선택 · 반별 담당 학생 목록 · 체크리스트 열기 · 빈 체크리스트
+        student-list.js         ① 시험 선택 · 반별 담당 학생 목록 · 학생 추가·수정 · 체크리스트 열기 · 빈 체크리스트
         login.js                ⓪ 선생님 로그인 / 로그아웃 (명단에 없는 이름 → 빈 체크리스트)
         export.js               ③ 출력 전 검사 · 인쇄/PDF · 이미지 저장/복사
       [시작]

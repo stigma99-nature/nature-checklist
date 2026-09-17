@@ -68,6 +68,7 @@ async function logout() {
   safeStorage.remove(LAST_STUDENT_KEY);
   currentTeacher = null;
   teacherStudents = [];
+  closeStudentForm(); // 학생 추가 · 수정 폼이 열려 있었으면 닫기 (js/student-list.js)
   closeChecklist("로그인하면 담당 학생의 체크리스트가 열립니다.");
   document.getElementById("teacher-name").textContent = "";
   document.getElementById("login-name").value = "";

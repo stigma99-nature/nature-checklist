@@ -5,6 +5,7 @@
    · 선생님 패널   : 로그인한 이름 · 로그아웃 · 시험 선택   (js/login.js, js/student-list.js)
      └ ⑥ 시험 선택 안내: 시험이 공란이면 시험 선택 칸만 밝게, 나머지 화면은 어둡게
    · 담당 학생 목록 : 학생을 누르면 체크리스트가 열림       (js/student-list.js)
+     └ 학생 추가 · 이름·학교 수정: 목록 아래 버튼 → 입력 폼
    · 단원 설정 패널 : 전체 켜기/끄기, 대단원·중단원 체크박스 (js/scope-panel.js)
                      진단평가 모두 자세히/간단히 (js/checklist-table.js)
      ※ 넓은 PC 화면(폭 1280px 이상)에서는 화면 오른쪽에 고정돼 보입니다 → css/responsive.css
@@ -347,6 +348,137 @@
 }
 .student-empty b {
   color: var(--brand-2);
+}
+
+/* ── 학생 추가 · 이름·학교 수정 ─────────────────────────────────
+   목록 아래 점선 버튼 두 개(.student-actions) 중 하나를 누르면 버튼 줄이 숨고 입력 폼이 열림
+   (js/student-list.js 의 openAddStudentForm · openEditStudentForm · submitStudentForm)
+   [＋ 학생 추가] [✏️ 이름·학교 수정]   ← 수정 버튼은 열린 학생이 없으면 흐리게 잠김
+   ┌ 새 학생 추가 ─────────────┐     (수정할 때는 제목이 "홍길동 학생 정보 수정",
+   │ 이름    [            ]   │      학년 줄 없음, 버튼 글자는 "저장")
+   │ 학교명  [            ]   │   ← .sf-field (왼쪽 이름표 + 입력칸)
+   │ 학년    [중2        ▾]   │
+   │            [취소] [추가]  │   ← .sf-actions
+   └──────────────────────────┘
+   ─────────────────────────────────────────────────────────── */
+.student-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+.btn-student-action {
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px dashed #9fbcbe;
+  border-radius: 8px;
+  background: #f4f9f9;
+  color: var(--brand-2);
+  font-size: 12.5px;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.btn-student-action:hover:not(:disabled) {
+  border-color: var(--brand-2);
+  background: #e7f2f2;
+}
+.btn-student-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.student-form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px solid #c4dddf;
+  border-left: 4px solid var(--brand-2);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.sf-title {
+  margin-bottom: 2px;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 900;
+  overflow-wrap: anywhere; /* 긴 이름도 폼 밖으로 넘치지 않게 */
+}
+.sf-field {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+.sf-field span {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+.sf-field input,
+.sf-field select {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+.sf-field input:focus,
+.sf-field select:focus {
+  outline: none;
+  border-color: var(--brand-2);
+}
+/* 오류 문구 (비어 있으면 자리 차지 안 함) */
+.sf-message {
+  margin: 0;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+.sf-message:empty {
+  display: none;
+}
+.sf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 2px;
+}
+.sf-cancel,
+.sf-submit {
+  min-height: 32px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.sf-cancel {
+  border: 1px solid #b8c5d6;
+  background: #ffffff;
+  color: var(--brand);
+}
+.sf-submit {
+  border: 1px solid var(--brand-2);
+  background: var(--brand-2);
+  color: #ffffff;
+}
+.sf-submit:hover {
+  background: #255b5e;
+}
+.sf-submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 /* ── 단원 설정 패널 ────────────────────────────────────────────── */
