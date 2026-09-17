@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "dev", "runtimeExecutable": "node", "runtimeArgs": ["dev-server.js"], "port": 5600 }
+    { "name": "dev", "runtimeExecutable": "node", "runtimeArgs": ["dev-server.js"], "port": 5600 },
+    { "name": "harness", "runtimeExecutable": "node", "runtimeArgs": ["C:/Users/kimxo/AppData/Local/Temp/claude/C--Users-kimxo-Dev-nature-checklist/a20e0260-4425-4480-aff6-6fe1a911c85b/scratchpad/harness/server.cjs"], "port": 5610 }
   ]
 }
