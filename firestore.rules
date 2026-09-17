@@ -1,0 +1,91 @@
+rules_version = '2';
+
+// ==========================================================================
+// firestore.rules — 🔒 Firestore 보안 규칙 (네이처과학 완벽내신 CHECKLIST)
+// --------------------------------------------------------------------------
+// ⚠️ 같은 Firebase 프로젝트에 다른 앱의 데이터·규칙이 이미 있다면, 이 파일 전체로 덮어쓰지 마세요!
+//    (기존 규칙이 사라져 다른 앱이 멈출 수 있습니다)
+//
+// 사용법
+//   · 기존 규칙이 있을 때: 아래 "▼ 체크리스트 시작" 부터 "▲ 체크리스트 끝" 까지만 복사해서,
+//     Firebase 콘솔 → Firestore Database → [규칙] 탭의 기존 규칙 안
+//     match /databases/{database}/documents { … } 의 맨 아래(닫는 괄호 } 바로 위)에 붙여넣고 [게시].
+//   · 규칙이 비어 있는 새 프로젝트일 때: 이 파일 전체를 붙여넣고 [게시].
+//   (이 파일을 고쳐도 자동으로 반영되지 않습니다. 고칠 때마다 콘솔에 다시 붙여넣기)
+//
+// 체크리스트가 쓰는 곳은 컬렉션 두 개뿐이고, 다른 컬렉션의 규칙에는 영향을 주지 않습니다.
+//   checklist-students/{학생 id}             학생 명단
+//   checklist-report/{학생id__학년__시험}     체크리스트
+//
+// · 비밀번호 · 로그인 없이 쓰는 사이트라, 사이트 주소를 아는 사람은 이 두 컬렉션을 보고 고칠 수 있습니다.
+//   이 규칙은 "정해진 모양의 데이터만" 저장되게 막아 줍니다 (엉뚱한 칸 · 너무 긴 글 등).
+// · 글자 수 제한은 화면 쪽 검사(js/db/db.js)보다 넉넉하게 잡았습니다.
+// · 함수 이름은 기존 규칙과 겹치지 않게 모두 checklist 로 시작합니다.
+// ==========================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ▼ 체크리스트 시작 ───────────────────────────────────────────
+
+    // 글자이고 길이가 min 이상 max 이하인지
+    function checklistTextOk(value, min, max) {
+      return value is string && value.size() >= min && value.size() <= max;
+    }
+
+    // 항목 묶음(map)이고 항목이 500개 이하인지
+    function checklistMapOk(value) {
+      return value is map && value.size() <= 500;
+    }
+
+    // 학생 명단 한 명의 모양 (학년은 js/data/curriculum.js 의 학년 코드: mid1, mid2 …)
+    function checklistStudentOk(d) {
+      return d.keys().hasAll(['teacher', 'name', 'school', 'grade'])
+        && d.keys().hasOnly(['teacher', 'name', 'school', 'grade', 'className', 'order', 'createdAt', 'updatedAt'])
+        && checklistTextOk(d.teacher, 1, 100)
+        && checklistTextOk(d.name, 1, 100)
+        && checklistTextOk(d.school, 1, 100)
+        && checklistTextOk(d.grade, 1, 20)
+        && d.grade.matches('[a-z][a-z0-9_]*')
+        && (!('className' in d) || checklistTextOk(d.className, 0, 200))
+        && (!('order' in d) || d.order is number)
+        && (!('createdAt' in d) || d.createdAt is number)
+        && (!('updatedAt' in d) || d.updatedAt is number);
+    }
+
+    // 체크리스트 하나의 모양
+    // · 문서 id 는 반드시 "학생id__학년__시험"
+    // · 명단에 있는 학생이고, 명단의 학년과 같은 학년이어야 저장됨 (get 으로 명단 확인)
+    function checklistReportOk(reportId, d) {
+      return d.keys().hasAll(['studentId', 'grade', 'examType', 'opinion', 'customEdits', 'activeGrades', 'scopeSelections', 'updatedAt'])
+        && d.keys().hasOnly(['studentId', 'teacher', 'studentName', 'schoolName', 'grade', 'examType', 'opinion', 'customEdits', 'activeGrades', 'scopeSelections', 'gradeNotes', 'updatedAt'])
+        && checklistTextOk(d.studentId, 1, 100)
+        && checklistTextOk(d.grade, 1, 20)
+        && checklistTextOk(d.examType, 1, 100)
+        && reportId == d.studentId + '__' + d.grade + '__' + d.examType
+        && get(/databases/$(database)/documents/checklist-students/$(d.studentId)).data.grade == d.grade
+        && (!('teacher' in d) || checklistTextOk(d.teacher, 0, 100))
+        && (!('studentName' in d) || checklistTextOk(d.studentName, 0, 100))
+        && (!('schoolName' in d) || checklistTextOk(d.schoolName, 0, 100))
+        && checklistTextOk(d.opinion, 0, 60000)
+        && checklistMapOk(d.customEdits)
+        && checklistMapOk(d.activeGrades)
+        && checklistMapOk(d.scopeSelections)
+        && (!('gradeNotes' in d) || checklistMapOk(d.gradeNotes))
+        && d.updatedAt is number;
+    }
+
+    // 학생 명단
+    match /checklist-students/{studentId} {
+      allow read, delete: if true;
+      allow create, update: if checklistStudentOk(request.resource.data);
+    }
+
+    // 체크리스트
+    match /checklist-report/{reportId} {
+      allow read, delete: if true;
+      allow create, update: if checklistReportOk(reportId, request.resource.data);
+    }
+
+    // ▲ 체크리스트 끝 ─────────────────────────────────────────────
+  }
+}

@@ -1,0 +1,231 @@
+/* ==========================================================================
+   css/print.css — 인쇄 / PDF 저장 전용 (학부모 배부용 A4)
+   --------------------------------------------------------------------------
+   🖨️ 버튼 → printReport() → window.print() 를 부르면 @media print 안의 규칙이 적용됩니다.
+   · 사이드바·버튼·로그인 화면 등 화면 조작용 요소 숨김
+   · 용지 그림자·장식 테두리 제거, A4 여백 설정
+   · A/B/C 버튼 대신 배지 표시, 리포트 끝에 발급일 푸터 표시
+   · 모바일 카드 레이아웃(responsive.css)을 원래 표 모양으로 되돌림
+
+   ⚠️ 이 파일은 CSS 중 "맨 마지막"에 불러와야 앞의 스타일을 제대로 덮어씁니다.
+   ========================================================================== */
+
+/* 리포트 맨 끝 "nature science · 발급일" 푸터 — 화면에서는 숨기고, 인쇄할 때만 보임 */
+.print-footer {
+  display: none;
+}
+
+@media print {
+  /* 화면에 보이는 배경/색을 인쇄물에도 그대로 반영 */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    size: A4;
+    margin: 9mm 10mm 11mm;
+  }
+  /* ── 페이지 전체: 여백·배경 초기화 ── */
+  html,
+  body {
+    width: auto;
+    height: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    display: block !important;
+    font-size: 11.6px;
+  }
+  .app-shell {
+    display: block !important;
+  }
+  .report-workspace {
+    display: block !important;
+  }
+  /* ── 화면 조작용 요소 숨기기 (.no-print: 사이드바·버튼 모음·팝업 등) ── */
+  .no-print,
+  .summary-bar,
+  .btn-group,
+  .editable-tag {
+    display: none !important;
+  }
+  /* ── 머리말 입력칸: 드롭다운 화살표·밑줄 없이 흰 글자만 ── */
+  .meta-select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    border: none !important;
+    background: transparent !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    color: #ffffff !important;
+  }
+  .meta-select::-ms-expand {
+    display: none !important;
+  }
+  .meta-input {
+    border: none !important;
+    background: transparent !important; /* 빈 체크리스트의 입력칸 배경도 인쇄에서는 지움 */
+    color: #ffffff !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* 종이: 그림자/외곽선 제거, 페이지 폭에 맞춤 */
+  .report-paper {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block;
+    position: static;
+    overflow: visible;
+  }
+  /* 인쇄 시 장식 테두리 제거 — @page 여백과 충돌해 내용이 테두리 위로
+     튀어나오는 문제를 막기 위해 화면에서만 표시한다 */
+  .report-paper::before,
+  .report-paper::after {
+    display: none !important;
+  }
+
+  /* 헤더가 첫 페이지에서 잘리지 않도록 */
+  .header-section {
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    page-break-inside: avoid;
+  }
+  .student-meta-grid {
+    grid-template-columns:
+      minmax(130px, 0.9fr)
+      minmax(220px, 1.55fr)
+      minmax(150px, 1.05fr) !important;
+  }
+  .meta-cell {
+    min-width: 0 !important;
+  }
+  .main-title {
+    font-size: 20px;
+  }
+
+  /* 단원 블록·행이 페이지 경계에서 쪼개지지 않도록 */
+  .unit-block,
+  .opinion-section,
+  .check-row,
+  .table-title {
+    page-break-inside: avoid;
+  }
+  .unit-block {
+    margin-bottom: 11px;
+  }
+  .table-title {
+    padding: 6px 14px;
+    font-size: 12.5px;
+  }
+  .opinion-section {
+    margin-top: 14px;
+  }
+
+  /* A4 인쇄 폭(≈794px)은 max-width:860px 규칙을 발동시켜 표가 모바일
+     '카드' 레이아웃으로 바뀐다. 인쇄에서는 원래의 표 형태로 되돌린다 */
+  .checklist-table {
+    display: table !important;
+    width: 100% !important;
+    table-layout: fixed;
+  }
+  .checklist-table thead {
+    display: table-header-group !important; /* 페이지마다 머리글 반복 */
+  }
+  .checklist-table tbody {
+    display: table-row-group !important;
+  }
+  .checklist-table tr,
+  .check-row {
+    display: table-row !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: visible !important;
+  }
+  /* 단원 설정에서 끈(숨긴) 소단원·단원은 인쇄에서도 숨긴다.
+     위 display:table-row !important 가 인라인 display:none 을 덮어쓰지
+     않도록, 더 높은 우선순위로 다시 숨김 처리한다. */
+  .checklist-table tr[style*="display: none"],
+  .check-row[style*="display: none"],
+  .unit-block[style*="display: none"] {
+    display: none !important;
+  }
+  .checklist-table td {
+    display: table-cell !important;
+    width: auto;
+    border: 1px solid #c9d1dc !important;
+    border-radius: 0 !important;
+    text-align: left;
+    padding: 7px 8px;
+    font-size: 11.4px;
+  }
+  .checklist-table th {
+    padding: 7px 8px;
+    font-size: 11.4px;
+  }
+  /* 카드 레이아웃에서 셀 앞에 붙던 라벨(중단원/주요내용 등) 숨김 */
+  .checklist-table td::before {
+    content: none !important;
+    display: none !important;
+  }
+  .grade-td {
+    text-align: center !important;
+  }
+
+  /* ── A/B/C 배지 보이기 · 편집 칸 배경 제거 · 의견 칸 흰 배경 ── */
+  .print-only-badge {
+    display: inline-block !important;
+  }
+  /* 진단평가 메모(점수 등): 배지 아래에 테두리 없이 글자만, 비어 있으면 숨김 */
+  .grade-note {
+    min-height: 0 !important;
+    margin: 3px 0 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  .grade-note:empty {
+    display: none !important;
+  }
+  .content-td,
+  .solution-td {
+    background-color: transparent !important;
+  }
+  .opinion-box {
+    background-color: #ffffff !important;
+    border: 1px solid var(--line) !important;
+    min-height: 92px;
+  }
+
+  /* 푸터 — 일반 흐름(static)으로 보고서 맨 끝에 한 번 표시.
+     position:fixed 를 쓰면 @page 여백 기준으로 떠서 내용 위로 겹치거나
+     페이지 밖으로 튀어나오므로 사용하지 않는다 */
+  .print-footer {
+    display: flex !important;
+    position: static;
+    margin-top: 18px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--brand);
+    letter-spacing: 0.4px;
+    page-break-inside: avoid;
+  }
+  .print-footer .pf-brand {
+    color: var(--brand-2);
+  }
+  .print-footer .pf-date {
+    color: var(--ink-soft);
+  }
+}

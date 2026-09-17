@@ -1,0 +1,36 @@
+/* ==========================================================================
+   css/opinion.css — ② 종합 의견
+   --------------------------------------------------------------------------
+   리포트 맨 아래 "종합 의견" 입력칸입니다.
+   클릭해서 바로 입력하며(contenteditable), 입력하면 자동 저장됩니다 (js/storage.js).
+   ========================================================================== */
+
+/* ── 영역 틀 ───────────────────────────────────────────────────── */
+.opinion-section {
+  margin-top: 30px;
+  page-break-inside: avoid;
+}
+
+/* ── 의견 입력칸 ────────────────────────────────────────────────
+   마우스를 올리면 연한 초록, 입력 중이면 연한 노랑 배경
+   ─────────────────────────────────────────────────────────── */
+.opinion-box {
+  width: 100%;
+  min-height: 122px;
+  border: 1px solid #b8c5d6;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #333333;
+  outline: none;
+  background-color: #fafafa;
+  text-align: justify;
+}
+.opinion-box:hover {
+  background-color: #fbfdf6;
+}
+.opinion-box:focus {
+  background-color: #fffbe6 !important;
+  box-shadow: inset 0 0 0 2px rgba(214, 168, 61, 0.28);
+}

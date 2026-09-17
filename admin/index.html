@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>관리자 · 네이처과학학원 완벽내신 CHECKLIST</title>
+
+    <!--
+      ==========================================================================
+      admin/index.html — 🗂️ 관리자 페이지 (주소: /admin)
+      --------------------------------------------------------------------------
+      선생님별 담당 학생 명단을 등록 · 수정 · 삭제합니다. (비밀번호 없이 바로 열림)
+      선생님은 체크리스트 화면(/)에서 여기 등록된 "선생님 이름"으로 로그인합니다.
+        · 모양: admin/admin.css (+ 공통 색상 · 글꼴 css/base.css)
+        · 동작: admin/admin.js
+        · 저장소: js/db/ 폴더 (Firebase 연결 정보: js/firebase-config.js)
+
+      ※ /admin 과 /admin/ 어느 주소로 열어도 파일을 찾을 수 있도록
+        CSS · JS 경로는 / 로 시작하는 절대 경로로 적었습니다.
+      ==========================================================================
+    -->
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+    />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/admin/admin.css" />
+  </head>
+  <body class="admin-body">
+    <!-- 관리 화면 (페이지를 열면 바로 명단을 불러옴 → admin.js 의 loadRoster) -->
+    <div class="admin-app" id="admin-app">
+      <header class="admin-header">
+        <div>
+          <div class="ah-logo">nature science · 관리자</div>
+          <h1 class="ah-title">학생 명단 관리</h1>
+          <p class="ah-desc">
+            선생님이 체크리스트 화면에서 <b>선생님 이름</b>으로 로그인하면, 여기
+            등록한 담당 학생들이 왼쪽 목록에 나타납니다.
+          </p>
+          <p class="ah-warn">
+            🔓 비밀번호가 없는 페이지예요. 이 주소를 아는 사람은 누구나 명단을
+            고칠 수 있으니 외부에 공유하지 마세요.
+          </p>
+        </div>
+        <div class="ah-actions">
+          <a class="ah-link" href="/" target="_blank" rel="noopener">
+            체크리스트 화면 열기 ↗
+          </a>
+        </div>
+      </header>
+
+      <!-- 학생 추가 → submitAddStudent() / 여러 명 추가 → previewBulk(), submitBulk() -->
+      <section class="admin-card">
+        <h2 class="card-title">학생 추가</h2>
+        <form class="add-form" onsubmit="submitAddStudent(event)">
+          <label class="field">
+            <span>선생님 이름</span>
+            <input
+              id="add-teacher"
+              list="teacher-options"
+              maxlength="30"
+              placeholder="예) 김선생"
+            />
+          </label>
+          <label class="field">
+            <span>학생 이름</span>
+            <input id="add-name" maxlength="30" placeholder="예) 홍길동" />
+          </label>
+          <label class="field">
+            <span>학교명</span>
+            <input id="add-school" maxlength="40" placeholder="예) 예시중학교" />
+          </label>
+          <label class="field">
+            <span>학년</span>
+            <select id="add-grade"></select>
+          </label>
+          <label class="field">
+            <span>반 (선택)</span>
+            <input
+              id="add-class"
+              list="class-options"
+              maxlength="60"
+              placeholder="예) 중2A반_수 7:30"
+            />
+          </label>
+          <button type="submit" class="btn-primary" id="add-submit">추가</button>
+        </form>
+        <!-- 이미 등록된 선생님 이름 · 반 이름 자동완성 목록 (JS 가 채움) -->
+        <datalist id="teacher-options"></datalist>
+        <datalist id="class-options"></datalist>
+        <p class="card-help">
+          선생님 이름은 선생님이 로그인할 때 입력하는 이름과 띄어쓰기까지
+          똑같아야 합니다. 반을 적으면 선생님 화면의 학생 목록이 반별로 묶입니다.
+        </p>
+
+        <!-- 여러 명 추가: CSV 파일 선택/끌어다 놓기 → onBulkFileSelected(), 붙여넣기 → previewBulk() -->
+        <details class="bulk" id="bulk-section">
+          <summary>📂 CSV 파일 · 엑셀 붙여넣기로 여러 명 한 번에 추가</summary>
+          <p class="card-help">
+            <b>CSV 파일</b>을 고르거나 아래 칸에 끌어다 놓으세요. 엑셀·구글 시트에서
+            표를 복사해 붙여넣어도 됩니다.<br />
+            첫 줄에 <code>이름</code> <code>학년</code> <code>중학교</code>
+            <code>반명</code> <code>선생님</code> 같은 제목이 있으면 열 순서와 상관없이
+            알아서 맞춥니다. (제목이 없으면 선생님 · 학생 이름 · 학교명 · 학년 · 반 순서로
+            읽어요)<br />
+            학년은 <code>2학년</code> <code>중2</code> <code>2</code> 처럼 적어도 되고, 이미
+            명단에 있는 학생은 건너뜁니다. 목록 순서는 파일의 줄 순서를 따릅니다.
+          </p>
+          <div class="bulk-file">
+            <label class="btn-file">
+              📂 CSV 파일 선택
+              <input
+                type="file"
+                id="bulk-file"
+                accept=".csv,.tsv,.txt,text/csv"
+                onchange="onBulkFileSelected(this)"
+              />
+            </label>
+            <span class="bulk-file-name" id="bulk-file-name"></span>
+          </div>
+          <textarea
+            id="bulk-text"
+            rows="6"
+            placeholder="이름,학년,중학교,반명,선생님&#10;홍길동A,2학년,예시중,중2A반_수 7:30,김선생"
+            oninput="previewBulk()"
+          ></textarea>
+          <div id="bulk-preview"></div>
+          <div class="bulk-actions">
+            <button
+              type="button"
+              class="btn-primary"
+              id="bulk-submit"
+              onclick="submitBulk()"
+              disabled
+            >
+              등록할 학생 없음
+            </button>
+          </div>
+        </details>
+      </section>
+
+      <!-- 학생 명단: 선생님별로 거르기 · 검색 · 수정 · 삭제 (renderRoster). 등록 순서(CSV 줄 순서)대로 보임 -->
+      <section class="admin-card">
+        <div class="roster-head">
+          <h2 class="card-title">
+            학생 명단 <span class="roster-count" id="roster-count"></span>
+          </h2>
+          <div class="roster-tools">
+            <select id="filter-teacher" onchange="renderRoster()">
+              <option value="">전체 선생님</option>
+            </select>
+            <input
+              id="filter-text"
+              placeholder="🔍 학생 이름 · 학교 · 반 검색"
+              oninput="renderRoster()"
+            />
+          </div>
+        </div>
+        <div class="teacher-chips" id="teacher-chips"></div>
+        <div class="table-wrap">
+          <table class="roster-table">
+            <thead>
+              <tr>
+                <th>선생님</th>
+                <th>반</th>
+                <th>학생 이름</th>
+                <th>학교명</th>
+                <th>학년</th>
+                <th class="col-actions">관리</th>
+              </tr>
+            </thead>
+            <tbody id="roster-body">
+              <tr>
+                <td colspan="6" class="roster-empty">명단을 불러오는 중…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="card-help">
+          학년을 바꾸면(진급) 그 학생은 새 학년 체크리스트로 새로 시작합니다.
+          이전 학년에 작성한 내용은 지워지지 않고 보관됩니다.
+        </p>
+      </section>
+    </div>
+
+    <!-- 알림 (notify) -->
+    <div class="admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
+
+    <!--
+      JS — 체크리스트 화면과 함께 쓰는 파일들 + 관리자 전용 파일 (⚠️ 순서 중요)
+        /js/data/curriculum.js    학년 목록
+        /js/config.js             학년 이름표 (gradeLabel)
+        /js/utils.js              escapeHtml
+        /js/firebase-config.js    🔑 Firebase 연결 정보
+        /js/db/firebase-db.js     Firebase 저장소
+        /js/db/test-db.js         테스트 모드 저장소
+        /js/db/db.js              저장소 고르기 → DB (위 두 파일 다음)
+        /admin/admin.js           관리자 페이지 동작 (반드시 마지막)
+    -->
+    <script src="/js/data/curriculum.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/db/firebase-db.js"></script>
+    <script src="/js/db/test-db.js"></script>
+    <script src="/js/db/db.js"></script>
+    <script src="/admin/admin.js"></script>
+  </body>
+</html>

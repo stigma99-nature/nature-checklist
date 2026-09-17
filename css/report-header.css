@@ -1,0 +1,161 @@
+/* ==========================================================================
+   css/report-header.css — ② 가운데 A4 리포트 용지 + 머리말
+   --------------------------------------------------------------------------
+   · A4 용지 모양 (크기, 그림자, 안쪽 이중 테두리 장식)
+   · 머리말 (남색 박스): 로고 문구, 제목, 학생 정보 입력칸 (이름 / 학교명 / 시험)
+
+   관련 JS : js/report-header.js
+   ========================================================================== */
+
+/* ── A4 용지 ───────────────────────────────────────────────────
+   210mm × 297mm(A4) 크기의 흰 종이.
+   ::before(남색 선)와 ::after(금색 선)로 용지 안쪽에 이중 테두리를 그립니다.
+   (모바일과 인쇄에서는 이 테두리를 숨깁니다 → responsive.css, print.css)
+   ─────────────────────────────────────────────────────────── */
+.report-paper {
+  width: min(210mm, 100%);
+  min-height: 297mm;
+  background-color: var(--paper);
+  padding: 23mm 18mm;
+  box-shadow: var(--shadow);
+  position: relative;
+  box-sizing: border-box;
+  border: 1px solid #c1cad8;
+  overflow: hidden;
+}
+.report-paper::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 2px solid var(--brand);
+  pointer-events: none;
+}
+.report-paper::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  border: 1px solid var(--gold);
+  pointer-events: none;
+}
+
+/* ── 머리말 (남색 박스) ───────────────────────────────────────── */
+.header-section {
+  background: linear-gradient(135deg, var(--brand), #214765);
+  border-bottom: 4px solid var(--gold);
+  padding: 22px 26px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column; /* 제목 아래에 학생정보가 오도록 세로 배치 */
+  align-items: stretch;
+  gap: 16px;
+  color: #ffffff;
+  position: relative;
+  z-index: 5;
+  border-radius: 6px;
+}
+.header-section > div:first-child {
+  min-width: 0;
+}
+.logo-area {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f4d98a;
+  letter-spacing: 1.4px;
+  margin-bottom: 4px;
+}
+.main-title {
+  font-size: 25px;
+  font-weight: 900;
+  margin: 0;
+}
+
+/* ── 학생 정보 입력칸 ─────────────────────────────────────────
+   .student-meta-grid : [이름] [학교명] [시험] 3칸 가로 배치
+   .meta-input        : 이름·학교명 입력칸 (투명 배경 + 금색 밑줄)
+   .meta-select       : 시험 선택 드롭다운
+   ─────────────────────────────────────────────────────────── */
+.student-meta-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(130px, 0.9fr)
+    minmax(220px, 1.55fr)
+    minmax(150px, 1.05fr);
+  gap: 8px;
+  background: transparent;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(214, 175, 55, 0.35);
+  flex: 0 0 auto; /* 세로 스택에서 제목 아래 한 줄로 */
+  min-width: 0;
+}
+.meta-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.meta-cell label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f4d98a;
+  white-space: nowrap;
+}
+.meta-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--gold);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+  outline: none;
+  padding: 5px 4px;
+}
+.meta-select {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--gold);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 800;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 5px 2px;
+  text-align: center;
+  text-align-last: center;
+}
+.meta-select option {
+  color: #111c3a;
+  background: #ffffff;
+}
+/* 입력칸이 비어 있을 때 보이는 안내 글자 (남색 배경 위라 반투명 흰색) */
+.meta-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 700;
+}
+/* 머리말 칸은 명단에서 자동으로 채워지는 "읽기 전용" 칸 (클릭·입력 불가, 드롭다운 화살표 없음) */
+.meta-input[readonly],
+.meta-select.is-readonly {
+  pointer-events: none;
+}
+/* 빈 체크리스트에서는 이름·학교명을 직접 입력 — 입력할 수 있는 칸임을 알 수 있게 살짝 밝게 (인쇄 때는 print.css 가 지움) */
+.meta-input:not([readonly]) {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px 4px 0 0;
+}
+.meta-select.is-readonly {
+  -webkit-appearance: none;
+  appearance: none;
+}

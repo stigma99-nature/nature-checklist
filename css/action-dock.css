@@ -1,0 +1,159 @@
+/* ==========================================================================
+   css/action-dock.css — ③ 오른쪽 위 고정 버튼 모음 (+ ④ 토스트 알림)
+   --------------------------------------------------------------------------
+   · .action-dock   : 화면 오른쪽 위에 떠 있는 남색 상자
+   · 버튼 3개       : 🖨️ 인쇄 / 📸 이미지 저장 / 📋 이미지 복사
+   · 진행 현황 문구 : "평가 3/20개 완료 · A 1 / B 1 / C 1"
+   · 자동 저장 상태 : 앞의 동그라미 점 색으로 대기 / 저장 중 / 저장됨 / 실패 구분
+   · .app-toast     : 화면 아래 가운데에 잠깐 떴다 사라지는 알림
+
+   관련 JS : js/export.js (인쇄·이미지), js/notify.js (저장 상태·토스트),
+             js/checklist-table.js 의 updateStatus (진행 현황 문구)
+   ※ 모바일(폭 860px 이하)에서는 화면 맨 아래 막대로 바뀝니다 → responsive.css
+   ========================================================================== */
+
+/* ── 고정 상자 ─────────────────────────────────────────────────── */
+.action-dock {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  background: rgba(24, 49, 83, 0.97);
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(214, 175, 55, 0.5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(10px);
+}
+.action-dock-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.action-dock-status {
+  color: #f4d98a;
+  font-size: 11.5px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── 자동 저장 상태 ────────────────────────────────────────────
+   is-idle    회색  "입력하면 자동 저장됩니다"
+   is-saving  노랑  "저장 중…" · "불러오는 중…"  (점이 깜빡임: dock-pulse 애니메이션)
+   is-saved   초록  "14:05 저장됨"
+   is-error   빨강  "저장 실패 — 다시 시도해 주세요"
+   ─────────────────────────────────────────────────────────── */
+.action-dock-save {
+  font-size: 11px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+}
+.action-dock-save::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.action-dock-save.is-idle {
+  color: #aebbd0;
+}
+.action-dock-save.is-saving {
+  color: #f0d7a0;
+}
+.action-dock-save.is-saving::before {
+  animation: dock-pulse 0.9s ease-in-out infinite;
+}
+.action-dock-save.is-saved {
+  color: #86e0a3;
+}
+.action-dock-save.is-error {
+  color: #ff9ba6;
+}
+/* 빈 체크리스트(명단에 없는 이름): "저장되지 않아요" */
+.action-dock-save.is-blank {
+  color: #f0d7a0;
+}
+@keyframes dock-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ── 버튼 3개 ──────────────────────────────────────────────────── */
+.btn-action-print,
+.btn-action-image,
+.btn-action-copy {
+  border: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 900;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.btn-action-print:hover,
+.btn-action-image:hover,
+.btn-action-copy:hover {
+  transform: translateY(-1px);
+}
+.btn-action-print {
+  background-color: var(--gold);
+  color: #111c3a;
+}
+.btn-action-image {
+  background-color: var(--brand-2);
+  color: #ffffff;
+}
+.btn-action-copy {
+  background-color: #3f7d5c;
+  color: #ffffff;
+}
+
+/* ── ④ 토스트 알림 (이미지 복사 · 예전 저장본 옮기기 등 결과 안내) ────
+   .show 클래스가 붙으면 아래에서 살짝 올라오며 나타납니다.
+   ─────────────────────────────────────────────────────────── */
+.app-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translate(-50%, 14px);
+  background: rgba(24, 49, 83, 0.97);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 11px 18px;
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(214, 175, 55, 0.5);
+  z-index: 10050;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  max-width: calc(100vw - 32px);
+}
+.app-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}

@@ -1,0 +1,400 @@
+/* ==========================================================================
+   js/student-list.js — ① 왼쪽 "담당 학생" 목록 · 시험 선택 · 체크리스트 열기
+   --------------------------------------------------------------------------
+   · 목록은 로그인할 때 저장소에서 받은 명단(관리자가 /admin 에서 등록)으로 만들어집니다.
+     명단 순서(CSV 줄 순서) 그대로, 반(className)별로 묶어서 보여 줍니다.
+   · 학생을 누르면 → 그 학생 · 선택한 시험의 체크리스트를 저장소에서 불러와 가운데에 엽니다.
+                     (한 번도 저장된 적이 없으면 새 체크리스트로 시작)
+   · 시험을 바꾸면 → 목록의 A/B/C 개수와 열린 체크리스트가 그 시험 것으로 바뀝니다.
+   · 로그인하면 마지막으로 열었던 학생(없으면 첫 번째 학생)의 체크리스트가 자동으로 열립니다.
+   · 명단에 없는 이름으로 로그인하면 → "빈 체크리스트" (이름·학교 직접 입력, 저장 안 함)
+
+   스타일: css/sidebar.css · 저장소: js/db/db.js 의 DB
+   ========================================================================== */
+
+const EXAM_KEY = "nature_exam"; // 이 탭에서만 기억하는 "고른 시험" (새로고침하면 유지, 새로 접속하면 공란)
+const LAST_STUDENT_KEY = "nature_last_student"; // 이 브라우저에 기억하는 "마지막으로 연 학생 id"
+const BLANK_GRADE_KEY = "nature_blank_grade"; // 이 브라우저에 기억하는 "빈 체크리스트에서 마지막으로 고른 학년"
+
+let teacherStudents = []; // 로그인한 선생님의 담당 학생 [{ id, name, school, grade, className, summary }]
+let openRequestNo = 0; // 학생을 빠르게 여러 번 누르면 마지막으로 누른 학생만 열리도록 매기는 번호
+let blankInitialTable = null; // 빈 체크리스트를 처음 열었을 때의 표 내용 (작성했는지 비교용)
+
+/* ── 담당 학생 목록 ────────────────────────────────────────────── */
+
+// 저장소에서 선생님의 담당 학생 목록(+ 선택한 시험의 A/B/C 개수)을 받아 온다.
+// 시험을 아직 고르지 않았으면 체크리스트는 읽지 않는다 (summary: null).
+async function fetchTeacherStudents(teacher) {
+  const students = await DB.listStudentsByTeacher(teacher);
+  const reports = currentExam && students.length ? await DB.getReports(students, currentExam) : {};
+  return students.map((student) => ({ ...student, summary: summarize(reports[student.id]) }));
+}
+
+// 체크리스트에서 A/B/C 개수만 뽑는다 → { A: 3, B: 1, C: 0, updatedAt } (체크리스트가 없으면 null)
+function summarize(report) {
+  if (!report) return null;
+  const grades = Object.values(report.activeGrades || {});
+  const count = (g) => grades.filter((x) => x === g).length;
+  return { A: count("A"), B: count("B"), C: count("C"), updatedAt: report.updatedAt || null };
+}
+
+// 목록을 바꾸고 다시 그린다.
+function setTeacherStudents(list) {
+  teacherStudents = list;
+  renderStudentList();
+}
+
+// 왼쪽 학생 목록을 그린다. 반별로 묶고, 지금 열린 학생은 강조(.active)한다.
+//   중2A반_수 7:30                5명
+//   [중2] 홍길동 A               평가 전
+//         예시중
+function renderStudentList() {
+  const root = document.getElementById("student-list");
+  document.getElementById("student-count").textContent = teacherStudents.length;
+  root.innerHTML = "";
+  if (!teacherStudents.length) {
+    root.innerHTML = isBlankChecklist
+      ? '<div class="student-empty">명단에 없는 이름이라 담당 학생이 없어요.<br>가운데 <b>빈 체크리스트</b>에 이름·학교를 직접 입력해 쓸 수 있어요.<br>(작성한 내용은 저장되지 않아요)</div>'
+      : '<div class="student-empty">담당 학생이 없습니다.</div>';
+    return;
+  }
+  groupByClass(teacherStudents).forEach(({ className, students }) => {
+    if (className !== null) {
+      const title = document.createElement("div");
+      title.className = "class-title";
+      title.innerHTML = `<span>${escapeHtml(className || "반 미지정")}</span><b>${students.length}명</b>`;
+      root.appendChild(title);
+    }
+    students.forEach((student) => root.appendChild(studentItem(student)));
+  });
+}
+
+// 반(className)별로 묶는다. 명단 순서를 지키고, 반은 처음 나온 순서대로 놓는다.
+// 반 정보가 있는 학생이 한 명도 없으면 제목 없이 한 묶음(className: null)으로 돌려준다.
+function groupByClass(students) {
+  if (!students.some((s) => s.className)) return [{ className: null, students }];
+  const groups = new Map();
+  students.forEach((student) => {
+    const key = student.className || "";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(student);
+  });
+  return [...groups].map(([className, list]) => ({ className, students: list }));
+}
+
+// 목록의 학생 한 줄 (버튼)
+function studentItem(student) {
+  const { base, tag } = splitStudentName(student.name);
+  const item = document.createElement("button");
+  item.type = "button";
+  item.className = "student-item";
+  if (currentStudent && currentStudent.id === student.id) item.classList.add("active");
+  item.innerHTML =
+    `<span class="si-grade si-grade-${escapeHtml(student.grade)}">${escapeHtml(gradeLabel(student.grade))}</span>` +
+    `<span class="si-main">` +
+    `<span class="si-name">${escapeHtml(base)}${tag ? `<span class="si-tag">${escapeHtml(tag)}</span>` : ""}</span>` +
+    `<span class="si-school">${escapeHtml(student.school || "학교 미입력")}</span>` +
+    `</span>` +
+    `<span class="si-progress">${progressHtml(student.summary)}</span>`;
+  item.addEventListener("click", () => {
+    // 이미 열려 있는 학생을 다시 누르면 아무것도 하지 않음
+    if (currentStudent && currentStudent.id === student.id && !isLoadingReport) return;
+    openChecklist(student.id);
+  });
+  return item;
+}
+
+// 목록 오른쪽의 평가 개수 표시.  예) "A3 B1 C0" / 아직 평가 안 했으면 "평가 전"
+function progressHtml(summary) {
+  if (!summary || summary.A + summary.B + summary.C === 0) {
+    return '<span class="p-none">평가 전</span>';
+  }
+  return (
+    `<span class="p-a">A${summary.A}</span>` +
+    `<span class="p-b">B${summary.B}</span>` +
+    `<span class="p-c">C${summary.C}</span>`
+  );
+}
+
+// 저장에 성공하면 목록의 A/B/C 개수도 바로 바꾼다 (storage.js 의 saveNow 에서 호출)
+function updateStudentSummary(studentId, exam, activeGrades, updatedAt) {
+  if (exam !== currentExam) return;
+  const student = teacherStudents.find((s) => s.id === studentId);
+  if (!student) return;
+  const grades = Object.values(activeGrades || {});
+  const count = (g) => grades.filter((x) => x === g).length;
+  student.summary = { A: count("A"), B: count("B"), C: count("C"), updatedAt };
+  renderStudentList();
+}
+
+/* ── 시험 · 학년 선택 ─────────────────────────────────────────── */
+
+// 페이지를 열 때: 시험 선택을 준비하고, 머리말의 시험 칸에도 같은 목록을 복사한다.
+//   · 기본값은 공란. 같은 탭에서 새로고침한 경우에만 고른 시험을 되살린다.
+//   · 시험 종류 목록은 index.html 의 <select id="exam-select"> 한 곳에서만 고치면 됩니다.
+// 빈 체크리스트용 학년 선택 목록도 여기서 채운다 (js/data/curriculum.js 의 학년 전부).
+function initExamSelect() {
+  const select = document.getElementById("exam-select");
+  const saved = safeSession.get(EXAM_KEY);
+  select.value =
+    saved && Array.from(select.options).some((o) => o.value === saved) ? saved : "";
+  currentExam = select.value;
+  // 머리말 시험 칸: 선택지는 같게, 공란 항목은 글자 없이 (인쇄물에 "시험 선택"이 찍히지 않도록)
+  const headerExam = document.getElementById("exam-type");
+  headerExam.innerHTML = select.innerHTML;
+  headerExam.querySelectorAll('option[value=""]').forEach((o) => (o.textContent = ""));
+  headerExam.value = currentExam;
+  updateExamHint();
+
+  document.getElementById("blank-grade-select").innerHTML = Object.keys(CURRICULUM_DATA)
+    .map((g) => `<option value="${escapeHtml(g)}">${escapeHtml(gradeLabel(g))}</option>`)
+    .join("");
+}
+
+// 시험을 아직 고르지 않았으면(공란) 왼쪽 시험 칸을 눈에 띄게 표시한다.
+function updateExamHint() {
+  document.getElementById("exam-select").classList.toggle("is-empty", !currentExam);
+}
+
+// 시험 선택을 바꿨을 때 (index.html 의 onchange)
+async function onExamSelectChange() {
+  const select = document.getElementById("exam-select");
+  const nextExam = select.value;
+
+  // 빈 체크리스트는 저장된 것이 없으므로 시험 이름만 바꾸고 내용은 그대로 둔다
+  if (isBlankChecklist) {
+    currentExam = nextExam;
+    safeSession.set(EXAM_KEY, nextExam);
+    updateExamHint();
+    fillReportHeader();
+    return;
+  }
+
+  if (!(await confirmLeave())) {
+    select.value = currentExam; // 이동 취소 → 원래 시험으로 되돌림
+    return;
+  }
+  beginLoading("체크리스트를 불러오는 중…");
+  currentExam = nextExam;
+  safeSession.set(EXAM_KEY, nextExam);
+  updateExamHint();
+  try {
+    setTeacherStudents(await fetchTeacherStudents(currentTeacher));
+  } catch (error) {
+    showToast(`학생 목록을 새로 불러오지 못했습니다. ${error.message}`);
+  }
+  const stillThere =
+    currentStudent && teacherStudents.find((s) => s.id === currentStudent.id);
+  if (stillThere && currentExam) await openChecklist(stillThere.id, { skipLeaveCheck: true });
+  else await openInitialStudent();
+}
+
+/* ── 체크리스트 열기 / 닫기 ────────────────────────────────────── */
+
+// 학생·시험을 바꾸거나 로그아웃하기 전에 지금 체크리스트를 저장한다.
+// 저장에 실패했거나(학생) 저장되지 않는 내용이 있으면(빈 체크리스트) 이동할지 물어본다.
+async function confirmLeave() {
+  if (isBlankChecklist) {
+    return (
+      !hasBlankEdits({ includeHeader: true }) ||
+      confirm("빈 체크리스트에 작성한 내용은 저장되지 않습니다.\n그래도 이동할까요?")
+    );
+  }
+  if (!currentStudent || isLoadingReport) return true;
+  if (await flushSave()) return true;
+  return confirm(
+    "방금 입력한 내용을 저장하지 못했습니다.\n그래도 이동할까요? (저장하지 못한 내용은 사라집니다)",
+  );
+}
+
+// 로그인 직후 · 시험을 고른 직후: 마지막으로 열었던(또는 눌렀던) 학생, 없으면 첫 번째 학생의 체크리스트를 연다.
+// 시험이 공란이면 체크리스트를 열지 않고 시험 선택을 안내한다.
+async function openInitialStudent() {
+  if (!currentExam) {
+    closeChecklist("왼쪽 위에서 시험을 먼저 선택하면\n학생의 체크리스트가 열립니다.");
+    return;
+  }
+  const lastId = safeStorage.get(LAST_STUDENT_KEY);
+  const first =
+    teacherStudents.find((s) => s.id === lastId) || teacherStudents[0];
+  if (first) await openChecklist(first.id, { skipLeaveCheck: true });
+  else closeChecklist("담당 학생이 없습니다.");
+}
+
+// 학생의 체크리스트를 연다.
+//   1) 지금 체크리스트 저장  2) 머리말을 새 학생 정보로  3) 저장소에서 불러오기
+//   4) 표·단원 설정을 그 학생의 학년으로 다시 그리고 내용 채우기
+async function openChecklist(studentId, { skipLeaveCheck = false } = {}) {
+  const student = teacherStudents.find((s) => s.id === studentId);
+  if (!student) return;
+  if (!currentExam) {
+    // 시험을 고르기 전: 누른 학생을 기억해 두고 시험 선택을 안내 → 시험을 고르면 이 학생이 열림
+    safeStorage.set(LAST_STUDENT_KEY, student.id);
+    showToast("먼저 왼쪽 위에서 시험을 선택해 주세요");
+    document.getElementById("exam-select").focus();
+    return;
+  }
+  if (!skipLeaveCheck && !(await confirmLeave())) return;
+
+  const requestNo = ++openRequestNo;
+  setBlankMode(false);
+  currentStudent = student;
+  currentGrade = student.grade;
+  safeStorage.set(LAST_STUDENT_KEY, student.id);
+  renderStudentList();
+  fillReportHeader();
+  beginLoading("체크리스트를 불러오는 중…");
+
+  if (!hasGradeData(student.grade)) {
+    showReportMessage(
+      `'${gradeLabel(student.grade)}' 학년의 단원 데이터가 없습니다.\njs/data/curriculum.js 를 확인하거나 관리자 페이지에서 학년을 고쳐 주세요.`,
+    );
+    setSaveState("idle");
+    return;
+  }
+
+  let report;
+  try {
+    report = await fetchReport(student, currentExam);
+  } catch (error) {
+    if (requestNo !== openRequestNo) return;
+    showReportMessage(`체크리스트를 불러오지 못했습니다.\n${error.message}`, { retry: true });
+    setSaveState("error");
+    return;
+  }
+  if (requestNo !== openRequestNo) return; // 그사이 다른 학생을 눌렀으면 이 결과는 버림
+
+  // 저장소에 없으면 이 브라우저의 예전 저장본을 찾아본다 (js/legacy-import.js)
+  let imported = false;
+  if (!report) {
+    report = await findLegacyReport(student, currentExam);
+    if (requestNo !== openRequestNo) return;
+    imported = Boolean(report);
+  }
+
+  renderScopeWidget();
+  renderReportTables();
+  document.getElementById("opinion-textarea").innerHTML = DEFAULT_OPINION;
+  // 저장본이 있으면 채우고, 없으면 "단원 체크 = 표 표시" 규칙대로 (처음엔 모두 꺼짐 → 숨김)
+  if (report) applyStateObj(report);
+  else restoreScopeSelections({});
+  updateStatus();
+  isLoadingReport = false;
+
+  if (imported) {
+    markAsUnsaved();
+    if (await persistCurrentReport()) {
+      showToast("📥 이 브라우저에 있던 예전 작성 내용을 서버로 옮겼어요");
+    }
+  } else {
+    markAsSaved(report && report.updatedAt);
+  }
+}
+
+// 체크리스트를 불러오는 동안: 저장을 멈추고 표 자리에 안내 문구를 보여 준다.
+function beginLoading(message) {
+  isLoadingReport = true;
+  if (saveTimer) {
+    clearTimeout(saveTimer); // 이전 체크리스트의 저장 예약(재시도 포함)이 남아 있으면 취소
+    saveTimer = null;
+  }
+  hideMacroPopover();
+  document.getElementById("opinion-textarea").innerHTML = DEFAULT_OPINION;
+  showReportMessage(message);
+  setSaveState("loading");
+}
+
+// 표 자리에 안내 문구를 보여 준다 (학생 선택 전 · 불러오는 중 · 오류).
+// retry: true 면 "다시 시도" 버튼도 보여 준다.
+function showReportMessage(message, { retry = false } = {}) {
+  document.getElementById("scope-widget-root").innerHTML = "";
+  document.getElementById("report-table-root").innerHTML =
+    `<div class="table-message">${escapeHtml(message).replace(/\n/g, "<br>")}` +
+    (retry
+      ? '<br><button type="button" class="table-message-retry" onclick="retryOpenChecklist()">다시 시도</button>'
+      : "") +
+    "</div>";
+  updateStatus();
+}
+
+// "다시 시도" 버튼
+function retryOpenChecklist() {
+  if (currentStudent) openChecklist(currentStudent.id, { skipLeaveCheck: true });
+}
+
+// 열린 체크리스트를 닫고 안내 문구를 보여 준다 (페이지를 처음 열 때 · 로그아웃할 때).
+function closeChecklist(message) {
+  openRequestNo++; // 불러오던 체크리스트가 있으면 무시하도록
+  setBlankMode(false);
+  currentStudent = null;
+  isLoadingReport = false;
+  hideMacroPopover();
+  document.getElementById("opinion-textarea").innerHTML = DEFAULT_OPINION;
+  fillReportHeader();
+  showReportMessage(message);
+  renderStudentList();
+  markAsSaved(null);
+}
+
+/* ── 빈 체크리스트 (명단에 없는 이름으로 로그인했을 때) ──────────────
+   · 이름·학교명을 머리말에 직접 입력하고, 왼쪽 "학년"에서 학년을 고릅니다.
+   · 저장소에 저장하지 않습니다. 인쇄 · 이미지 저장/복사는 그대로 쓸 수 있습니다.
+   · 작성한 내용이 있는데 창을 닫거나 로그아웃하면 한 번 더 물어봅니다.
+   ─────────────────────────────────────────────────────────── */
+
+// 빈 체크리스트를 연다.
+//   grade: 보여 줄 학년 (없으면 마지막으로 고른 학년, 처음이면 첫 번째 학년)
+//   keepHeader: 학년만 바꿀 때 입력해 둔 이름·학교명 유지
+function openBlankChecklist(grade, { keepHeader = false } = {}) {
+  openRequestNo++;
+  setBlankMode(true);
+  currentStudent = null;
+  isLoadingReport = false;
+  const wanted = grade || safeStorage.get(BLANK_GRADE_KEY);
+  currentGrade = hasGradeData(wanted) ? wanted : Object.keys(CURRICULUM_DATA)[0];
+  document.getElementById("blank-grade-select").value = currentGrade;
+  hideMacroPopover();
+  if (!keepHeader) {
+    document.getElementById("student-name").value = "";
+    document.getElementById("school-name").value = "";
+  }
+  fillReportHeader();
+  renderScopeWidget();
+  renderReportTables();
+  document.getElementById("opinion-textarea").innerHTML = DEFAULT_OPINION;
+  restoreScopeSelections({});
+  updateStatus();
+  renderStudentList();
+  blankInitialTable = JSON.stringify(buildStateObj());
+  setSaveState("blank");
+}
+
+// 빈 체크리스트 모드 켜기/끄기 (왼쪽 학년 선택을 보이거나 숨김)
+function setBlankMode(on) {
+  isBlankChecklist = on;
+  document.getElementById("blank-grade-picker").hidden = !on;
+  if (!on) blankInitialTable = null;
+}
+
+// 빈 체크리스트에 뭔가 작성했는지. includeHeader 면 머리말의 이름·학교 입력도 포함
+function hasBlankEdits({ includeHeader = false } = {}) {
+  if (!isBlankChecklist) return false;
+  const headerTyped =
+    document.getElementById("student-name").value.trim() ||
+    document.getElementById("school-name").value.trim();
+  return (
+    JSON.stringify(buildStateObj()) !== blankInitialTable ||
+    Boolean(includeHeader && headerTyped)
+  );
+}
+
+// 빈 체크리스트의 학년을 바꿨을 때 (index.html 의 onchange): 표를 그 학년으로 새로 그림
+function onBlankGradeChange() {
+  const select = document.getElementById("blank-grade-select");
+  if (hasBlankEdits() && !confirm("학년을 바꾸면 표에 작성한 내용이 지워집니다.\n계속할까요?")) {
+    select.value = currentGrade;
+    return;
+  }
+  safeStorage.set(BLANK_GRADE_KEY, select.value);
+  openBlankChecklist(select.value, { keepHeader: true });
+}

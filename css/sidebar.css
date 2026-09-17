@@ -1,0 +1,404 @@
+/* ==========================================================================
+   css/sidebar.css — ① 왼쪽 사이드바
+   --------------------------------------------------------------------------
+   index.html 의 <aside class="sidebar"> 영역입니다. 위에서부터
+   · 선생님 패널   : 로그인한 이름 · 로그아웃 · 시험 선택   (js/login.js, js/student-list.js)
+   · 담당 학생 목록 : 학생을 누르면 체크리스트가 열림       (js/student-list.js)
+   · 단원 설정 패널 : 전체 켜기/끄기, 대단원·중단원 체크박스 (js/scope-panel.js)
+     ※ 넓은 PC 화면(폭 1280px 이상)에서는 화면 오른쪽에 고정돼 보입니다 → css/responsive.css
+
+   ※ var(--unit-color) 는 JS 가 대단원마다 넣어 주는 색입니다 (js/config.js 의 UNIT_COLORS).
+     값이 없으면 뒤에 적힌 기본 브랜드 색을 씁니다.
+   ========================================================================== */
+
+/* 사이드바 안의 패널들을 세로로 쌓기 */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── 선생님 패널 (남색 박스) ────────────────────────────────────── */
+.teacher-panel {
+  background: var(--brand);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.teacher-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.teacher-name {
+  min-width: 0;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.teacher-name::before {
+  content: "👤 ";
+}
+.btn-logout {
+  flex-shrink: 0;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+/* 시험 선택: 고른 시험 기준으로 모든 학생의 체크리스트가 열림 */
+.exam-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f4d98a;
+  font-size: 12px;
+  font-weight: 800;
+}
+.exam-select {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+/* 시험을 아직 고르지 않았을 때(공란): 금색 테두리 빛으로 눈에 띄게 */
+.exam-select.is-empty {
+  color: var(--ink-soft);
+  box-shadow: 0 0 0 3px rgba(244, 217, 138, 0.55);
+}
+
+/* ── 담당 학생 목록 ─────────────────────────────────────────────
+   중2A반_수 7:30                   5명   ← .class-title (반 이름)
+   [중2] 홍길동 A          A3 B1 C0      ← .student-item
+         예시중
+   .active = 지금 체크리스트가 열린 학생
+   ─────────────────────────────────────────────────────────── */
+.student-panel {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+.panel-title {
+  margin-bottom: 10px;
+  color: var(--brand);
+  font-size: 15px;
+  font-weight: 900;
+}
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* 반 이름 줄 (반별 묶음의 제목) */
+.class-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 0 2px 3px;
+  border-bottom: 1px solid var(--line);
+  color: var(--brand-2);
+  font-size: 12px;
+  font-weight: 900;
+}
+.class-title:first-child {
+  margin-top: 0;
+}
+.class-title span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.class-title b {
+  flex-shrink: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 800;
+}
+.student-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+.student-item:hover {
+  border-color: var(--brand-2);
+  transform: translateY(-1px);
+}
+.student-item.active {
+  border-color: var(--brand-2);
+  background: #eef7f7;
+  box-shadow: inset 4px 0 0 var(--brand-2);
+}
+/* 학년 배지 (중1 청록 / 중2 파랑 / 중3 갈색 / 그 밖의 학년 회색) */
+.si-grade {
+  flex-shrink: 0;
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: #5b6b82;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+.si-grade-mid1 {
+  background: #2f6f73;
+}
+.si-grade-mid2 {
+  background: #3a5a9c;
+}
+.si-grade-mid3 {
+  background: #8a5a2b;
+}
+.si-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.si-name,
+.si-school {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.si-name {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+/* 이름 뒤 구분용 영문자 (예: 홍길동 A) — 목록에서만 작게 보이고 인쇄물에는 안 나옴 */
+.si-tag {
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #eef2f7;
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  font-weight: 800;
+  vertical-align: 1px;
+}
+.si-school {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+/* 오른쪽 평가 개수: A 파랑 · B 노랑 · C 빨강 */
+.si-progress {
+  flex-shrink: 0;
+  display: flex;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 900;
+}
+.p-a {
+  color: #1565c0;
+}
+.p-b {
+  color: #a87900;
+}
+.p-c {
+  color: #c62828;
+}
+.p-none {
+  color: #9aa7b8;
+  font-weight: 800;
+}
+.student-empty {
+  padding: 16px 8px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+}
+.student-empty b {
+  color: var(--brand-2);
+}
+
+/* ── 단원 설정 패널 ────────────────────────────────────────────── */
+.scope-selector-panel {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.selector-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--brand);
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+/* 제목 아래 "표시 단원 3/7" 상태 표시 (알약 모양) */
+.status-pill {
+  background: #e7f0f1;
+  color: var(--brand-2);
+  border: 1px solid #c4dddf;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* 전체 켜기 / 전체 끄기 버튼 줄 */
+.master-control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  align-items: stretch;
+}
+.btn-master {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+.btn-master:hover {
+  transform: translateY(-1px);
+}
+.btn-master-all {
+  background-color: var(--brand);
+  color: #ffffff;
+  border: 1px solid var(--brand);
+}
+.btn-master-clear {
+  background-color: #ffffff;
+  color: var(--brand);
+  border: 1px solid #b8c5d6;
+}
+
+/* ── 대단원 카드 & 중단원 체크박스 ──────────────────────────────
+   .scope-group        : 대단원 하나를 감싸는 카드 (왼쪽 굵은 띠 = 단원 색)
+   .group-header-label : 대단원 제목 + 체크박스
+   .sub-group-grid     : 중단원 체크박스 목록
+   .sub-scope-label    : 중단원 체크박스 한 줄
+   ─────────────────────────────────────────────────────────── */
+.scope-group-container {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.scope-group {
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--unit-color, var(--brand));
+  border-radius: 8px;
+  padding: 11px;
+  background: var(--surface);
+}
+.group-header-label {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--unit-color, var(--brand));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.group-header-label input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--unit-color, var(--brand-2));
+}
+.sub-group-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 26px;
+  border-top: 1px dashed var(--line);
+  padding-top: 10px;
+}
+.sub-scope-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: #ffffff;
+  padding: 7px 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  transition:
+    border 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+/* 체크된 중단원은 단원 색으로 연하게 칠함 (:has(input:checked) = 안에 체크된 input 이 있으면) */
+.sub-scope-label:has(input:checked) {
+  background: color-mix(
+    in srgb,
+    var(--unit-color, var(--brand-2)) 12%,
+    #ffffff
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--unit-color, var(--brand-2)) 55%,
+    #ffffff
+  );
+  color: color-mix(
+    in srgb,
+    var(--unit-color, var(--brand-2)) 75%,
+    #111c3a
+  );
+}
+.sub-scope-label input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--unit-color, var(--brand-2));
+}

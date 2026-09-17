@@ -1,0 +1,470 @@
+/* ==========================================================================
+   admin/admin.css — 🗂️ 관리자 페이지 스타일
+   --------------------------------------------------------------------------
+   색상 변수(--brand, --line 등)와 글꼴은 /css/base.css 를 함께 씁니다.
+   · 머리말 (.admin-header)
+   · 카드: 학생 추가 폼 · 여러 명 추가 · 명단 표
+   · 알림 (.admin-toast)
+   ========================================================================== */
+
+.admin-body {
+  padding: 24px 18px 64px;
+}
+/* base.css 의 버튼 최소 높이(38px)를 작은 버튼에서는 풀어 줌 */
+.teacher-chip,
+.btn-small {
+  min-height: auto;
+}
+
+/* ── 관리 화면 틀 ──────────────────────────────────────────────── */
+.admin-app {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px;
+  border-bottom: 4px solid var(--gold);
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--brand), #214765);
+  box-shadow: var(--shadow);
+  color: #ffffff;
+}
+.ah-logo {
+  color: #f4d98a;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+.ah-title {
+  margin: 4px 0 6px;
+  font-size: 24px;
+  font-weight: 900;
+}
+.ah-desc {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+/* "비밀번호가 없는 페이지" 주의 문구 */
+.ah-warn {
+  margin: 6px 0 0;
+  color: #f4d98a;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.ah-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ah-link {
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ah-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.admin-card {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  margin: 0 0 12px;
+  color: var(--brand);
+  font-size: 17px;
+  font-weight: 900;
+}
+.card-help {
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.card-help code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #eef2f7;
+  font-size: 12px;
+}
+
+/* 입력칸 공통 */
+.field input,
+.field select,
+.roster-tools select,
+.roster-tools input,
+.bulk textarea,
+.edit-input {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #f7faff;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.field input:focus,
+.field select:focus,
+.roster-tools select:focus,
+.roster-tools input:focus,
+.bulk textarea:focus,
+.edit-input:focus {
+  outline: none;
+  border-color: var(--brand-2);
+  background: #ffffff;
+}
+.btn-primary {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 7px;
+  background: var(--brand);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: #24466e;
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── 학생 추가 폼: [선생님] [학생] [학교] [학년] [반] [추가] ─────── */
+.add-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 96px minmax(0, 1.3fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ── 여러 명 한 번에 추가 ──────────────────────────────────────── */
+.bulk {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.bulk summary {
+  color: var(--brand-2);
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.bulk textarea {
+  width: 100%;
+  margin-top: 10px;
+  font-family: inherit;
+  resize: vertical;
+}
+/* CSV 파일을 끌어다 놓는 중 */
+.bulk textarea.drag-over {
+  border: 2px dashed var(--brand-2);
+  background: #eef7f7;
+}
+/* "📂 CSV 파일 선택" 버튼 (실제 파일 입력칸은 숨기고 라벨을 버튼처럼 보이게) */
+.bulk-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.btn-file {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border: 1px solid var(--brand-2);
+  border-radius: 7px;
+  background: #ffffff;
+  color: var(--brand-2);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.btn-file:hover {
+  background: var(--brand-2);
+  color: #ffffff;
+}
+.btn-file input {
+  display: none;
+}
+.bulk-file-name {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+/* 미리보기가 길면 표 안에서 스크롤 */
+.bulk-table {
+  max-height: 360px;
+  overflow: auto;
+}
+.bulk-columns {
+  margin: 0 0 8px;
+}
+.bulk-summary {
+  margin: 10px 0 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.bulk-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.ok-text {
+  color: #2e7d5b;
+  font-weight: 900;
+}
+.error-text {
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ── 명단 표 ───────────────────────────────────────────────────── */
+.roster-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.roster-head .card-title {
+  margin: 0;
+}
+.roster-count {
+  margin-left: 4px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+.roster-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* 선생님별 학생 수 칩 (누르면 그 선생님만 보기) */
+.teacher-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.teacher-chip {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.teacher-chip b {
+  margin-left: 5px;
+  color: var(--brand-2);
+}
+.teacher-chip:hover {
+  border-color: var(--brand-2);
+}
+.teacher-chip.active {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+}
+.teacher-chip.active b {
+  color: #f4d98a;
+}
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.roster-table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #f1f5f9;
+  color: var(--brand);
+  font-weight: 900;
+  text-align: left;
+  white-space: nowrap;
+}
+.roster-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #edf1f6;
+  color: var(--ink);
+  font-weight: 700;
+  vertical-align: middle;
+}
+.roster-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.roster-table tbody tr:hover td {
+  background: #fafcff;
+}
+.roster-table .row-error td {
+  background: #fff5f5;
+}
+/* 반 이름 열: 조금 작고 옅게 */
+.roster-table .col-class {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+.roster-table th.col-actions {
+  width: 140px;
+  text-align: right;
+}
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.btn-small {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-small:hover {
+  border-color: var(--brand-2);
+  color: var(--brand-2);
+}
+.btn-small.danger:hover {
+  border-color: var(--danger);
+  background: #fbeaec;
+  color: var(--danger);
+}
+.btn-small.save {
+  border-color: var(--brand-2);
+  background: var(--brand-2);
+  color: #ffffff;
+}
+.edit-input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+/* 학년 배지 (체크리스트 화면 학생 목록과 같은 색) */
+.grade-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #5b6b82;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 900;
+}
+.grade-badge.g-mid1 {
+  background: #2f6f73;
+}
+.grade-badge.g-mid2 {
+  background: #3a5a9c;
+}
+.grade-badge.g-mid3 {
+  background: #8a5a2b;
+}
+.roster-empty {
+  padding: 28px 12px !important;
+  color: var(--ink-soft) !important;
+  line-height: 1.7;
+  text-align: center;
+}
+/* 명단을 불러오지 못했을 때 (다시 불러오기 버튼 포함) */
+.roster-empty.roster-error {
+  color: var(--danger) !important;
+}
+.roster-error .btn-small {
+  margin-top: 8px;
+}
+
+/* ── 알림 ─────────────────────────────────────────────────────── */
+.admin-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  z-index: 200;
+  max-width: calc(100vw - 32px);
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(24, 49, 83, 0.97);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 14px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.admin-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.admin-toast.error {
+  background: var(--danger);
+}
+
+/* ── 좁은 화면 ─────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .admin-body {
+    padding: 14px 10px 64px;
+  }
+  .add-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .add-form .field:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+  .add-form .btn-primary {
+    grid-column: 1 / -1;
+  }
+  .roster-tools,
+  .roster-tools > * {
+    width: 100%;
+  }
+}
