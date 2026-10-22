@@ -24,6 +24,13 @@ function gradeLabel(grade) {
   return Object.prototype.hasOwnProperty.call(GRADE_LABELS, grade) ? GRADE_LABELS[grade] : grade;
 }
 
+// 학년 순서 번호 (정렬용) = js/data/curriculum.js 에 적힌 순서 (중1 → 중2 → 중3 …).
+// 데이터에 없는 학년은 맨 뒤.  예) gradeOrder("mid1") → 0,  gradeOrder("mid2") → 1
+function gradeOrder(grade) {
+  const index = Object.keys(CURRICULUM_DATA).indexOf(grade);
+  return index < 0 ? 999 : index;
+}
+
 // 그 학년의 단원 데이터가 js/data/curriculum.js 에 있는지.  예) hasGradeData("mid2") → true
 // (명단의 학년 값이 "constructor" 같은 이상한 글자여도 잘못 인식하지 않도록 hasOwnProperty 로 확인)
 function hasGradeData(grade) {

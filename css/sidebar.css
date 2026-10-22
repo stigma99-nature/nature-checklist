@@ -4,10 +4,11 @@
    index.html 의 <aside class="sidebar"> 영역입니다. 위에서부터
    · 선생님 패널   : 로그인한 이름 · 로그아웃 · 시험 선택   (js/login.js, js/student-list.js)
      └ ⑥ 시험 선택 안내: 시험이 공란이면 시험 선택 칸만 밝게, 나머지 화면은 어둡게
-   · 담당 학생 목록 : 학생을 누르면 체크리스트가 열림       (js/student-list.js)
-     └ 학생 추가 · 이름·학교 수정: 목록 아래 버튼 → 입력 폼
-   · 단원 설정 패널 : 전체 켜기/끄기, 대단원·중단원 체크박스 (js/scope-panel.js)
+   · 담당 학생 목록 : 학생을 누르면 체크리스트가 열림, 제목 오른쪽 "정렬" (js/student-list.js)
+     └ 학생 추가 · 이름·학교 수정 · 학생 삭제: 목록 아래 버튼 → 입력 폼
+   · 단원 설정 패널 : 전체 켜기/끄기 · 범위 복사, 대단원·중단원 체크박스 (js/scope-panel.js)
                      진단평가 모두 자세히/간단히 (js/checklist-table.js)
+     └ ⑦ 시험 범위 복사 창 (화면 가운데에 뜨는 창, 맨 아래 부분)
      ※ 넓은 PC 화면(폭 1280px 이상)에서는 화면 오른쪽에 고정돼 보입니다 → css/responsive.css
 
    ※ var(--unit-color) 는 JS 가 대단원마다 넣어 주는 색입니다 (js/config.js 의 UNIT_COLORS).
@@ -185,7 +186,8 @@
 }
 
 /* ── 담당 학생 목록 ─────────────────────────────────────────────
-   중2A반_수 7:30                   5명   ← .class-title (반 이름)
+   담당 학생 12명          정렬 [반별 ▾]   ← .panel-title · .student-sort
+   중2A반_수 7:30                   5명   ← .class-title (묶음 제목: 반 · 학년 · 학교)
    [중2] 홍길동 A          A3 B1 C0      ← .student-item
          예시중
    .active = 지금 체크리스트가 열린 학생
@@ -198,10 +200,38 @@
   box-shadow: var(--shadow);
 }
 .panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 10px;
   color: var(--brand);
   font-size: 15px;
   font-weight: 900;
+}
+/* 제목 오른쪽 "정렬 [반별 ▾]" */
+.student-sort {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.student-sort select {
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.student-sort select:focus {
+  outline: none;
+  border-color: var(--brand-2);
 }
 .student-list {
   display: flex;
@@ -354,6 +384,7 @@
    목록 아래 점선 버튼 두 개(.student-actions) 중 하나를 누르면 버튼 줄이 숨고 입력 폼이 열림
    (js/student-list.js 의 openAddStudentForm · openEditStudentForm · submitStudentForm)
    [＋ 학생 추가] [✏️ 이름·학교 수정]   ← 수정 버튼은 열린 학생이 없으면 흐리게 잠김
+                 🗑 홍길동 학생 삭제   ← .btn-student-delete (지우는 버튼이라 눈에 덜 띄게 작은 글자)
    ┌ 새 학생 추가 ─────────────┐     (수정할 때는 제목이 "홍길동 학생 정보 수정",
    │ 이름    [            ]   │      학년 줄 없음, 버튼 글자는 "저장")
    │ 학교명  [            ]   │   ← .sf-field (왼쪽 이름표 + 입력칸)
@@ -387,6 +418,32 @@
   background: #e7f2f2;
 }
 .btn-student-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-student-delete {
+  grid-column: 1 / -1; /* 두 칸을 다 쓰고 오른쪽 끝에 붙임 */
+  justify-self: end;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 26px;
+  padding: 3px 6px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.btn-student-delete:hover:not(:disabled) {
+  background: #fbecee;
+  color: var(--danger);
+}
+.btn-student-delete:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -546,6 +603,21 @@
   color: var(--brand);
   border: 1px solid #b8c5d6;
 }
+/* 다른 학생에게 범위 복사 (열린 학생이 없으면 흐리게 잠김) */
+.btn-master-copy {
+  background-color: #f4f9f9;
+  color: var(--brand-2);
+  border: 1px dashed #9fbcbe;
+}
+.btn-master-copy:hover:not(:disabled) {
+  border-color: var(--brand-2);
+  background-color: #e7f2f2;
+}
+.btn-master:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* 진단평가 [모두 자세히] [모두 간단히] 버튼 줄 (js/checklist-table.js 의 setAllDetail)
    지금 모든 대단원이 그 상태면 버튼이 진하게 강조됨(.is-active — updateDetailControls) */
@@ -670,4 +742,188 @@
   width: 15px;
   height: 15px;
   accent-color: var(--unit-color, var(--brand-2));
+}
+
+/* ── ⑦ 시험 범위 복사 창 ──────────────────────────────────────────
+   단원 설정의 "📋 다른 학생에게 범위 복사"를 누르면 화면 가운데에 뜨는 창 (<dialog>)
+   (js/student-list.js 의 openCopyScopeDialog · submitCopyScope)
+   ┌ 📋 시험 범위 복사 ───────────────────┐
+   │ 홍길동(예시중 · 중2)의 … 적용해요.     │ ← .cs-desc
+   │ [5. 식물과 에너지 전체] [6. … 2/4]    │ ← .cs-scope · .cs-chip (복사할 범위, 단원 색 띠)
+   │ [같은 학교 모두] [전체 선택] [선택 해제] │ ← .cs-quick
+   │ ┌ 예시중 · 같은 학교          3명 ┐   │ ← .cs-group (학교 묶음 제목)
+   │ │ ☑ 김철수   중2A반   [범위 없음] │   │ ← .cs-item · .cs-status (안에서 스크롤)
+   │ └──────────────────────────────┘   │
+   │                [취소] [3명에게 복사] │ ← .sf-actions (학생 추가 폼과 같은 버튼 모양)
+   └────────────────────────────────────┘
+   ─────────────────────────────────────────────────────────── */
+.copy-scope-dialog {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: 0 24px 60px rgba(10, 18, 34, 0.35);
+  overflow: hidden;
+}
+/* 창 뒤 화면을 어둡게 */
+.copy-scope-dialog::backdrop {
+  background: rgba(10, 18, 34, 0.55);
+}
+.cs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 48px);
+  padding: 16px;
+  box-sizing: border-box;
+}
+.cs-title {
+  color: var(--brand);
+  font-size: 16px;
+  font-weight: 900;
+}
+.cs-desc {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.cs-desc b {
+  color: var(--ink);
+}
+.cs-scope {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.cs-chip {
+  padding: 4px 8px;
+  border-left: 4px solid var(--unit-color, var(--brand-2));
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--unit-color, var(--brand-2)) 10%, #ffffff);
+  color: color-mix(in srgb, var(--unit-color, var(--brand-2)) 80%, #111c3a);
+  font-size: 12px;
+  font-weight: 800;
+}
+.cs-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cs-quick button {
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid #b8c5d6;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.cs-quick button:hover:not(:disabled) {
+  border-color: var(--brand-2);
+  color: var(--brand-2);
+}
+.cs-quick button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* 학생 목록: 학생이 많으면 이 칸 안에서 스크롤 */
+.cs-list {
+  flex: 1 1 auto;
+  min-height: 90px;
+  overflow-y: auto;
+  padding: 4px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.cs-group {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 0 2px 3px;
+  border-bottom: 1px solid var(--line);
+  color: var(--brand-2);
+  font-size: 12px;
+  font-weight: 900;
+}
+.cs-group b {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.cs-item {
+  display: grid;
+  grid-template-columns: 18px minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px dashed var(--line);
+  cursor: pointer;
+}
+.cs-item:last-child {
+  border-bottom: none;
+}
+.cs-item input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--brand-2);
+}
+.cs-item.is-disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.cs-name {
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.cs-class {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 지금 범위: 없음 회색 · 같음 초록 · 다름 노랑 */
+.cs-status {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.cs-status.is-none {
+  background: #eef2f7;
+  color: #6b7a90;
+}
+.cs-status.is-same {
+  background: #e6f4ec;
+  color: #2e7d5b;
+}
+.cs-status.is-diff {
+  background: #fff6cc;
+  color: #a87900;
+}
+.cs-note {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.cs-card .sf-submit:disabled {
+  cursor: not-allowed;
 }

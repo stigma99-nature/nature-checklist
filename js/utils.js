@@ -86,6 +86,12 @@ function htmlHasText(html) {
   );
 }
 
+// 정렬할 때 쓰는 가나다순 비교. 빈 값도 오류 없이 비교한다.
+// 예) ["이도현", "김나윤"].sort(compareKo) → ["김나윤", "이도현"]
+function compareKo(a, b) {
+  return String(a ?? "").localeCompare(String(b ?? ""), "ko");
+}
+
 // 명단 이름 뒤에 붙은 구분용 영문자(동명이인 구분 등)를 떼어 나눈다.
 // 인쇄물·파일 이름에는 base(이름만), 선생님용 목록에는 tag 까지 함께 보여 줍니다.
 // 예) "홍길동A" → { base: "홍길동", tag: "A" },  "이순신" → { base: "이순신", tag: "" }

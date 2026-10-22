@@ -100,10 +100,10 @@
           <p class="card-help">
             <b>CSV 파일</b>을 고르거나 아래 칸에 끌어다 놓으세요. 엑셀·구글 시트에서
             표를 복사해 붙여넣어도 됩니다.<br />
-            첫 줄에 <code>이름</code> <code>학년</code> <code>중학교</code>
-            <code>반명</code> <code>선생님</code> 같은 제목이 있으면 열 순서와 상관없이
-            알아서 맞춥니다. (제목이 없으면 선생님 · 학생 이름 · 학교명 · 학년 · 반 순서로
-            읽어요)<br />
+            맨 위 줄 근처에 <code>성명</code> <code>학년</code> <code>학교</code>
+            <code>반명</code> <code>담당</code> 같은 제목 줄이 있으면 열 순서와 상관없이
+            알아서 맞춥니다. 제목 줄 위의 시트 제목 · 번호만 있는 빈 줄은 건너뛰어요.
+            (제목이 없으면 선생님 · 학생 이름 · 학교명 · 학년 · 반 순서로 읽어요)<br />
             학년은 <code>2학년</code> <code>중2</code> <code>2</code> 처럼 적어도 되고, 이미
             명단에 있는 학생은 건너뜁니다. 목록 순서는 파일의 줄 순서를 따릅니다.
           </p>
@@ -140,7 +140,8 @@
         </details>
       </section>
 
-      <!-- 학생 명단: 선생님별로 거르기 · 검색 · 수정 · 삭제 (renderRoster). 등록 순서(CSV 줄 순서)대로 보임 -->
+      <!-- 학생 명단: 선생님별로 거르기 · 검색 · 정렬 · 수정 · 삭제 (renderRoster).
+           기본은 선생님 → 등록 순서(CSV 줄 순서). 정렬에서 학년별 · 학교별 · 반별 · 이름순을 고를 수 있음 -->
       <section class="admin-card">
         <div class="roster-head">
           <h2 class="card-title">
@@ -155,6 +156,14 @@
               placeholder="🔍 학생 이름 · 학교 · 반 검색"
               oninput="renderRoster()"
             />
+            <!-- 정렬: 고른 기준이 같은 학생끼리는 선생님 → 등록 순서 (admin.js 의 ROSTER_SORTS) -->
+            <select id="roster-sort" onchange="renderRoster()" aria-label="정렬">
+              <option value="">정렬: 선생님별</option>
+              <option value="grade">정렬: 학년별</option>
+              <option value="school">정렬: 학교별</option>
+              <option value="class">정렬: 반별</option>
+              <option value="name">정렬: 이름순</option>
+            </select>
           </div>
         </div>
         <div class="teacher-chips" id="teacher-chips"></div>

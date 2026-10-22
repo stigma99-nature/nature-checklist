@@ -32,7 +32,7 @@
       같은 대상에 같은 우선순위의 스타일이 겹치면 "아래에 있는 파일"이 이깁니다.
         base.css             색상 변수 · 기본 스타일 · 전체 2단 레이아웃
         login.css            ⓪ 로그인 화면
-        sidebar.css          ① 왼쪽: 선생님 · 시험 선택 · 담당 학생 목록 · 단원 설정 · ⑥ 시험 선택 안내
+        sidebar.css          ① 왼쪽: 선생님 · 시험 선택 · 담당 학생 목록 · 단원 설정 · ⑥ 시험 선택 안내 · ⑦ 범위 복사 창
         report-header.css    ② 가운데: A4 용지 · 머리말 (이름/학교/시험)
         checklist-table.css  ② 가운데: 체크리스트 표 · ⑤ SOLUTION 문구 팝오버
         opinion.css          ② 가운데 아래: 종합 의견
@@ -58,13 +58,14 @@
     <!--
       화면 구성
         ⓪ 로그인 화면 ··········· 선생님 이름 입력 (로그인 전에는 화면 전체를 덮음)
-        ① 왼쪽 사이드바 ········· 선생님 · 시험 선택 · 담당 학생 목록 · 학생 추가·수정 · 단원 설정
+        ① 왼쪽 사이드바 ········· 선생님 · 시험 선택 · 담당 학생 목록(정렬) · 학생 추가·수정·삭제 · 단원 설정
                                   (단원 설정은 넓은 PC 화면에서 오른쪽에 보임 → css/responsive.css)
         ② 가운데 A4 리포트 ······ 머리말, 체크리스트 표 (JS 가 생성), 종합 의견, 인쇄용 푸터
         ③ 오른쪽 위 버튼 모음 ··· 인쇄 / 이미지 저장 / 이미지 복사
         ④ 토스트 알림
         ⑤ SOLUTION 문구 팝오버
         ⑥ 시험 선택 안내 ········ 시험이 공란이면 시험 선택 칸만 밝게, 나머지는 어둡게
+        ⑦ 시험 범위 복사 창 ····· 지금 학생의 단원 설정을 같은 학년의 다른 학생들에게 복사
       class="no-print" 가 붙은 요소는 인쇄물과 이미지에 나오지 않습니다.
     -->
 
@@ -130,20 +131,33 @@
           </label>
         </div>
 
-        <!-- 담당 학생 목록: 로그인하면 renderStudentList() (js/student-list.js) 가 반별로 묶어 채움
-             목록 아래 버튼: "학생 추가" → 새 학생 입력 폼 / "이름·학교 수정" → 지금 열린 학생 정보 수정 폼 -->
+        <!-- 담당 학생 목록: 로그인하면 renderStudentList() (js/student-list.js) 가 "정렬"에서 고른 대로 묶어 채움
+             정렬 → onStudentSortChange() : 반별(기본) · 학년별 · 학교별 · 이름순 (이 브라우저에 기억)
+             목록 아래 버튼: "학생 추가" → 새 학생 입력 폼 / "이름·학교 수정" → 지금 열린 학생 정보 수정 폼
+                             "학생 삭제" → 지금 열린 학생 삭제 -->
         <div class="student-panel">
           <div class="panel-title">
-            담당 학생 <span id="student-count">0</span>명
+            <span>담당 학생 <span id="student-count">0</span>명</span>
+            <label class="student-sort">
+              <span>정렬</span>
+              <select id="student-sort" onchange="onStudentSortChange()">
+                <option value="class">반별</option>
+                <option value="grade">학년별</option>
+                <option value="school">학교별</option>
+                <option value="name">이름순</option>
+              </select>
+            </label>
           </div>
           <div class="student-list" id="student-list"></div>
 
           <!-- 학생 추가 · 이름·학교 수정 ─ js/student-list.js · css/sidebar.css
                · 학생 추가 → openAddStudentForm() : 명단에 없는 학생을 로그인한 선생님 명단에 바로 등록
                · 이름·학교 수정 → openEditStudentForm() : 지금 체크리스트가 열린 학생의 이름 · 학교명 고치기
-                 (열린 학생이 없으면 버튼이 잠김. 학년 · 반 변경과 삭제는 관리자 페이지 /admin 에서)
+                 (열린 학생이 없으면 버튼이 잠김. 학년 · 반 변경은 관리자 페이지 /admin 에서)
                두 버튼이 아래 폼 하나를 함께 씁니다 (수정할 때는 학년 칸이 숨음).
-               저장 → submitStudentForm() / 취소 → closeStudentForm()  (학년 선택지는 initExamSelect 가 채움) -->
+               저장 → submitStudentForm() / 취소 → closeStudentForm()  (학년 선택지는 initExamSelect 가 채움)
+               · 학생 삭제 → deleteCurrentStudent() : 지금 열린 학생 + 그 학생의 체크리스트 삭제 (한 번 더 물어봄)
+                 버튼 글자의 학생 이름은 updateStudentActions() 가 채움 -->
           <div class="student-actions" id="student-actions">
             <button
               type="button"
@@ -160,6 +174,15 @@
               disabled
             >
               ✏️ 이름·학교 수정
+            </button>
+            <button
+              type="button"
+              class="btn-student-delete"
+              id="delete-student-open"
+              onclick="deleteCurrentStudent()"
+              disabled
+            >
+              🗑 학생 삭제
             </button>
           </div>
           <form
@@ -217,7 +240,8 @@
             <span>단원 설정</span>
             <span class="status-pill" id="scope-status">전체 단원 표시 중</span>
           </div>
-          <!-- 전체 켜기 / 끄기 → setAllScopes() -->
+          <!-- 전체 켜기 / 끄기 → setAllScopes()
+               다른 학생에게 범위 복사 → openCopyScopeDialog() : js/student-list.js (⑦ 범위 복사 창이 열림) -->
           <div class="master-control-row">
             <button
               type="button"
@@ -232,6 +256,15 @@
               onclick="setAllScopes(false)"
             >
               ✕ 전체 단원 끄기
+            </button>
+            <button
+              type="button"
+              class="btn-master btn-master-copy"
+              id="copy-scope-open"
+              onclick="openCopyScopeDialog()"
+              disabled
+            >
+              📋 다른 학생에게 범위 복사
             </button>
           </div>
           <!-- 진단평가 방식 한꺼번에 바꾸기 → setAllDetail() : js/checklist-table.js
@@ -406,6 +439,59 @@
       <span>시험을 고르면 학생의 체크리스트가 열려요.</span>
     </div>
 
+    <!-- ⑦ 시험 범위 복사 창 ─ css/sidebar.css · js/student-list.js 의 openCopyScopeDialog
+         지금 열린 학생의 단원 설정을 같은 학년의 다른 학생들(같은 시험)에게 똑같이 적용합니다.
+         설명 · 범위 칩 · 학생 목록은 JS 가 채움. 복사 → submitCopyScope() / 취소 → closeCopyScopeDialog() -->
+    <dialog
+      class="copy-scope-dialog no-print"
+      id="copy-scope-dialog"
+      oncancel="onCopyScopeCancel(event)"
+      onclose="onCopyScopeClosed()"
+    >
+      <form class="cs-card" onsubmit="submitCopyScope(event)">
+        <div class="cs-title">📋 시험 범위 복사</div>
+        <p class="cs-desc" id="copy-scope-desc"></p>
+        <div class="cs-scope" id="copy-scope-summary"></div>
+        <div class="cs-quick">
+          <button
+            type="button"
+            id="copy-scope-same-school"
+            onclick="selectCopyTargets('school')"
+          >
+            같은 학교 모두
+          </button>
+          <button type="button" onclick="selectCopyTargets('all')">
+            전체 선택
+          </button>
+          <button type="button" onclick="selectCopyTargets('none')">
+            선택 해제
+          </button>
+        </div>
+        <div
+          class="cs-list"
+          id="copy-scope-list"
+          onchange="updateCopyScopeButton()"
+        ></div>
+        <p class="cs-note">
+          고른 학생의 평가(A/B/C) · 메모 · SOLUTION 은 그대로 두고 단원 설정만
+          바뀌어요.
+        </p>
+        <p class="sf-message" id="copy-scope-message" role="alert"></p>
+        <div class="sf-actions">
+          <button
+            type="button"
+            class="sf-cancel"
+            onclick="closeCopyScopeDialog()"
+          >
+            취소
+          </button>
+          <button type="submit" class="sf-submit" id="copy-scope-submit">
+            복사
+          </button>
+        </div>
+      </form>
+    </dialog>
+
     <!-- ⑤ SOLUTION 문구 팝오버 ─ css/checklist-table.css · js/checklist-table.js
          SOLUTION 칸(기본값 "-" 공란)을 클릭하면 그 칸 바로 아래에 뜸.
          문구를 바꾸려면 injectMacro('넣을 문구', false) 의 '넣을 문구'와 버튼 글자를 함께 고치세요. -->
@@ -515,7 +601,7 @@
         scope-panel.js          ① 단원 설정 체크박스
         report-header.js        ② 머리말 (명단 정보 / 빈 체크리스트는 직접 입력) · 저장 파일 이름
         checklist-table.js      ② 체크리스트 표 · 진단평가 간단히/자세히 · A/B/C 평가 · 진단평가 메모 · ⑤ SOLUTION 문구 팝오버
-        student-list.js         ① 시험 선택 · 반별 담당 학생 목록 · 학생 추가·수정 · 체크리스트 열기 · 빈 체크리스트
+        student-list.js         ① 시험 선택 · 담당 학생 목록(정렬) · 학생 추가·수정·삭제 · ⑦ 범위 복사 · 체크리스트 열기 · 빈 체크리스트
         login.js                ⓪ 선생님 로그인 / 로그아웃 (명단에 없는 이름 → 빈 체크리스트)
         export.js               ③ 출력 전 검사 · 인쇄/PDF · 이미지 저장/복사
       [시작]

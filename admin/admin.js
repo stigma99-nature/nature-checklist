@@ -151,9 +151,11 @@ function isDuplicate(student, exceptId) {
 /* ── 여러 명 한 번에 추가 (CSV 파일 · 엑셀 붙여넣기) ────────────────
    · CSV 파일: 엑셀에서 저장한 CSV 는 보통 한글이 EUC-KR 로 들어 있는데, UTF-8 파일도 함께 읽습니다.
    · 엑셀·시트에서 복사해 붙여넣으면 칸 사이가 탭(\t)으로 들어옵니다.
-   · 첫 줄에 제목(이름 · 학년 · 중학교 · 반명 · 선생님 …)이 있으면 제목으로 열 위치를 찾고,
-     없으면 [선생님, 학생 이름, 학교명, 학년, 반] 순서로 읽습니다.
-   · 제목에 없는 열(예: 일정, 시험범위)은 읽지 않습니다.
+   · 맨 위 몇 줄(HEADER_SEARCH_ROWS) 안에 제목 줄(이름 · 학년 · 중학교 · 반명 · 선생님 …)이 있으면
+     제목으로 열 위치를 찾고, 그 위의 줄(시트 제목 등)은 건너뜁니다.
+     제목 줄이 없으면 [선생님, 학생 이름, 학교명, 학년, 반] 순서로 읽습니다.
+   · 제목에 없는 열(예: 번호, 시험일, 시험범위, 성적)은 읽지 않습니다.
+   · 학생 칸(선생님 · 이름 · 학교 · 학년)이 모두 빈 줄은 건너뜁니다 (번호만 적힌 빈 줄 등).
    ─────────────────────────────────────────────────────────── */
 
 // 제목 칸 글자 → 명단 항목 (띄어쓰기를 뺀 글자로 비교)
@@ -166,6 +168,7 @@ const HEADER_NAMES = {
 };
 const FIELD_LABELS = { teacher: "선생님", name: "학생 이름", school: "학교명", grade: "학년", className: "반" };
 const DEFAULT_COLUMNS = { teacher: 0, name: 1, school: 2, grade: 3, className: 4 };
+const HEADER_SEARCH_ROWS = 10; // 제목 줄을 찾아볼 맨 위 줄 수 (시트 맨 위에 제목 · 안내 줄이 있어도 되게)
 
 // 파일 선택 (index.html 의 onchange)
 function onBulkFileSelected(input) {
@@ -237,7 +240,7 @@ function parseTable(text) {
   return rows.map((r) => r.map((c) => c.trim())).filter((r) => r.some((c) => c));
 }
 
-// 첫 줄이 제목 줄이면 { 항목: 열 번호 } 를, 아니면 null 을 돌려준다.
+// 그 줄이 제목 줄이면 { 항목: 열 번호 } 를, 아니면 null 을 돌려준다.
 // (선생님 · 학생 이름 열을 둘 다 찾아야 제목 줄로 인정)
 function detectColumns(firstRow) {
   const columns = {};
@@ -253,30 +256,36 @@ function detectColumns(firstRow) {
 // 붙여넣은 글(또는 불러온 파일)을 읽어 미리보기를 만든다 (입력할 때마다 실행)
 function previewBulk() {
   const table = parseTable(document.getElementById("bulk-text").value);
-  const header = table.length ? detectColumns(table[0]) : null;
+  const headerIndex = table.slice(0, HEADER_SEARCH_ROWS).findIndex((row) => detectColumns(row));
+  const header = headerIndex >= 0 ? detectColumns(table[headerIndex]) : null;
   const columns = header || DEFAULT_COLUMNS;
-  const body = header ? table.slice(1) : table;
+  const body = header ? table.slice(headerIndex + 1) : table;
 
   bulkColumnInfo = !table.length
     ? ""
     : header
-      ? "첫 줄 제목으로 열을 찾았어요 → " +
+      ? `${headerIndex + 1}번째 줄 제목으로 열을 찾았어요 → ` +
         Object.keys(FIELD_LABELS)
           .map((f) => `${FIELD_LABELS[f]}: ${header[f] === undefined ? "없음" : `${header[f] + 1}번째 열`}`)
           .join(" · ")
       : "제목 줄이 없어 선생님 · 학생 이름 · 학교명 · 학년 · 반 순서로 읽었어요.";
 
+  const rows = body
+    .map((cells) => {
+      const cellOf = (field) =>
+        columns[field] === undefined ? "" : String(cells[columns[field]] || "").trim();
+      return {
+        teacher: cellOf("teacher"),
+        name: cellOf("name"),
+        school: cellOf("school"),
+        gradeText: cellOf("grade"),
+        className: cellOf("className"),
+      };
+    })
+    .filter((row) => row.teacher || row.name || row.school || row.gradeText); // 학생이 없는 줄은 건너뜀
+
   const seen = new Set();
-  bulkRows = body.map((cells) => {
-    const cellOf = (field) =>
-      columns[field] === undefined ? "" : String(cells[columns[field]] || "").trim();
-    const row = {
-      teacher: cellOf("teacher"),
-      name: cellOf("name"),
-      school: cellOf("school"),
-      gradeText: cellOf("grade"),
-      className: cellOf("className"),
-    };
+  bulkRows = rows.map((row) => {
     row.grade = parseGrade(row.gradeText);
     const key = [row.teacher, row.name, row.school, row.grade].join("|");
     if (!row.teacher || !row.name || !row.school) row.error = "빈 칸이 있습니다";
@@ -400,7 +409,18 @@ function renderTeacherControls() {
     .join("");
 }
 
-// 거르기·검색 조건에 맞는 학생을 표로 그린다 (선생님 → 등록 순서, 수정 중인 줄은 입력칸으로)
+// 명단 표 정렬 방식 (표 위 "정렬" 선택 칸 #roster-sort 의 value → 비교 함수)
+// 기본("")은 선생님 → 등록 순서(CSV 줄 순서). 고른 기준이 같으면 이 기본 순서로 놓는다.
+const ROSTER_SORTS = {
+  grade: (a, b) =>
+    gradeOrder(a.grade) - gradeOrder(b.grade) || compareKo(a.school, b.school) || compareKo(a.name, b.name),
+  school: (a, b) =>
+    compareKo(a.school, b.school) || gradeOrder(a.grade) - gradeOrder(b.grade) || compareKo(a.name, b.name),
+  class: (a, b) => !a.className - !b.className || compareKo(a.className, b.className), // 반 없는 학생은 맨 뒤
+  name: (a, b) => compareKo(a.name, b.name),
+};
+
+// 거르기·검색 조건에 맞는 학생을 표로 그린다 (고른 정렬 방식대로, 수정 중인 줄은 입력칸으로)
 function renderRoster() {
   const body = document.getElementById("roster-body");
   const countEl = document.getElementById("roster-count");
@@ -422,11 +442,13 @@ function renderRoster() {
     chip.classList.toggle("active", chip.dataset.teacher === teacher);
   });
 
+  const sortBy = ROSTER_SORTS[document.getElementById("roster-sort").value];
   const list = roster
     .filter((s) => !teacher || s.teacher === teacher)
     .filter((s) => !query || `${s.name} ${s.school} ${s.className || ""}`.toLowerCase().includes(query))
     .sort(
       (a, b) =>
+        (sortBy ? sortBy(a, b) : 0) ||
         a.teacher.localeCompare(b.teacher, "ko") ||
         orderOf(a) - orderOf(b) ||
         a.name.localeCompare(b.name, "ko"),
